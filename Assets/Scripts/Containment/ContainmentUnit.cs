@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.EventSystems;
 /// <summary>
 /// ContainmentUnit menampung 1 Monster.
 /// Assign monster prefab langsung di Inspector field "Monster Prefab".
@@ -11,6 +11,17 @@ public class ContainmentUnit : MonoBehaviour
     [Header("Unit Info")]
     [SerializeField] private string unitName = "Containment Unit";
 
+    [Header("Collider")]
+    [Tooltip("Otomatis sesuaikan ukuran BoxCollider2D dengan sprite saat Awake / ganti sprite.")]
+    [SerializeField] private bool autoFitCollider = true;
+
+    private BoxCollider2D boxCollider;
+
+    [Header("Visual")]
+    [Tooltip("Sprite default untuk containment unit ini. Akan otomatis di-apply ke SpriteRenderer.")]
+    [SerializeField] private Sprite unitSprite;
+    [SerializeField] private SpriteRenderer unitRenderer; // opsional, auto-cari kalau kosong
+
     [Header("Monster — assign prefab monster di sini")]
     [Tooltip("Drag prefab monster ke sini. Kosongkan jika unit ini tidak punya monster.")]
     [SerializeField] private GameObject monsterPrefab;
@@ -21,7 +32,9 @@ public class ContainmentUnit : MonoBehaviour
 
     // ── Events ────────────────────────────────────────────────────────────────
     public System.Action<ContainmentUnit> OnUnitClicked;
-    public System.Action<MonsterBase>     OnMonsterAssigned;
+    public System.Action<MonsterBase> OnMonsterAssigned;
+
+    public static System.Action<ContainmentUnit> OnAnyUnitClicked;
 
     // ── Properties ────────────────────────────────────────────────────────────
     public string     UnitName   { get => unitName;  set => unitName = value; }
@@ -29,6 +42,18 @@ public class ContainmentUnit : MonoBehaviour
     public bool        HasMonster => monster != null;
     public Room        ParentRoom => parentRoom;
     public MonsterContext Context { get; private set; }
+    public SpriteRenderer UnitRenderer => unitRenderer;
+    
+
+    public Sprite UnitSprite
+    {
+        get => unitSprite;
+        set
+        {
+            unitSprite = value;
+            ApplySprite();
+        }
+    }
 
     // ── Init ──────────────────────────────────────────────────────────────────
     public void SetParentRoom(Room room)
@@ -39,6 +64,13 @@ public class ContainmentUnit : MonoBehaviour
 
         Debug.Log($"SetParentRoom dipanggil -> {room}");
     }
+
+    private void Awake()
+    {
+        boxCollider = GetComponent<BoxCollider2D>();
+        ApplySprite();
+    }
+
 
     private void Start()
     {
@@ -54,6 +86,16 @@ public class ContainmentUnit : MonoBehaviour
     /// Dipanggil otomatis dari Start() jika monsterPrefab di-assign.
     /// Bisa juga dipanggil runtime untuk ganti monster.
     /// </summary>
+    private void ApplySprite()
+    {
+        if (unitRenderer == null)
+            unitRenderer = GetComponent<SpriteRenderer>();
+
+        if (unitRenderer != null && unitSprite != null)
+            unitRenderer.sprite = unitSprite;
+
+        FitColliderToSprite();
+    }
     public void SpawnMonsterFromPrefab(GameObject prefab)
     {
         if (prefab == null) return;
@@ -76,6 +118,23 @@ public class ContainmentUnit : MonoBehaviour
         AssignMonster(m);
     }
 
+
+    private void FitColliderToSprite()
+    {
+        if (!autoFitCollider) return;
+
+        if (boxCollider == null)
+            boxCollider = GetComponent<BoxCollider2D>();
+
+        if (unitRenderer == null || unitRenderer.sprite == null || boxCollider == null)
+            return;
+
+        Bounds spriteBounds = unitRenderer.sprite.bounds;
+
+        boxCollider.size = spriteBounds.size;
+        boxCollider.offset = spriteBounds.center;
+    }
+
     /// <summary>
     /// Assign instance MonsterBase yang sudah ada (tidak spawn baru).
     /// </summary>
@@ -85,6 +144,13 @@ public class ContainmentUnit : MonoBehaviour
 
         monster = newMonster;
         monster.InitUnit(this);
+
+        if (monster.MonsterRenderer != null && unitRenderer != null)
+        {
+            monster.MonsterRenderer.sortingLayerID = unitRenderer.sortingLayerID;
+            monster.MonsterRenderer.sortingOrder   = unitRenderer.sortingOrder + 1;
+        }
+        
         OnMonsterAssigned?.Invoke(monster);
         Debug.Log($"[ContainmentUnit:{unitName}] Monster aktif: {monster.MonsterName}");
     }
@@ -100,9 +166,15 @@ public class ContainmentUnit : MonoBehaviour
 
     // ── Click Handling ────────────────────────────────────────────────────────
     private void OnMouseDown()
+{
+    if (EventSystem.current != null &&
+        EventSystem.current.IsPointerOverGameObject())
     {
-        HandleClick();
+        return;
     }
+
+    HandleClick();
+}
 
     protected virtual void HandleClick()
     {
@@ -113,8 +185,10 @@ public class ContainmentUnit : MonoBehaviour
         }
 
         Debug.Log($"[ContainmentUnit:{unitName}] " +
-                  $"Monster: {monster.MonsterName} | Mood: {monster.Mood} | Growth: {monster.Growth:P0}");
+                $"Monster: {monster.MonsterName} | Mood: {monster.Mood} | Growth: {monster.Growth:P0}");
+
         OnUnitClicked?.Invoke(this);
+        OnAnyUnitClicked?.Invoke(this);   // <-- baris baru
     }
 
 }

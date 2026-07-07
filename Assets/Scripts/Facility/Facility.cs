@@ -24,6 +24,7 @@ public class Facility : MonoBehaviour
 
     //────────────────────────────────────────────────────────
 
+
     public float Energy
     {
         get => energy;
