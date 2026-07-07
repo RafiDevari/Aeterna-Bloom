@@ -212,6 +212,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Employee
   employeeName: Rafi5
   moveSpeed: 1
+  carriedFood: 0
+  hasFood: 0
 --- !u!61 &38880548
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1174,6 +1176,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Employee
   employeeName: Rafi
   moveSpeed: 1
+  carriedFood: 0
+  hasFood: 1
 --- !u!61 &333630763
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2105,6 +2109,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Employee
   employeeName: Rafi3
   moveSpeed: 1
+  carriedFood: 0
+  hasFood: 0
 --- !u!61 &659396527
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3108,7 +3114,7 @@ GameObject:
   - component: {fileID: 1229295260}
   - component: {fileID: 1229295259}
   m_Layer: 5
-  m_Name: Close2Button
+  m_Name: MagnesiumButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3446,6 +3452,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Employee
   employeeName: Rafi4
   moveSpeed: 1
+  carriedFood: 0
+  hasFood: 0
 --- !u!61 &1270282705
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3600,6 +3608,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Employee
   employeeName: Rafi2
   moveSpeed: 1
+  carriedFood: 0
+  hasFood: 1
 --- !u!61 &1278774950
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -5087,7 +5097,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Close
+  m_text: Magnesium
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

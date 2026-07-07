@@ -5,6 +5,13 @@
         /// MonsterBase hanya menyediakan data dasar dan API.
         /// Mekanik mood/growth sepenuhnya ditentukan oleh subclass.
         /// </summary>
+        public enum FoodType
+        {
+            Natrium,
+            Fosfor,
+            Kalium
+        }
+
         public class MonsterBase : MonoBehaviour
         {
             //────────────────────────────────────────────────────────
@@ -39,6 +46,16 @@
             protected float suitableTemperature = 20f;
 
             //────────────────────────────────────────────────────────
+            // Feeding
+            //────────────────────────────────────────────────────────
+        
+            [Header("Feeding")]
+            [Tooltip("Jeda waktu (detik) sebelum monster ini bisa diberi makan lagi.")]
+            [SerializeField] protected float feedCooldown = 5f;
+        
+            protected float feedCooldownTimer = 0f;
+
+            //────────────────────────────────────────────────────────
             // References
             //────────────────────────────────────────────────────────
 
@@ -51,6 +68,7 @@
 
             public System.Action<int> OnMoodChanged;
             public System.Action<float> OnGrowthChanged;
+            public System.Action<FoodType> OnFed;
 
             //────────────────────────────────────────────────────────
             // Properties
@@ -109,9 +127,17 @@
                 protected set => suitableTemperature = value;
             }
 
+            public float FeedCooldown
+            {
+                get => feedCooldown;
+                protected set => feedCooldown = value;
+            }
+
             public MonsterContext Context => context;
 
             public ContainmentUnit Unit => myUnit;
+            public bool CanBeFed => feedCooldownTimer <= 0f;
+ 
 
             //────────────────────────────────────────────────────────
             // Init
@@ -141,6 +167,7 @@
             }
             protected virtual void Update()
             {
+                TickFeedCooldown();
                 OnMonsterUpdate();
             }
 
@@ -163,6 +190,12 @@
                 return true;
             }
 
+            private void TickFeedCooldown()
+            {
+                if (feedCooldownTimer > 0f)
+                    feedCooldownTimer -= Time.deltaTime;
+            }
+
             //────────────────────────────────────────────────────────
             // Virtual Hooks
             //────────────────────────────────────────────────────────
@@ -170,6 +203,9 @@
             protected virtual void OnMonsterUpdate() { }
 
             protected virtual void OnMoodChange(int oldMood, int newMood) { }
+
+            protected virtual void OnMonsterFed(FoodType food) { }
+            protected virtual void OnFedDuringCooldown(FoodType food) { }
 
             //────────────────────────────────────────────────────────
             // Public API
@@ -188,5 +224,22 @@
             public void ModifyGrowth(float delta)
             {
                 Growth += delta;
+            }
+            public virtual bool Feed(FoodType food)
+            {
+                bool wasOnCooldown = !CanBeFed;
+        
+                if (wasOnCooldown)
+                    OnFedDuringCooldown(food);
+                else
+                    OnMonsterFed(food);
+        
+                feedCooldownTimer = feedCooldown;
+        
+                OnFed?.Invoke(food);
+        
+                Debug.Log($"[{MonsterName}] Diberi makan : {food}" + (wasOnCooldown ? " (masih dalam cooldown)" : ""));
+        
+                return true;
             }
         }

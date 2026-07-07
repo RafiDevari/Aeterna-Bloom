@@ -75,6 +75,17 @@
             }
         }
 
+        protected override void OnMonsterFed(FoodType food)
+        {
+            if (food == FoodType.Natrium)
+            {
+                ModifyMood(-1);
+                ModifyGrowth(0.4f);
+
+                Debug.Log($"[{MonsterName}] Diberi Natrium : mood turun, growth +40%.");
+            }
+        }
+
         protected override void OnMoodChange(int oldMood, int newMood)
         {
             if (newMood == 0 && !hasTriggeredAtMoodZero)

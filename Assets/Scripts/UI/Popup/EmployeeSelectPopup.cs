@@ -91,10 +91,9 @@ public class EmployeeSelectPopup : PopupBase
             return;
         }
 
-        employee.MoveTo(targetUnit.Monster.transform.position);
+        employee.FeedMonster(targetUnit.Monster);
 
-        Debug.Log(
-            $"Employee {employee.EmployeeName} berjalan menuju {targetUnit.Monster.MonsterName}");
+        Debug.Log( $"Employee {employee.EmployeeName} berjalan menuju {targetUnit.Monster.MonsterName} untuk memberi nutrisi {nutritionName}.");
 
         Close();
     }
