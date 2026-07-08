@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 [DefaultExecutionOrder(-100)]
 public class Facility : MonoBehaviour
@@ -129,6 +130,17 @@ public class Facility : MonoBehaviour
             OnEmployeeUnregistered?.Invoke(employee);
         }
     }
+
+    
+    public StockRoom FindNearestStockRoom(Vector3 fromPosition)
+    {
+        return Rooms
+            .OfType<StockRoom>()
+            .Where(room => room != null && room.Stock > 0)
+            .OrderBy(room => Vector3.Distance(fromPosition, room.transform.position))
+            .FirstOrDefault();
+    }
+
 
     public Employee GetRandomEmployee()
     {

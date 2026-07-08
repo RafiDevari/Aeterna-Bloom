@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 /// <summary>
 /// Employee dapat dipilih dengan Right Click lalu diperintahkan bergerak.
@@ -145,6 +146,81 @@ public class Employee : MonoBehaviour
         hasFood = false;
 
         return true;
+    }
+
+    //==============================
+// High-level Commands
+//==============================
+
+/// <summary>
+/// Perintah lengkap: jalan ke monster, lalu beri makan begitu sampai.
+/// TODO: saat ini employee harus sudah punya hasFood=true sebelumnya
+/// (belum ada mekanisme pickup food otomatis di sini).
+/// </summary>
+    public void GoFeed(ContainmentUnit unit, FoodType food, int amount = 1)
+    {
+        if (unit == null || !unit.HasMonster)
+        {
+            Debug.Log($"[Employee] {employeeName} batal: unit tidak valid / tidak ada monster.");
+            return;
+        }
+
+        if (Facility.Instance == null)
+        {
+            Debug.Log($"[Employee] {employeeName} batal: Facility tidak ditemukan.");
+            return;
+        }
+
+        StockRoom stockRoom = Facility.Instance.FindNearestStockRoom(transform.position);
+
+        if (stockRoom == null)
+        {
+            Debug.Log($"[Employee] {employeeName} batal: tidak ada stock room dengan stok tersedia.");
+            return;
+        }
+
+        MonsterBase capturedMonster = unit.Monster;
+
+        // TAHAP 1: jalan ke stock room
+        MoveTo(stockRoom.transform.position, () =>
+        {
+            if (stockRoom == null)
+            {
+                Debug.Log($"[Employee] {employeeName} tiba tapi stock room sudah tidak ada.");
+                return;
+            }
+
+            if (!stockRoom.TakeStock(amount))
+            {
+                Debug.Log($"[Employee] {employeeName} gagal ambil stok, stok habis di {stockRoom.RoomName}.");
+                return;
+            }
+
+            PickUpFood(food);
+
+            if (unit == null || !unit.HasMonster || unit.Monster != capturedMonster)
+            {
+                Debug.Log($"[Employee] {employeeName} sudah ambil stok tapi target monster sudah tidak valid.");
+                return;
+            }
+
+            // TAHAP 2: jalan ke monster
+            MoveTo(capturedMonster.transform.position, () =>
+            {
+                if (unit != null && unit.HasMonster && unit.Monster == capturedMonster)
+                {
+                    FeedMonster(capturedMonster);
+                }
+                else
+                {
+                    Debug.Log($"[Employee] {employeeName} tiba di monster tapi target sudah tidak valid.");
+                }
+            });
+
+            Debug.Log($"[Employee] {employeeName} ambil stok, lanjut jalan ke {capturedMonster.MonsterName}.");
+        });
+
+        Debug.Log($"[Employee] {employeeName} berjalan menuju stock room {stockRoom.RoomName}.");
     }
 
     //==============================

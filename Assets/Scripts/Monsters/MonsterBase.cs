@@ -5,12 +5,7 @@
         /// MonsterBase hanya menyediakan data dasar dan API.
         /// Mekanik mood/growth sepenuhnya ditentukan oleh subclass.
         /// </summary>
-        public enum FoodType
-        {
-            Natrium,
-            Fosfor,
-            Kalium
-        }
+        /// 
 
         public class MonsterBase : MonoBehaviour
         {

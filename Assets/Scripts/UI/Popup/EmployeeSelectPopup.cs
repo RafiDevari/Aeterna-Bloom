@@ -23,7 +23,7 @@ public class EmployeeSelectPopup : PopupBase
     [SerializeField] private Button employeeButtonPrefab;
 
     private ContainmentUnit targetUnit;
-    private string nutritionName;
+    private FoodType selectedFood;
 
     private readonly List<GameObject> spawnedButtons = new();
 
@@ -33,10 +33,10 @@ public class EmployeeSelectPopup : PopupBase
         Instance = this;
     }
 
-    public void Open(ContainmentUnit unit, string nutrition)
+    public void Open(ContainmentUnit unit, FoodType food)
     {
         targetUnit = unit;
-        nutritionName = nutrition;
+        selectedFood = food;
 
         BuildEmployeeButtons();
 
@@ -93,27 +93,10 @@ public class EmployeeSelectPopup : PopupBase
             return;
         }
 
-        // Capture LOCAL copies — these are safe from OnClosed() nulling the fields
-        ContainmentUnit capturedUnit = targetUnit;
-        string capturedNutrition = nutritionName;
-        MonsterBase capturedMonster = targetUnit.Monster;
+        FoodType food = FoodType.None;
+        
 
-        employee.MoveTo(capturedMonster.transform.position, () =>
-        {
-            // Guard in case the monster got removed/killed while employee was walking
-            if (capturedUnit != null && capturedUnit.HasMonster && capturedUnit.Monster == capturedMonster)
-            {
-                employee.FeedMonster(capturedMonster);
-                Debug.Log($"Employee {employee.EmployeeName} tiba dan memberi nutrisi {capturedNutrition} ke {capturedMonster.MonsterName}.");
-            }
-            else
-            {
-                Debug.Log($"[EmployeeSelectPopup] {employee.EmployeeName} tiba tapi target sudah tidak valid.");
-            }
-        });
-
-        Debug.Log($"Employee {employee.EmployeeName} berjalan menuju {capturedMonster.MonsterName} untuk memberi nutrisi {capturedNutrition}.");
-
+        employee.GoFeed(targetUnit, selectedFood);    
         Close();
     }
 
@@ -121,6 +104,7 @@ public class EmployeeSelectPopup : PopupBase
     {
         ClearButtons();
         targetUnit = null;
-        nutritionName = null;
+        selectedFood = FoodType.None;
+        
     }
 }
