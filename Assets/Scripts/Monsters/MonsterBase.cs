@@ -37,6 +37,12 @@
             [SerializeField] protected int maxMood = 5;
             [SerializeField] protected int minMood = 0;
 
+            [Header("Growth")]
+            [SerializeField] protected float passiveGrowthInterval = 4f;
+            [SerializeField] protected float passiveGrowthAmount = 0.01f;
+
+            private float passiveGrowthTimer;
+
             //────────────────────────────────────────────────────────
             // Environment
             //────────────────────────────────────────────────────────
@@ -168,6 +174,7 @@
             protected virtual void Update()
             {
                 TickFeedCooldown();
+                TickPassiveGrowth();
                 OnMonsterUpdate();
             }
 
@@ -194,6 +201,14 @@
             {
                 if (feedCooldownTimer > 0f)
                     feedCooldownTimer -= Time.deltaTime;
+            }
+
+            protected virtual void TickPassiveGrowth()
+            {
+                if (Every(ref passiveGrowthTimer, passiveGrowthInterval))
+                {
+                    ModifyGrowth(passiveGrowthAmount);
+                }
             }
 
             //────────────────────────────────────────────────────────

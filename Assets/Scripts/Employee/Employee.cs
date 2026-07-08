@@ -43,6 +43,7 @@ public class Employee : MonoBehaviour
 
     public System.Action<Employee, bool> OnSelectionChanged;
     public System.Action<Vector3> OnMoveCommandReceived;
+    private System.Action onArriveCallback;
 
     //==============================
     // Properties
@@ -208,12 +209,13 @@ public class Employee : MonoBehaviour
     // Movement
     //==============================
 
-    public virtual void MoveTo(Vector3 destination)
+    public virtual void MoveTo(Vector3 destination, System.Action onArrive = null)
     {
         destination.z = 0f;
 
         targetPosition = destination;
         isMoving = true;
+        onArriveCallback = onArrive; // <-- store what to do when we arrive
 
         OnMoveCommandReceived?.Invoke(destination);
 
@@ -244,6 +246,11 @@ public class Employee : MonoBehaviour
     protected virtual void OnArrived()
     {
         Debug.Log($"[Employee] {employeeName} tiba di tujuan.");
+
+        // Fire once, then clear, so it doesn't leak into the next MoveTo call
+        var callback = onArriveCallback;
+        onArriveCallback = null;
+        callback?.Invoke();
     }
 
     //==============================

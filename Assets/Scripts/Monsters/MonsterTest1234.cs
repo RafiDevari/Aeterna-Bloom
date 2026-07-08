@@ -84,6 +84,13 @@
 
                 Debug.Log($"[{MonsterName}] Diberi Natrium : mood turun, growth +40%.");
             }
+            if (food == FoodType.Kalium)
+            {
+                ModifyMood(-1);
+                ModifyGrowth(-0.2f);
+
+                Debug.Log($"[{MonsterName}] Diberi Kalium : mood speed turun, growth -20%%.");
+            }
         }
 
         protected override void OnMoodChange(int oldMood, int newMood)

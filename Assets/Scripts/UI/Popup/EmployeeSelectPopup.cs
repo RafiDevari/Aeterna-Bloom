@@ -83,6 +83,8 @@ public class EmployeeSelectPopup : PopupBase
         spawnedButtons.Clear();
     }
 
+    
+
     private void OnEmployeeClicked(Employee employee)
     {
         if (targetUnit == null || !targetUnit.HasMonster)
@@ -91,9 +93,26 @@ public class EmployeeSelectPopup : PopupBase
             return;
         }
 
-        employee.FeedMonster(targetUnit.Monster);
+        // Capture LOCAL copies — these are safe from OnClosed() nulling the fields
+        ContainmentUnit capturedUnit = targetUnit;
+        string capturedNutrition = nutritionName;
+        MonsterBase capturedMonster = targetUnit.Monster;
 
-        Debug.Log( $"Employee {employee.EmployeeName} berjalan menuju {targetUnit.Monster.MonsterName} untuk memberi nutrisi {nutritionName}.");
+        employee.MoveTo(capturedMonster.transform.position, () =>
+        {
+            // Guard in case the monster got removed/killed while employee was walking
+            if (capturedUnit != null && capturedUnit.HasMonster && capturedUnit.Monster == capturedMonster)
+            {
+                employee.FeedMonster(capturedMonster);
+                Debug.Log($"Employee {employee.EmployeeName} tiba dan memberi nutrisi {capturedNutrition} ke {capturedMonster.MonsterName}.");
+            }
+            else
+            {
+                Debug.Log($"[EmployeeSelectPopup] {employee.EmployeeName} tiba tapi target sudah tidak valid.");
+            }
+        });
+
+        Debug.Log($"Employee {employee.EmployeeName} berjalan menuju {capturedMonster.MonsterName} untuk memberi nutrisi {capturedNutrition}.");
 
         Close();
     }
