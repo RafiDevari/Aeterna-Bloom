@@ -42,14 +42,4 @@ public class ContainmentRoom : Room
         return $"Containment Units : {ContainmentUnits.Count}";
     }
 
-#if UNITY_EDITOR
-    protected override void OnDrawGizmosSelected()
-    {
-        base.OnDrawGizmosSelected();
-
-        UnityEditor.Handles.Label(
-            transform.position + Vector3.down * 1.2f,
-            $"Units : {containmentUnits.Count}");
-    }
-#endif
 }

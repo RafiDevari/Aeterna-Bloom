@@ -1,3 +1,4 @@
+// Facility.cs
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -13,8 +14,6 @@ public class Facility : MonoBehaviour
     [Tooltip("Suhu awal yang diberikan ke setiap Room saat dibuat.")]
     [SerializeField] private float defaultRoomTemperature = 20f;
 
-    [SerializeField] private float electricity = 100f;
-
     [Header("Rooms")]
     [SerializeField]
     private List<Room> rooms = new();
@@ -24,7 +23,6 @@ public class Facility : MonoBehaviour
     private List<Employee> employees = new();
 
     //────────────────────────────────────────────────────────
-
 
     public float Energy
     {
@@ -46,15 +44,12 @@ public class Facility : MonoBehaviour
         }
     }
 
-    public float Electricity
-    {
-        get => electricity;
-        set
-        {
-            electricity = Mathf.Max(0, value);
-            OnElectricityChanged?.Invoke(electricity);
-        }
-    }
+    /// <summary>
+    /// Total pemakaian listrik saat ini : jumlah ElectricityCost dari semua Room.
+    /// Murni hasil hitungan, bukan nilai yang di-set manual - selalu mencerminkan
+    /// kondisi room-room saat ini (base cost + monster + selisih suhu).
+    /// </summary>
+    public float Electricity => rooms.Sum(room => room.ElectricityCost);
 
     public IReadOnlyList<Room> Rooms => rooms;
     public IReadOnlyList<Employee> Employees => employees;
@@ -95,15 +90,29 @@ public class Facility : MonoBehaviour
         rooms.Add(room);
 
         room.InitFromFacility(DefaultRoomTemperature);
+        room.OnElectricityCostChanged += HandleRoomElectricityCostChanged;
 
         OnRoomAdded?.Invoke(room);
+        OnElectricityChanged?.Invoke(Electricity);
 
         Debug.Log($"[Facility] Room ditambahkan : {room.RoomName}");
     }
 
     public void RemoveRoom(Room room)
     {
-        rooms.Remove(room);
+        if (room == null)
+            return;
+
+        if (rooms.Remove(room))
+        {
+            room.OnElectricityCostChanged -= HandleRoomElectricityCostChanged;
+            OnElectricityChanged?.Invoke(Electricity);
+        }
+    }
+
+    private void HandleRoomElectricityCostChanged(float _)
+    {
+        OnElectricityChanged?.Invoke(Electricity);
     }
 
     //────────────────────────────────────────────────────────
@@ -131,7 +140,6 @@ public class Facility : MonoBehaviour
         }
     }
 
-    
     public StockRoom FindNearestStockRoom(Vector3 fromPosition)
     {
         return Rooms
@@ -140,7 +148,6 @@ public class Facility : MonoBehaviour
             .OrderBy(room => Vector3.Distance(fromPosition, room.transform.position))
             .FirstOrDefault();
     }
-
 
     public Employee GetRandomEmployee()
     {

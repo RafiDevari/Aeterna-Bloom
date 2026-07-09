@@ -1,3 +1,4 @@
+// MonsterContext.cs
 using UnityEngine;
 
 public class MonsterContext
@@ -31,6 +32,18 @@ public class MonsterContext
         Facility.DefaultRoomTemperature += delta;
     }
 
+    /// <summary>
+    /// Set kontribusi biaya listrik monster ini ke room tempatnya berada.
+    /// Total ElectricityCost room = base + cost ini + selisih suhu.
+    /// </summary>
+    public void SetMonsterElectricityCost(float cost)
+    {
+        if (CurrentRoom == null)
+            return;
+
+        CurrentRoom.MonsterElectricityCost = cost;
+    }
+
     // ======================================================
     // Facility
     // ======================================================
@@ -43,14 +56,6 @@ public class MonsterContext
             return;
 
         Facility.Energy += delta;
-    }
-
-    public void ChangeElectricity(float delta)
-    {
-        if (Facility == null)
-            return;
-
-        Facility.Electricity += delta;
     }
 
     // ======================================================
@@ -79,8 +84,6 @@ public class MonsterContext
 
         MoveEmployee(emp, unit.transform.position);
     }
-
-    
 
     // ======================================================
 
