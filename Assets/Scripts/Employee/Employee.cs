@@ -7,146 +7,10 @@ using System.Linq;
 /// Implementasi HARUS memanggil tepat salah satu dari onComplete / onFail (sekali saja),
 /// baik langsung (synchronous, misal ambil stok) maupun setelah proses async
 /// (misal lewat callback MoveTo).
+///
+/// Task konkret (MoveToTask, TakeStockAndPickupTask, FeedMonsterTask) dan
+/// enum EmployeeState sekarang ada di file masing-masing.
 /// </summary>
-
-//==============================================================
-// Task: berjalan ke sebuah posisi.
-// Posisi & validitas dievaluasi LAZY (saat task benar-benar mulai),
-// supaya kalau target sudah tidak valid (misal room dihancurkan),
-// task gagal dengan bersih alih-alih exception / posisi salah.
-//==============================================================
-public enum EmployeeState
-{
-    Idle,
-    Moving,
-    Feeding
-}
-public class MoveToTask : EmployeeTask
-{
-    private readonly System.Func<Vector3> getDestination;
-    private readonly System.Func<bool> isValid;
-
-    public MoveToTask(System.Func<Vector3> getDestination, System.Func<bool> isValid = null)
-    {
-        this.getDestination = getDestination;
-        this.isValid = isValid;
-    }
-
-    public void Start(Employee employee, System.Action onComplete, System.Action onFail)
-    {
-        if (isValid != null && !isValid())
-        {
-            onFail?.Invoke();
-            return;
-        }
-
-        employee.MoveTo(getDestination(), onComplete);
-    }
-
-    public void Cancel()
-    {
-        // Tidak ada resource untuk dibersihkan; employee yang berhenti
-        // ditangani lewat Employee.ClearTasksAndInterrupt().
-    }
-}
-
-//==============================================================
-// Task: ambil stok dari StockRoom lalu simpan sebagai makanan yang dibawa.
-//==============================================================
-public class TakeStockAndPickupTask : EmployeeTask
-{
-    private readonly StockRoom stockRoom;
-    private readonly FoodType food;
-    private readonly int amount;
-
-    public TakeStockAndPickupTask(StockRoom stockRoom, FoodType food, int amount)
-    {
-        this.stockRoom = stockRoom;
-        this.food = food;
-        this.amount = amount;
-    }
-
-    public void Start(Employee employee, System.Action onComplete, System.Action onFail)
-    {
-        if (stockRoom == null)
-        {
-            Debug.Log($"[Employee] {employee.EmployeeName} gagal ambil stok: stock room sudah tidak ada.");
-            onFail?.Invoke();
-            return;
-        }
-
-        if (!stockRoom.TakeStock(amount))
-        {
-            Debug.Log($"[Employee] {employee.EmployeeName} gagal ambil stok, stok habis di {stockRoom.RoomName}.");
-            onFail?.Invoke();
-            return;
-        }
-
-        employee.PickUpFood(food);
-        onComplete?.Invoke();
-    }
-
-    public void Cancel() { }
-}
-
-//==============================================================
-// Task: beri makan monster target, dengan validasi ulang
-// (monster/unit bisa berubah selama employee dalam perjalanan).
-//==============================================================
-public class FeedMonsterTask : EmployeeTask
-{
-    private readonly ContainmentUnit unit;
-    private readonly MonsterBase targetMonster;
-
-    private System.Action onComplete;
-    private bool isWaitingForFeedToFinish;
-
-    public FeedMonsterTask(ContainmentUnit unit, MonsterBase targetMonster)
-    {
-        this.unit = unit;
-        this.targetMonster = targetMonster;
-    }
-
-    public void Start(Employee employee, System.Action onComplete, System.Action onFail)
-    {
-        if (unit == null || !unit.HasMonster || unit.Monster != targetMonster)
-        {
-            onFail?.Invoke();
-            return;
-        }
-
-        if (!employee.FeedMonster(targetMonster))
-        {
-            onFail?.Invoke();
-            return;
-        }
-
-        this.onComplete = onComplete;
-        isWaitingForFeedToFinish = true;
-
-        employee.SetState(EmployeeState.Feeding);
-        targetMonster.OnFeedFinished += HandleFeedFinished;
-    }
-
-    private void HandleFeedFinished()
-    {
-        if (!isWaitingForFeedToFinish)
-            return;
-
-        isWaitingForFeedToFinish = false;
-        targetMonster.OnFeedFinished -= HandleFeedFinished;
-        onComplete?.Invoke();
-    }
-
-    public void Cancel()
-    {
-        if (!isWaitingForFeedToFinish)
-            return;
-
-        isWaitingForFeedToFinish = false;
-        targetMonster.OnFeedFinished -= HandleFeedFinished;
-    }
-}
 
 /// <summary>
 /// Employee dapat dipilih dengan Right Click lalu diperintahkan bergerak.
@@ -314,14 +178,33 @@ public class Employee : MonoBehaviour
             return false;
         }
 
-        if (!target.Feed(carriedFood))
+        float finalFeedDuration = CalculateFeedDuration(target);
+
+        if (!target.Feed(carriedFood, finalFeedDuration))
             return false;
 
-        Debug.Log($"[Employee] {employeeName} memberi makan {target.MonsterName} dengan {carriedFood}.");
+        Debug.Log($"[Employee] {employeeName} memberi makan {target.MonsterName} dengan {carriedFood} (durasi : {finalFeedDuration}s).");
 
         hasFood = false;
 
         return true;
+    }
+
+    /// <summary>
+    /// Menghitung durasi makan FINAL (detik) untuk target monster, dari sudut
+    /// pandang employee ini yang sedang memberi makan.
+    ///
+    /// Sengaja dipisah dari MonsterBase.FeedDuration supaya monster tidak perlu
+    /// tahu siapa yang memberinya makan. Semua faktor yang berhubungan dengan
+    /// "siapa yang bekerja" (jenis employee, level, skill, buff, dsb) nantinya
+    /// tinggal ditambahkan di sini lewat override, tanpa menyentuh MonsterBase
+    /// maupun subclass Employee lain.
+    ///
+    /// Default: tidak ada modifikasi, sama persis dengan FeedDuration bawaan monster.
+    /// </summary>
+    protected virtual float CalculateFeedDuration(MonsterBase target)
+    {
+        return target.FeedDuration ;
     }
 
     //==============================
@@ -358,7 +241,6 @@ public class Employee : MonoBehaviour
 
         MonsterBase capturedMonster = unit.Monster;
 
-        // Job baru menggantikan job lama (kalau ada) secara eksplisit.
         ClearTasksAndInterrupt();
 
         EnqueueTask(new MoveToTask(

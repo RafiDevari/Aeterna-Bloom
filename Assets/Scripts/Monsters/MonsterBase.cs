@@ -51,10 +51,10 @@ public class MonsterBase : MonoBehaviour
     //────────────────────────────────────────────────────────
 
     [Header("Feeding")]
-    [Tooltip("Berapa lama (detik) monster ini sedang 'makan' setelah di-Feed, sebelum dianggap selesai. Beda-beda tiap jenis monster.")]
+    [Tooltip("Durasi 'makan' BAWAAN monster ini (detik), dipakai sebagai fallback kalau Feed() dipanggil tanpa durasi eksplisit dari luar. Beda-beda tiap jenis monster.")]
     [SerializeField] protected float feedDuration = 1f;
 
-    [Tooltip("Jeda waktu (detik) sebelum monster ini bisa diberi makan lagi, DIHITUNG SETELAH feedDuration selesai.")]
+    [Tooltip("Jeda waktu (detik) sebelum monster ini bisa diberi makan lagi, DIHITUNG SETELAH proses makan selesai.")]
     [SerializeField] protected float feedCooldown = 5f;
 
     protected float feedDurationTimer = 0f;
@@ -133,6 +133,11 @@ public class MonsterBase : MonoBehaviour
         protected set => suitableTemperature = value;
     }
 
+    /// <summary>
+    /// Durasi makan BAWAAN monster ini, tanpa modifikasi apapun dari luar.
+    /// Ini murni data milik monster (dipakai Employee sebagai basis perhitungan
+    /// durasi final lewat Employee.CalculateFeedDuration).
+    /// </summary>
     public float FeedDuration
     {
         get => feedDuration;
@@ -149,7 +154,7 @@ public class MonsterBase : MonoBehaviour
 
     public ContainmentUnit Unit => myUnit;
 
-    /// <summary>True selagi monster sedang dalam proses makan (dari Feed() sampai feedDuration habis).</summary>
+    /// <summary>True selagi monster sedang dalam proses makan (dari Feed() sampai durasi makan habis).</summary>
     public bool IsFeeding => feedDurationTimer > 0f;
 
     /// <summary>Boleh diberi makan hanya kalau tidak sedang makan DAN cooldown sudah habis.</summary>
@@ -269,7 +274,20 @@ public class MonsterBase : MonoBehaviour
     {
         Growth += delta;
     }
-    public virtual bool Feed(FoodType food)
+
+    /// <summary>
+    /// Beri makan monster ini.
+    /// </summary>
+    /// <param name="food">Jenis makanan yang diberikan.</param>
+    /// <param name="feedDurationOverride">
+    /// Durasi makan FINAL (detik) yang sudah dihitung oleh pemanggil (biasanya
+    /// Employee.CalculateFeedDuration, yang nantinya bisa memperhitungkan
+    /// multiplier per jenis employee / level / skill).
+    /// Kalau null, fallback ke <see cref="FeedDuration"/> bawaan monster ini,
+    /// supaya Feed() tetap aman dipanggil langsung tanpa lewat Employee
+    /// (misal dari testing atau sistem lain).
+    /// </param>
+    public virtual bool Feed(FoodType food, float? feedDurationOverride = null)
     {
         if (IsFeeding)
         {
@@ -284,11 +302,11 @@ public class MonsterBase : MonoBehaviour
         else
             OnMonsterFed(food);
 
-        feedDurationTimer = feedDuration;
+        feedDurationTimer = Mathf.Max(0f, feedDurationOverride ?? feedDuration);
 
         OnFed?.Invoke(food);
 
-        Debug.Log($"[{MonsterName}] Diberi makan : {food}, durasi makan : {feedDuration}s" + (wasOnCooldown ? " (masih dalam cooldown)" : ""));
+        Debug.Log($"[{MonsterName}] Diberi makan : {food}, durasi makan : {feedDurationTimer}s" + (wasOnCooldown ? " (masih dalam cooldown)" : ""));
 
         return true;
     }
