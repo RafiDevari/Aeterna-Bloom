@@ -1,11 +1,28 @@
 using UnityEngine;
+using System.Collections.Generic;
 using System.Linq;
+
+/// <summary>
+/// Kontrak untuk satu unit pekerjaan yang bisa dijalankan Employee secara berurutan.
+/// Implementasi HARUS memanggil tepat salah satu dari onComplete / onFail (sekali saja),
+/// baik langsung (synchronous, misal ambil stok) maupun setelah proses async
+/// (misal lewat callback MoveTo).
+///
+/// Task konkret (MoveToTask, TakeStockAndPickupTask, FeedMonsterTask) dan
+/// enum EmployeeState sekarang ada di file masing-masing.
+/// </summary>
 
 /// <summary>
 /// Employee dapat dipilih dengan Right Click lalu diperintahkan bergerak.
 /// Employee memiliki:
 /// - CurrentRoom      -> lokasi fisik saat ini.
 /// - AssignedDivision -> divisi tempat ia bekerja.
+///
+/// Pekerjaan multi-tahap (mis. ambil stok lalu beri makan) dijalankan lewat
+/// task queue (EmployeeTask), bukan lewat nested callback, supaya:
+/// - job tidak diam-diam ketimpa kalau ada perintah lain masuk,
+/// - job bisa di-cancel secara eksplisit,
+/// - mudah menambah jenis pekerjaan baru tanpa mengubah Employee.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class Employee : MonoBehaviour
@@ -37,6 +54,19 @@ public class Employee : MonoBehaviour
 
     // Hanya satu employee boleh dipilih
     private static Employee currentlySelected;
+
+    //==============================
+    // Task Queue
+    //==============================
+
+    private readonly Queue<EmployeeTask> taskQueue = new();
+    private EmployeeTask currentTask;
+
+    /// <summary>True kalau employee sedang menjalankan atau masih punya task tertunda.</summary>
+    public bool IsBusy => currentTask != null || taskQueue.Count > 0;
+    private EmployeeState currentState = EmployeeState.Idle;
+    public EmployeeState CurrentState => currentState;
+    public System.Action<EmployeeState> OnStateChanged;
 
     //==============================
     // Events
@@ -83,11 +113,20 @@ public class Employee : MonoBehaviour
 
         assignedDivision?.UnassignEmployee(this);
     }
+    public void SetState(EmployeeState newState)
+    {
+        if (currentState == newState)
+            return;
+
+        currentState = newState;
+        OnStateChanged?.Invoke(currentState);
+    }
 
     private void Update()
     {
         HandleMovement();
         HandleGlobalInput();
+        ProcessTaskQueue();
     }
 
     //==============================
@@ -139,24 +178,45 @@ public class Employee : MonoBehaviour
             return false;
         }
 
-        target.Feed(carriedFood);
+        float finalFeedDuration = CalculateFeedDuration(target);
 
-        Debug.Log($"[Employee] {employeeName} memberi makan {target.MonsterName} dengan {carriedFood}.");
+        if (!target.Feed(carriedFood, finalFeedDuration))
+            return false;
+
+        Debug.Log($"[Employee] {employeeName} memberi makan {target.MonsterName} dengan {carriedFood} (durasi : {finalFeedDuration}s).");
 
         hasFood = false;
 
         return true;
     }
 
-    //==============================
-// High-level Commands
-//==============================
+    /// <summary>
+    /// Menghitung durasi makan FINAL (detik) untuk target monster, dari sudut
+    /// pandang employee ini yang sedang memberi makan.
+    ///
+    /// Sengaja dipisah dari MonsterBase.FeedDuration supaya monster tidak perlu
+    /// tahu siapa yang memberinya makan. Semua faktor yang berhubungan dengan
+    /// "siapa yang bekerja" (jenis employee, level, skill, buff, dsb) nantinya
+    /// tinggal ditambahkan di sini lewat override, tanpa menyentuh MonsterBase
+    /// maupun subclass Employee lain.
+    ///
+    /// Default: tidak ada modifikasi, sama persis dengan FeedDuration bawaan monster.
+    /// </summary>
+    protected virtual float CalculateFeedDuration(MonsterBase target)
+    {
+        return target.FeedDuration ;
+    }
 
-/// <summary>
-/// Perintah lengkap: jalan ke monster, lalu beri makan begitu sampai.
-/// TODO: saat ini employee harus sudah punya hasFood=true sebelumnya
-/// (belum ada mekanisme pickup food otomatis di sini).
-/// </summary>
+    //==============================
+    // High-level Commands
+    //==============================
+
+    /// <summary>
+    /// Perintah lengkap: jalan ke stock room, ambil stok, jalan ke monster, lalu beri makan.
+    /// Disusun sebagai rangkaian task di task queue, bukan nested callback,
+    /// sehingga job ini tidak akan ketimpa diam-diam oleh perintah lain
+    /// (perintah lain akan lewat ClearTasksAndInterrupt terlebih dahulu).
+    /// </summary>
     public void GoFeed(ContainmentUnit unit, FoodType food, int amount = 1)
     {
         if (unit == null || !unit.HasMonster)
@@ -181,59 +241,80 @@ public class Employee : MonoBehaviour
 
         MonsterBase capturedMonster = unit.Monster;
 
-        // TAHAP 1: jalan ke stock room
-        MoveTo(stockRoom.transform.position, () =>
-        {
-            if (stockRoom == null)
-            {
-                Debug.Log($"[Employee] {employeeName} tiba tapi stock room sudah tidak ada.");
-                return;
-            }
+        ClearTasksAndInterrupt();
 
-            if (!stockRoom.TakeStock(amount))
-            {
-                Debug.Log($"[Employee] {employeeName} gagal ambil stok, stok habis di {stockRoom.RoomName}.");
-                return;
-            }
+        EnqueueTask(new MoveToTask(
+            () => stockRoom.transform.position,
+            () => stockRoom != null));
 
-            PickUpFood(food);
+        EnqueueTask(new TakeStockAndPickupTask(stockRoom, food, amount));
 
-            if (unit == null || !unit.HasMonster || unit.Monster != capturedMonster)
-            {
-                Debug.Log($"[Employee] {employeeName} sudah ambil stok tapi target monster sudah tidak valid.");
-                return;
-            }
+        EnqueueTask(new MoveToTask(
+            () => capturedMonster.transform.position,
+            () => unit != null && unit.HasMonster && unit.Monster == capturedMonster));
 
-            // TAHAP 2: jalan ke monster
-            MoveTo(capturedMonster.transform.position, () =>
-            {
-                if (unit != null && unit.HasMonster && unit.Monster == capturedMonster)
-                {
-                    FeedMonster(capturedMonster);
-                }
-                else
-                {
-                    Debug.Log($"[Employee] {employeeName} tiba di monster tapi target sudah tidak valid.");
-                }
-            });
+        EnqueueTask(new FeedMonsterTask(unit, capturedMonster));
 
-            Debug.Log($"[Employee] {employeeName} ambil stok, lanjut jalan ke {capturedMonster.MonsterName}.");
-        });
+        EnqueueTask(new MoveToTask(
+            () => stockRoom.transform.position,
+            () => stockRoom != null));
 
-        Debug.Log($"[Employee] {employeeName} berjalan menuju stock room {stockRoom.RoomName}.");
+        Debug.Log($"[Employee] {employeeName} menerima job: ambil stok lalu beri makan {capturedMonster?.MonsterName}.");
     }
 
     //==============================
-    // Selection
+    // Task Queue Handling
     //==============================
 
-    private void OnMouseOver()
+    public void EnqueueTask(EmployeeTask task)
     {
-        if (Input.GetMouseButtonDown(1))
-        {
-            SelectThisEmployee();
-        }
+        if (task == null)
+            return;
+
+        taskQueue.Enqueue(task);
     }
+
+    /// <summary>
+    /// Membatalkan task yang sedang berjalan beserta semua task yang masih mengantre.
+    /// Panggil ini secara eksplisit sebelum memberi perintah baru yang menggantikan
+    /// job lama (misal klik manual, atau assign job baru).
+    /// </summary>
+    public void ClearTasksAndInterrupt()
+    {
+        if (currentTask != null)
+        {
+            currentTask.Cancel();
+            currentTask = null;
+        }
+
+        taskQueue.Clear();
+    }
+
+    private void ProcessTaskQueue()
+    {
+        if (currentTask != null)
+            return;
+
+        if (taskQueue.Count == 0)
+            return;
+
+        currentTask = taskQueue.Dequeue();
+        currentTask.Start(this, OnTaskComplete, OnTaskFail);
+    }
+
+    private void OnTaskComplete()
+    {
+        currentTask = null;
+    }
+
+    private void OnTaskFail()
+    {
+        Debug.Log($"[Employee] {employeeName} job dibatalkan: salah satu task gagal, sisa antrean dibersihkan.");
+        currentTask = null;
+        taskQueue.Clear();
+    }
+
+    
 
     private void SelectThisEmployee()
     {
@@ -276,6 +357,9 @@ public class Employee : MonoBehaviour
                 Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
             worldPos.z = 0f;
+
+            // Klik manual = perintah baru yang membatalkan job otomatis yang sedang berjalan.
+            ClearTasksAndInterrupt();
 
             MoveTo(worldPos);
         }
@@ -329,37 +413,6 @@ public class Employee : MonoBehaviour
         callback?.Invoke();
     }
 
-    //==============================
-    // Room Tracking
-    //==============================
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        Room room = other.GetComponent<Room>();
-
-        if (room == null)
-            return;
-
-        if (room == currentRoom)
-            return;
-
-        currentRoom = room;
-
-        Debug.Log($"[Employee] {employeeName} masuk ke {room.RoomName}");
-    }
-
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        Room room = other.GetComponent<Room>();
-
-        if (room == null)
-            return;
-
-        if (room != currentRoom)
-            return;
-
-        currentRoom = null;
-    }
 
 #if UNITY_EDITOR
     private void OnDrawGizmos()

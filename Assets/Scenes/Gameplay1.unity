@@ -1175,7 +1175,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Employee
   employeeName: Rafi
-  moveSpeed: 1
+  moveSpeed: 4.27
   carriedFood: 0
   hasFood: 1
 --- !u!61 &333630763
