@@ -82,12 +82,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MonsterTest1234
   monsterName: Unknown Monster
   monsterRenderer: {fileID: 0}
-  monsterSprite: {fileID: -2803993944443423045, guid: 0eea3a9d061d5644298dfa4969707499, type: 3}
+  monsterSprite: {fileID: -2803993944443423045, guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb, type: 3}
   growth: 0
   mood: 5
   maxMood: 5
   minMood: 0
+  passiveGrowthInterval: 4
+  passiveGrowthAmount: 0.01
   suitableTemperature: 20
+  feedDuration: 1
+  feedCooldown: 5
   allowedDifference: 5
   moodInterval: 2.2
   roomTempIncrease: 2
