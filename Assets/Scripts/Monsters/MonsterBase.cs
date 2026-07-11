@@ -13,6 +13,17 @@ public enum GrowthState
 }
 
 /// <summary>
+/// Pasangan GrowthState -> Sprite, dipakai untuk konfigurasi sprite per state
+/// lewat Inspector. Beda-beda tiap prefab child class.
+/// </summary>
+[System.Serializable]
+public struct GrowthStateSprite
+{
+    public GrowthState state;
+    public Sprite sprite;
+}
+
+/// <summary>
 /// Base class semua monster.
 /// MonsterBase hanya menyediakan data dasar dan API.
 /// Mekanik mood/growth sepenuhnya ditentukan oleh subclass.
@@ -32,6 +43,18 @@ public class MonsterBase : MonoBehaviour
     [Tooltip("SpriteRenderer untuk menampilkan sprite monster. Auto-cari kalau kosong.")]
     [SerializeField] protected SpriteRenderer monsterRenderer;
     [SerializeField] protected Sprite monsterSprite;
+
+    [Tooltip("Sprite untuk tiap GrowthState. Kosongkan salah satu state kalau tidak mau sprite " +
+             "berubah di state itu (sprite terakhir tetap dipakai). Beda-beda tiap prefab child class.")]
+    [SerializeField] private GrowthStateSprite[] growthStateSprites;
+
+    [Tooltip("Otomatis sesuaikan ukuran BoxCollider2D monster ini mengikuti bounds sprite, " +
+             "tiap kali sprite berubah (mis. pas GrowthState pindah dan sprite ganti ukuran).")]
+    [SerializeField] private bool autoFitCollider = true;
+
+    [Tooltip("BoxCollider2D milik monster ini sendiri (bukan milik ContainmentUnit). Opsional — " +
+             "auto-cari kalau kosong. Kalau prefab tidak punya Collider2D, fitur ini otomatis di-skip.")]
+    [SerializeField] private BoxCollider2D monsterCollider;
 
 
     //────────────────────────────────────────────────────────
@@ -100,6 +123,10 @@ public class MonsterBase : MonoBehaviour
 
     protected float feedDurationTimer = 0f;
     protected float feedCooldownTimer = 0f;
+
+    private FoodType pendingFeedFood;
+    private bool pendingFeedWasOnCooldown;
+    private bool hasPendingFeedEffect;
 
     //────────────────────────────────────────────────────────
     // References
@@ -240,6 +267,9 @@ public class MonsterBase : MonoBehaviour
         if (monsterRenderer == null)
             monsterRenderer = GetComponentInChildren<SpriteRenderer>();
 
+        if (monsterCollider == null)
+            monsterCollider = GetComponentInChildren<BoxCollider2D>();
+
         ApplySprite();
         SyncInitialGrowthState();
     }
@@ -248,7 +278,26 @@ public class MonsterBase : MonoBehaviour
     {
         if (monsterRenderer != null && monsterSprite != null)
             monsterRenderer.sprite = monsterSprite;
+
+        FitColliderToSprite();
     }
+
+    /// <summary>
+    /// Sesuaikan ukuran & offset monsterCollider mengikuti bounds sprite saat ini.
+    /// No-op kalau autoFitCollider mati atau monster ini tidak punya Collider2D
+    /// sendiri (misal klik-nya sepenuhnya ditangani oleh ContainmentUnit).
+    /// </summary>
+    private void FitColliderToSprite()
+    {
+        if (!autoFitCollider || monsterCollider == null) return;
+        if (monsterRenderer == null || monsterRenderer.sprite == null) return;
+
+        Bounds spriteBounds = monsterRenderer.sprite.bounds;
+
+        monsterCollider.size = spriteBounds.size;
+        monsterCollider.offset = spriteBounds.center;
+    }
+
     // di MonsterBase
     protected virtual void Update()
     {
@@ -307,13 +356,27 @@ public class MonsterBase : MonoBehaviour
         feedDurationTimer -= Time.deltaTime;
 
         if (feedDurationTimer <= 0f)
-        {
-            feedDurationTimer = 0f;
-            feedCooldownTimer = feedCooldown; // cooldown baru mulai setelah makan selesai
-            OnFeedFinished?.Invoke();
+            CompleteFeeding();
+    }
 
-            Debug.Log($"[{MonsterName}] Selesai makan, cooldown mulai : {feedCooldown}s");
+    private void CompleteFeeding()
+    {
+        feedDurationTimer = 0f;
+        feedCooldownTimer = feedCooldown; // cooldown baru mulai setelah makan selesai
+
+        if (hasPendingFeedEffect)
+        {
+            hasPendingFeedEffect = false;
+
+            if (pendingFeedWasOnCooldown)
+                OnFedDuringCooldown(pendingFeedFood);
+            else
+                OnMonsterFed(pendingFeedFood);
         }
+
+        OnFeedFinished?.Invoke();
+
+        Debug.Log($"[{MonsterName}] Selesai makan, cooldown mulai : {feedCooldown}s");
     }
 
     private void TickFeedCooldown()
@@ -343,6 +406,8 @@ public class MonsterBase : MonoBehaviour
         hasGrown = growth >= growThreshold;
         isMutated = growth >= mutatedThreshold;
         currentGrowthState = ComputeGrowthState();
+
+        ApplySpriteForState(currentGrowthState);
     }
 
     private GrowthState ComputeGrowthState()
@@ -389,10 +454,45 @@ public class MonsterBase : MonoBehaviour
 
         currentGrowthState = computed;
 
+        ApplySpriteForState(currentGrowthState);
+
         OnGrowthStateChanged?.Invoke(previous, computed);
         OnGrowthStateChange(previous, computed);
 
         Debug.Log($"[{MonsterName}] Growth State : {previous} -> {computed} (growth = {GrowthPercent:F0}%)");
+    }
+
+    //────────────────────────────────────────────────────────
+    // Sprite per Growth State
+    //────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Cari sprite untuk GrowthState tertentu dari array growthStateSprites.
+    /// Override ini kalau child class butuh logika lebih rumit (mis. random
+    /// variant, kombinasi dengan mood, animasi transisi, dll).
+    /// Return null kalau tidak ada yang cocok -> sprite lama tidak diganti.
+    /// </summary>
+    protected virtual Sprite GetSpriteForState(GrowthState state)
+    {
+        foreach (var entry in growthStateSprites)
+        {
+            if (entry.state == state && entry.sprite != null)
+                return entry.sprite;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Terapkan sprite sesuai GrowthState (lewat GetSpriteForState). Dipanggil
+    /// otomatis tiap kali GrowthState berubah, tapi boleh juga dipanggil manual.
+    /// </summary>
+    protected void ApplySpriteForState(GrowthState state)
+    {
+        Sprite target = GetSpriteForState(state);
+
+        if (target != null)
+            MonsterSprite = target; // pakai property, biar ApplySprite() ikut kepanggil
     }
 
     //────────────────────────────────────────────────────────
@@ -447,21 +547,21 @@ public class MonsterBase : MonoBehaviour
             return false;
         }
 
-        bool wasOnCooldown = feedCooldownTimer > 0f;
-
-        if (wasOnCooldown)
-            OnFedDuringCooldown(food);
-        else
-            OnMonsterFed(food);
+        pendingFeedFood = food;
+        pendingFeedWasOnCooldown = feedCooldownTimer > 0f;
+        hasPendingFeedEffect = true;
 
         feedDurationTimer = Mathf.Max(0f, feedDurationOverride ?? feedDuration);
 
         OnFed?.Invoke(food);
 
-        Debug.Log($"[{MonsterName}] Diberi makan : {food}, durasi makan : {feedDurationTimer}s" + (wasOnCooldown ? " (masih dalam cooldown)" : ""));
+        Debug.Log($"[{MonsterName}] Mulai makan : {food}, durasi makan : {feedDurationTimer}s" +
+            (pendingFeedWasOnCooldown ? " (masih dalam cooldown)" : ""));
+
+        // Durasi 0 = makan instan, langsung selesai di frame yang sama.
+        if (feedDurationTimer <= 0f)
+            CompleteFeeding();
 
         return true;
     }
 }
-
-
