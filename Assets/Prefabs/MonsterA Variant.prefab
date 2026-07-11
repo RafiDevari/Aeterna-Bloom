@@ -83,10 +83,26 @@ MonoBehaviour:
   monsterName: Unknown Monster
   monsterRenderer: {fileID: 0}
   monsterSprite: {fileID: -2803993944443423045, guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb, type: 3}
+  growthStateSprites:
+  - state: 0
+    sprite: {fileID: -7417075999804959461, guid: 58fe1d613333b6049be85a7421ebcfd2, type: 3}
+  - state: 1
+    sprite: {fileID: -2803993944443423045, guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb, type: 3}
+  - state: 2
+    sprite: {fileID: -2803993944443423045, guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb, type: 3}
+  - state: 3
+    sprite: {fileID: -7417075999804959461, guid: 58fe1d613333b6049be85a7421ebcfd2, type: 3}
+  autoFitCollider: 1
+  monsterCollider: {fileID: 0}
   growth: 0
   mood: 5
   maxMood: 5
   minMood: 0
+  growThreshold: 0.3
+  overgrowthThreshold: 1
+  mutatedThreshold: 2
+  mutationRecoveryThreshold: 1
+  currentGrowthState: 0
   passiveGrowthInterval: 4
   passiveGrowthAmount: 0.01
   suitableTemperature: 20
@@ -154,5 +170,5 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
-  m_SpriteSortPoint: 0
+  m_SpriteSortPoint: 1
   m_BlendShapeWeights: []

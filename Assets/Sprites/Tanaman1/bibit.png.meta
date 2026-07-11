@@ -1,16 +1,10 @@
 fileFormatVersion: 2
-guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb
+guid: 58fe1d613333b6049be85a7421ebcfd2
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2803993944443423045
-    second: Tanaman1_0
-  - first:
-      213: 5483647636204611785
-    second: Tanaman1_1
-  - first:
-      213: 450345334654533054
-    second: Tanaman1_2
+      213: -7417075999804959461
+    second: bibit_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -119,67 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Tanaman1_0
+      name: bibit_0
       rect:
         serializedVersion: 2
-        x: 751
-        y: 777
-        width: 402
-        height: 417
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: bb67a1d1d563619d0800000000000000
-      internalID: -2803993944443423045
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Tanaman1_1
-      rect:
-        serializedVersion: 2
-        x: 989
-        y: 1189
-        width: 17
-        height: 18
+        x: 904
+        y: 775
+        width: 79
+        height: 73
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9c8e265b874d91c40800000000000000
-      internalID: 5483647636204611785
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Tanaman1_2
-      rect:
-        serializedVersion: 2
-        x: 1016
-        y: 1187
-        width: 15
-        height: 11
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ebd765222b2ff3600800000000000000
-      internalID: 450345334654533054
+      spriteID: b15dc8feca0411990800000000000000
+      internalID: -7417075999804959461
       vertices: []
       indices: 
       edges: []
@@ -188,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: f14e7b689cace4d4395105b41d27a29a
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -198,9 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Tanaman1_0: -2803993944443423045
-      Tanaman1_1: 5483647636204611785
-      Tanaman1_2: 450345334654533054
+      bibit_0: -7417075999804959461
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -565,6 +565,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContainmentRoom
   roomName: Room
   temperature: 0
+  roomSize: {x: 4, y: 2}
+  baseElectricityCost: 2
+  isLocked: 0
   containmentUnits:
   - {fileID: 43846251}
 --- !u!61 &127104235
@@ -1236,6 +1239,7 @@ GameObject:
   - component: {fileID: 387370762}
   - component: {fileID: 387370761}
   - component: {fileID: 387370760}
+  - component: {fileID: 387370764}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1361,6 +1365,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &387370764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 387370759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c323da69bba3fd478159527458b94a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraDrag
 --- !u!1 &405496661
 GameObject:
   m_ObjectHideFlags: 0
@@ -2757,6 +2773,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StockRoom
   roomName: Room
   temperature: -0
+  roomSize: {x: 4, y: 2}
+  baseElectricityCost: 2
+  isLocked: 0
   stock: 15
   maxStock: 15
   restockDuration: 20
@@ -2899,7 +2918,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Facility
   energy: 100
   defaultRoomTemperature: 20
-  electricity: 100
   rooms: []
   employees: []
 --- !u!4 &1122271521
@@ -2971,6 +2989,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContainmentRoom
   roomName: Room
   temperature: 0
+  roomSize: {x: 4, y: 2}
+  baseElectricityCost: 2
+  isLocked: 0
   containmentUnits:
   - {fileID: 104535643}
 --- !u!61 &1149442990
@@ -4582,11 +4603,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.67
+      value: -3.3
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.39
+      value: 2.76
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5403,11 +5424,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.7200003
+      value: -3.25
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.8899999
+      value: -3.84
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.z
