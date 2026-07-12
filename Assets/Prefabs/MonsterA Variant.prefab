@@ -95,19 +95,26 @@ MonoBehaviour:
   autoFitCollider: 1
   monsterCollider: {fileID: 0}
   growth: 0
-  mood: 5
+  mood: 1
   maxMood: 5
   minMood: 0
   growThreshold: 0.3
   overgrowthThreshold: 1
   mutatedThreshold: 2
   mutationRecoveryThreshold: 1
-  currentGrowthState: 0
+  currentGrowthState: 1
   passiveGrowthInterval: 4
   passiveGrowthAmount: 0.01
   suitableTemperature: 20
   feedDuration: 1
   feedCooldown: 5
+  researchEntries:
+  - level: 1
+    id: r_moodzero
+    resultText: ini yang mood zero
+    condition: 4
+    trigger: 1
+    customValue: 0
   allowedDifference: 5
   moodInterval: 2.2
   roomTempIncrease: 2
