@@ -73,7 +73,17 @@ public class ContainmentPopup : PopupBase
     private void OnResearchClicked()
     {
         Debug.Log($"[ContainmentUnitPopup] Research ditekan untuk unit: {targetUnit?.UnitName}");
-        Close();
+ 
+        // Sama seperti Nutrisi: tidak perlu panggil Close() di sini kalau PopupManager
+        // otomatis menutup popup ini begitu EmployeeSelectPopup dibuka.
+        if (EmployeeSelectPopup.Instance != null)
+        {
+            ContainmentUnit unit = targetUnit; // capture, targetUnit di-reset saat popup ini close
+ 
+            EmployeeSelectPopup.Instance.Open(employee => employee.GoResearch(unit));
+        }
+        else
+            Debug.LogError("[ContainmentUnitPopup] EmployeeSelectPopup.Instance belum ada. Pastikan component EmployeeSelectPopup sudah ditambahkan ke scene.");
     }
 
     private void OnInfoClicked()

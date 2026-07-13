@@ -55,6 +55,9 @@ public class Employee : MonoBehaviour
     // Hanya satu employee boleh dipilih
     private static Employee currentlySelected;
 
+    /// <summary>Employee yang sedang dipilih player sekarang (null kalau tidak ada). Dipakai popup/UI lain (mis. tombol Research) yang butuh tahu employee mana yang akan diberi perintah.</summary>
+    public static Employee CurrentlySelected => currentlySelected;
+
     //==============================
     // Task Queue
     //==============================
@@ -208,6 +211,38 @@ public class Employee : MonoBehaviour
     }
 
     //==============================
+    // Research
+    //==============================
+
+    /// <summary>
+    /// Coba jalankan satu aksi research pada monster target.
+    /// - researchId null/kosong -> coba research APA SAJA yang available sekarang (TryResearchNext).
+    /// - researchId diisi        -> coba entry spesifik itu (TryResearch(id)).
+    /// Return false kalau target null, atau tidak ada research yang syaratnya terpenuhi sekarang.
+    ///
+    /// Dipisah dari MonsterBase (sama seperti CalculateFeedDuration) supaya nanti kalau mau
+    /// ada faktor "siapa yang research" (skill employee, kecepatan, dsb), tinggal ditambah di
+    /// sini lewat override tanpa menyentuh MonsterBase.
+    /// </summary>
+    public virtual bool TryResearch(MonsterBase target, string researchId = null)
+    {
+        if (target == null)
+            return false;
+
+        bool success = string.IsNullOrEmpty(researchId)
+            ? target.TryResearchNext()
+            : target.TryResearch(researchId);
+
+        if (success)
+            Debug.Log($"[Employee] {employeeName} berhasil melakukan research pada {target.MonsterName}.");
+        else
+            Debug.Log($"[Employee] {employeeName} gagal research pada {target.MonsterName} " +
+                      $"(syarat belum terpenuhi / sudah selesai / tidak ada yang available sekarang).");
+
+        return success;
+    }
+
+    //==============================
     // High-level Commands
     //==============================
 
@@ -260,6 +295,36 @@ public class Employee : MonoBehaviour
             () => stockRoom != null));
 
         Debug.Log($"[Employee] {employeeName} menerima job: ambil stok lalu beri makan {capturedMonster?.MonsterName}.");
+    }
+
+    /// <summary>
+    /// Perintah lengkap: jalan ke unit target, lalu coba research begitu sampai.
+    /// - researchId null/kosong -> research apa saja yang available (TryResearchNext) begitu sampai.
+    /// - researchId diisi        -> coba entry spesifik itu begitu sampai.
+    ///
+    /// Disusun lewat task queue (sama seperti GoFeed) supaya job ini tidak ketimpa diam-diam
+    /// oleh perintah lain, dan otomatis batal (onFail) kalau pas sampai ternyata monster
+    /// sudah tidak ada lagi di unit tersebut.
+    /// </summary>
+    public void GoResearch(ContainmentUnit unit, string researchId = null)
+    {
+        if (unit == null || !unit.HasMonster)
+        {
+            Debug.Log($"[Employee] {employeeName} batal research: unit tidak valid / tidak ada monster.");
+            return;
+        }
+
+        MonsterBase capturedMonster = unit.Monster;
+
+        ClearTasksAndInterrupt();
+
+        EnqueueTask(new MoveToTask(
+            () => capturedMonster.transform.position,
+            () => unit != null && unit.HasMonster && unit.Monster == capturedMonster));
+
+        EnqueueTask(new ResearchMonsterTask(unit, capturedMonster, researchId));
+
+        Debug.Log($"[Employee] {employeeName} menerima job: research {capturedMonster?.MonsterName}.");
     }
 
     //==============================
