@@ -4,9 +4,20 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Sub-popup pemilihan Employee, muncul setelah salah satu nutrisi dipilih
-/// di NutrisiPopup. Menampilkan 1 tombol untuk tiap Employee yang terdaftar
-/// di Facility, dengan nama employee sebagai teks tombolnya.
+/// Sub-popup pemilihan Employee. Menampilkan 1 tombol untuk tiap Employee yang
+/// terdaftar di Facility, dengan nama employee sebagai teks tombolnya.
+///
+/// GENERIC lewat callback: dipanggil dengan Action&lt;Employee&gt; yang berisi apa
+/// yang mau dilakukan begitu employee dipilih (mis. GoFeed, GoResearch, atau job
+/// lain di masa depan). Popup ini sendiri TIDAK tahu-menahu soal feed/research --
+/// itu keputusan si pemanggil (NutrisiPopup, ContainmentPopup, dst), popup ini
+/// cuma bertugas "kasih daftar employee, laporkan siapa yang dipilih".
+///
+/// Contoh pakai dari NutrisiPopup (feed) :
+///   EmployeeSelectPopup.Instance.Open(employee => employee.GoFeed(targetUnit, selectedFood));
+///
+/// Contoh pakai dari ContainmentPopup (research) :
+///   EmployeeSelectPopup.Instance.Open(employee => employee.GoResearch(targetUnit));
 ///
 /// Sama seperti popup lain: taruh script ini di GameObject yang SELALU AKTIF,
 /// bukan di GameObject visual (popupRoot).
@@ -22,8 +33,7 @@ public class EmployeeSelectPopup : PopupBase
     [Tooltip("Prefab tombol employee. Harus punya component Button + Text/TMP_Text di child-nya.")]
     [SerializeField] private Button employeeButtonPrefab;
 
-    private ContainmentUnit targetUnit;
-    private FoodType selectedFood;
+    private System.Action<Employee> onEmployeeSelected;
 
     private readonly List<GameObject> spawnedButtons = new();
 
@@ -33,10 +43,13 @@ public class EmployeeSelectPopup : PopupBase
         Instance = this;
     }
 
-    public void Open(ContainmentUnit unit, FoodType food)
+    /// <summary>
+    /// Buka popup pilih employee. Begitu salah satu employee di-klik, callback
+    /// dipanggil dengan employee itu, lalu popup otomatis Close().
+    /// </summary>
+    public void Open(System.Action<Employee> onEmployeeSelected)
     {
-        targetUnit = unit;
-        selectedFood = food;
+        this.onEmployeeSelected = onEmployeeSelected;
 
         BuildEmployeeButtons();
 
@@ -83,28 +96,20 @@ public class EmployeeSelectPopup : PopupBase
         spawnedButtons.Clear();
     }
 
-    
-
     private void OnEmployeeClicked(Employee employee)
     {
-        if (targetUnit == null || !targetUnit.HasMonster)
-        {
-            Close();
-            return;
-        }   
+        // Simpan dulu & clear field sebelum invoke, biar OnClosed() (dipanggil
+        // dari Close()) tidak ikut menghapus callback yang belum sempat jalan.
+        var callback = onEmployeeSelected;
 
-        FoodType food = FoodType.None;
-        
-
-        employee.GoFeed(targetUnit, selectedFood);    
         Close();
+
+        callback?.Invoke(employee);
     }
 
     protected override void OnClosed()
     {
         ClearButtons();
-        targetUnit = null;
-        selectedFood = FoodType.None;
-        
+        onEmployeeSelected = null;
     }
 }

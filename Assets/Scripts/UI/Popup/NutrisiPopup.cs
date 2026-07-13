@@ -41,8 +41,12 @@ public class NutrisiPopup : PopupBase
 
         if (EmployeeSelectPopup.Instance != null)
         {
+            // Capture dulu -- targetUnit di-reset ke null lewat OnClosed() begitu
+            // PopupManager menutup popup ini saat EmployeeSelectPopup dibuka.
+            ContainmentUnit unit = targetUnit;
+
             // PopupManager akan otomatis menutup popup ini saat popup baru dibuka.
-            EmployeeSelectPopup.Instance.Open(targetUnit, food);
+            EmployeeSelectPopup.Instance.Open(employee => employee.GoFeed(unit, food));
         }
     }
 

@@ -12,6 +12,16 @@ using UnityEngine;
 ///   dan otomatis melewati state Benih -> Tumbuh -> Overgrowth -> Mutated
 ///   sesuai growThreshold / overgrowthThreshold / mutatedThreshold yang
 ///   diatur di Inspector (lihat MonsterBase).
+/// - Research entries (array "Research Entries" di Inspector) contoh konfigurasi :
+///     level 1  : id="r1_diet"       , condition=Any          , trigger=Manual
+///     level 2  : id="r2_natrium"    , condition=Any          , trigger=Manual
+///     level 3  : id="r3_kalium"     , condition=Any          , trigger=Manual
+///     level 4  : id="r4_temp"       , condition=AboveGrowing , trigger=Manual
+///     level 7  : id="r7_over"       , condition=Overgrowth   , trigger=Manual
+///     level 9  : id="r9_mutasi"     , condition=Mutated      , trigger=Auto
+///     level 10 : id="r10_mutasi_dp" , condition=Mutated      , trigger=Manual
+///     level 11 : id="r_moodzero"    , condition=Custom       , trigger=Auto (lihat CheckCustomResearchCondition)
+///     level 11 : id="r_roomtemp"    , condition=Custom       , trigger=Auto , customValue=35 (suhu ambang)
 /// </summary>
 public class MonsterTest1234 : MonsterBase
 {
@@ -110,6 +120,33 @@ public class MonsterTest1234 : MonsterBase
             case GrowthState.Mutated:
                 Debug.Log($"[{MonsterName}] MUTATED! Growth harus diturunkan sampai 100% lagi supaya normal.");
                 break;
+        }
+    }
+
+    /// <summary>
+    /// Contoh syarat Custom, dispatch berdasarkan entry.id -- boleh punya banyak Custom entry
+    /// sekaligus, tiap id logikanya beda-beda.
+    /// </summary>
+    protected override bool CheckCustomResearchCondition(ResearchEntry entry)
+    {
+        switch (entry.id)
+        {
+            // Auto-unlock begitu efek mood-zero PERNAH ke-trigger, TIDAK peduli GrowthState.
+            // Karena trigger-nya Auto, begitu ini true sekali, CompleteResearch() langsung
+            // jalan dan PERMANEN -- walaupun hasTriggeredAtMoodZero nanti balik false lagi
+            // setelah triggerCooldown, research yang sudah selesai tidak akan ke-lock ulang.
+            case "r_moodzero":
+                return hasTriggeredAtMoodZero;
+
+            // Auto-unlock begitu suhu ruangan SEKARANG >= entry.customValue (ambang diatur
+            // lewat Inspector per-entry, jadi tiap entry bisa punya suhu ambang beda-beda
+            // tanpa perlu tambah kode baru).
+            case "r_roomtemp":
+                return Context != null && Context.CurrentRoom != null
+                    && Context.CurrentRoom.Temperature >= entry.customValue;
+
+            default:
+                return false;
         }
     }
 
