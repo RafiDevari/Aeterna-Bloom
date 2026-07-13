@@ -12,6 +12,10 @@ using UnityEngine;
 ///   dan otomatis melewati state Benih -> Tumbuh -> Overgrowth -> Mutated
 ///   sesuai growThreshold / overgrowthThreshold / mutatedThreshold yang
 ///   diatur di Inspector (lihat MonsterBase).
+/// - Harvest (lihat MonsterBase.Harvest.cs) : begitu growth Overgrowth (>100%),
+///   employee bisa di-harvest. Energy = energyGain * (growth saat dipotong - growThreshold)
+///   * CalculateHarvestEnergyMultiplier(), lalu growth balik persis ke growThreshold.
+///   Contoh di sini: multiplier naik sedikit kalau mood monster lagi tinggi.
 /// - Research entries (array "Research Entries" di Inspector) contoh konfigurasi :
 ///     level 1  : id="r1_diet"       , condition=Any          , trigger=Manual
 ///     level 2  : id="r2_natrium"    , condition=Any          , trigger=Manual
@@ -159,5 +163,20 @@ public class MonsterTest1234 : MonsterBase
         Context.ChangeRoomTemperature(roomTempIncrease);
 
         Context.SummonRandomEmployee();
+    }
+
+    //────────────────────────────────────────────────────────
+    // Harvest
+    //────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Contoh multiplier : mood penuh (maxMood) kasih bonus +50% energy, mood 0 tidak ada
+    /// bonus sama sekali. Linear di antaranya. Ganti sesuai kebutuhan desain (bisa juga
+    /// berdasarkan GrowthState pas di-harvest, RNG, dsb -- bebas, ini cuma contoh).
+    /// </summary>
+    protected override float CalculateHarvestEnergyMultiplier()
+    {
+        float moodRatio = maxMood > 0 ? Mathf.Clamp01((float)Mood / maxMood) : 1f;
+        return 1f + (moodRatio * 0.5f);
     }
 }

@@ -2,22 +2,16 @@ using UnityEngine;
 
 /// <summary>
 /// Bagian MonsterBase yang mengurus sistem Harvest : durasi proses harvest (mirror
-/// Feeding/Research), syarat kapan monster bisa di-harvest, dan efek harvest itu sendiri.
+/// Feeding/Research), syarat kapan monster bisa di-harvest, reset growth, dan reward energy.
 ///
 /// Alur : growth monster lewat 100% (Overgrowth) -> tombol Harvest muncul di UI -> employee
-/// dikirim buat harvest (ada durasi, sama seperti feed/research) -> begitu selesai, growth
-/// direset ke MINIMAL growth untuk state Growing (monster "dipangkas" balik ke awal siklus
-/// Growing, BUKAN balik ke Seed).
-///
-/// ASUMSI PENTING yang perlu dicek/disesuaikan terhadap MonsterBase.Growth.cs kalian yang
-/// sebenarnya (saya belum pernah lihat isi file itu) :
-///   - CurrentGrowthState == GrowthState.Overgrowth dipakai sebagai representasi "growth > 100%".
-///     Kalau ternyata growth kalian itu angka float terpisah (mis. growthPercent) yang BISA
-///     Overgrowth tapi belum tentu selalu >100%, sesuaikan IsOvergrown di bawah.
-///   - ResetGrowthForHarvest() SENGAJA saya buat virtual + isinya cuma warning log. Isi
-///     method ini (override di sini lewat edit langsung, atau override di child class)
-///     supaya beneran mengeset growth value/timer kalian balik ke ambang minimal Growing
-///     + set CurrentGrowthState = GrowthState.Growing.
+/// dikirim buat harvest (ada durasi, sama seperti feed/research) -> begitu selesai :
+///   1. Energy dihitung dari KELEBIHAN growth di atas growThreshold :
+///        energy = energyGain * (growth saat dipotong - growThreshold) * CalculateHarvestEnergyMultiplier()
+///      Base class cuma menghitung angkanya -- child class yang menentukan apa yang
+///      terjadi dengan energy itu lewat OnEnergyHarvested(), dan multiplier-nya sendiri
+///      lewat CalculateHarvestEnergyMultiplier() (lihat contoh di MonsterTest1234).
+///   2. Growth direset PERSIS ke growThreshold (balik ke awal siklus Growing, BUKAN ke Seed).
 /// </summary>
 public partial class MonsterBase
 {
@@ -31,6 +25,15 @@ public partial class MonsterBase
     [SerializeField] protected float harvestDuration = 1f;
 
     protected float harvestDurationTimer = 0f;
+
+    //────────────────────────────────────────────────────────
+    // Harvest Reward
+    //────────────────────────────────────────────────────────
+
+    [Header("Harvest Reward")]
+    [Tooltip("Base energy yang didapat per 1.0 kelebihan growth di atas growThreshold saat harvest. " +
+             "Final energy = energyGain * (growth saat harvest - growThreshold) * CalculateHarvestEnergyMultiplier().")]
+    [SerializeField] protected float energyGain = 1f;
 
     //────────────────────────────────────────────────────────
     // Events
@@ -47,6 +50,13 @@ public partial class MonsterBase
     {
         get => harvestDuration;
         protected set => harvestDuration = value;
+    }
+
+    /// <summary>Base energy per 1.0 kelebihan growth di atas growThreshold. Lihat CalculateHarvestEnergyMultiplier untuk multiplier tambahan.</summary>
+    public float EnergyGain
+    {
+        get => energyGain;
+        protected set => energyGain = value;
     }
 
     /// <summary>True selagi monster sedang dalam proses di-harvest.</summary>
@@ -80,13 +90,23 @@ public partial class MonsterBase
     {
         harvestDurationTimer = 0f;
 
-        OnMonsterHarvested(); // efek harvest -- isi di child class, lihat hook di bawah
+        // Growth SAAT DIPOTONG (sebelum direset) -- dasar perhitungan energy.
+        // ASUMSI: MonsterBase.Growth.cs expose current growth lewat property/field bernama "Growth".
+        // Ganti nama ini kalau ternyata beda di file kalian.
+        float growthAtHarvest = Growth;
+        float excessGrowth = Mathf.Max(0f, growthAtHarvest - growThreshold);
+        float multiplier = CalculateHarvestEnergyMultiplier();
+        float energyAmount = energyGain * excessGrowth * multiplier;
 
-        ResetGrowthForHarvest(); // kembalikan growth ke minimal Growing -- lihat catatan asumsi di atas
+        OnMonsterHarvested();            // efek harvest lain (drop item, dsb) -- isi di child
+        OnEnergyHarvested(energyAmount); // energy hasil harvest -- child WAJIB isi ini biar energy-nya benar2 diberikan
+
+        ResetGrowthForHarvest();         // kembalikan growth persis ke growThreshold
 
         OnHarvestFinished?.Invoke();
 
-        Debug.Log($"[{MonsterName}] Harvest selesai.");
+        Debug.Log($"[{MonsterName}] Harvest selesai. Growth {growthAtHarvest:0.##} -> {growThreshold:0.##}, " +
+                  $"energy : {energyGain} x {excessGrowth:0.##} x {multiplier:0.##} = {energyAmount:0.##}");
     }
 
     //────────────────────────────────────────────────────────
@@ -95,23 +115,40 @@ public partial class MonsterBase
 
     /// <summary>
     /// Override di child class buat isi APA YANG TERJADI saat harvest selesai
-    /// (mis. kasih resource ke player, spawn item, tambah stok, dsb). Sengaja
-    /// dikosongkan dulu di base class sesuai permintaan -- "nanti saja buat apa
-    /// yang terjadi saat di-harvest".
+    /// (mis. spawn item, VFX, dsb) -- di luar reward energy (lihat OnEnergyHarvested).
+    /// Sengaja dikosongkan dulu di base class.
     /// </summary>
     protected virtual void OnMonsterHarvested() { }
 
     /// <summary>
-    /// Reset growth monster ke MINIMAL growth untuk state Growing, dipanggil otomatis
-    /// begitu harvest selesai. PLACEHOLDER -- ganti isinya (atau override di child class)
-    /// supaya beneran mengeset growth value/timer kalian + CurrentGrowthState = GrowthState.Growing,
-    /// sesuai cara growth kalian disimpan di MonsterBase.Growth.cs.
+    /// Multiplier tambahan buat hasil energy harvest, dihitung SEPENUHNYA di child class
+    /// monster (bisa berdasarkan jenis monster, mood, growth stage, RNG, dsb -- lihat
+    /// contoh di MonsterTest1234). Default 1 (tidak ada modifikasi) di base class.
+    /// </summary>
+    protected virtual float CalculateHarvestEnergyMultiplier() => 1f;
+
+    /// <summary>
+    /// Dipanggil begitu energy hasil harvest sudah dihitung
+    /// (energyGain * kelebihan growth * CalculateHarvestEnergyMultiplier()).
+    /// Base class TIDAK melakukan apapun dengan angka ini -- child class WAJIB override
+    /// method ini untuk benar-benar memberikan energy-nya ke sistem lain (mis. tambah ke
+    /// resource pool Facility, currency player, dsb).
+    /// </summary>
+    protected virtual void OnEnergyHarvested(float energyAmount)
+    {
+        Context.ChangeEnergy(+energyAmount);
+        Debug.Log($"[{MonsterName}] Harvest memberi energy : {energyAmount:0.##}");
+    }
+
+    /// <summary>
+    /// Reset growth monster PERSIS ke growThreshold (awal siklus Growing), dipanggil
+    /// otomatis begitu harvest selesai. Pakai ModifyGrowth() yang sudah ada supaya
+    /// GrowthState & hook OnGrowthStateChange ikut ke-update otomatis lewat jalur yang sama
+    /// seperti perubahan growth lainnya (mis. dari makan).
     /// </summary>
     protected virtual void ResetGrowthForHarvest()
     {
-        Debug.LogWarning($"[{MonsterName}] ResetGrowthForHarvest() belum diimplementasi -- " +
-                          "isi method ini di MonsterBase.Growth.cs supaya growth beneran " +
-                          "kembali ke minimal Growing setelah harvest.");
+        ModifyGrowth(growThreshold - Growth);
     }
 
     //────────────────────────────────────────────────────────
