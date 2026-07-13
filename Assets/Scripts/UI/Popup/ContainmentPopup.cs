@@ -79,7 +79,15 @@ public class ContainmentPopup : PopupBase
     private void OnInfoClicked()
     {
         Debug.Log($"[ContainmentUnitPopup] Info ditekan untuk unit: {targetUnit?.UnitName}");
-        Close();
+ 
+        // Sama seperti Nutrisi: tidak perlu panggil Close() di sini kalau PopupManager
+        // otomatis menutup popup ini begitu MonsterInfoPopup dibuka.
+        if (MonsterInfoPopup.Instance != null)
+        {
+            MonsterInfoPopup.Instance.Open(targetUnit);
+        }
+        else
+            Debug.LogError("[ContainmentUnitPopup] MonsterInfoPopup.Instance belum ada. Pastikan component MonsterInfoPopup sudah ditambahkan ke scene.");
     }
 
     protected override void OnClosed()

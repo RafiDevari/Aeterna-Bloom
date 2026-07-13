@@ -10,10 +10,10 @@ using UnityEngine;
 public enum ResearchCondition
 {
     Any,            // Bisa kapan saja, tidak terikat GrowthState
-    AboveGrowing,   // GrowthState harus > Growing, yaitu Overgrowth atau Mutated
+    Growing,        // GrowthState harus persis Growing
     Overgrowth,     // GrowthState harus persis Overgrowth
     Mutated,        // GrowthState harus persis Mutated
-    Custom          // Kondisi custom (event/state apapun di luar GrowthState) -- override lewat CheckCustomResearchCondition
+    Custom          // Kondisi c    ustom (event/state apapun di luar GrowthState) -- override lewat CheckCustomResearchCondition
 }
 
 /// <summary>
@@ -30,7 +30,7 @@ public enum ResearchTrigger
  * "level" sendiri cuma label urutan/pengelompokan, tidak dipakai langsung dalam logika) :
  *
  *   1-3  : Any          + Manual  -> bisa di-research kapan saja
- *   4-6  : AboveGrowing  + Manual  -> butuh growth di atas Growing (Overgrowth/Mutated)
+ *   4-6  : Growing      + Manual  -> butuh growth persis Growing
  *   7-8  : Overgrowth    + Manual  -> butuh persis Overgrowth
  *   9    : Mutated       + Auto    -> langsung ke-unlock begitu Mutated, TANPA aksi research
  *   10   : Mutated       + Manual  -> butuh aksi research SELAGI Mutated
@@ -113,8 +113,8 @@ public partial class MonsterBase
             case ResearchCondition.Any:
                 return true;
 
-            case ResearchCondition.AboveGrowing:
-                return CurrentGrowthState > GrowthState.Growing;
+            case ResearchCondition.Growing:
+                return CurrentGrowthState == GrowthState.Growing;
 
             case ResearchCondition.Overgrowth:
                 return CurrentGrowthState == GrowthState.Overgrowth;

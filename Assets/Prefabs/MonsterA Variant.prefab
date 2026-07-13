@@ -106,12 +106,24 @@ MonoBehaviour:
     condition: 4
     trigger: 1
     customValue: 0
+  - level: 2
+    id: r1
+    resultText: ini dari research
+    condition: 0
+    trigger: 0
+    customValue: 0
+  - level: 3
+    id: r2
+    resultText: ini dari research part 2 harusnya
+    condition: 1
+    trigger: 0
+    customValue: 0
   monsterName: Unknown Monster
   monsterRenderer: {fileID: 0}
   monsterSprite: {fileID: -2803993944443423045, guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb, type: 3}
   autoFitCollider: 1
   monsterCollider: {fileID: 0}
-  mood: 5
+  mood: 1
   maxMood: 5
   minMood: 0
   suitableTemperature: 20
