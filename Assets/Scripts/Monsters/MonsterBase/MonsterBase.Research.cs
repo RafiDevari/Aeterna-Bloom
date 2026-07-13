@@ -13,7 +13,7 @@ public enum ResearchCondition
     Growing,        // GrowthState harus persis Growing
     Overgrowth,     // GrowthState harus persis Overgrowth
     Mutated,        // GrowthState harus persis Mutated
-    Custom          // Kondisi c    ustom (event/state apapun di luar GrowthState) -- override lewat CheckCustomResearchCondition
+    Custom          // Kondisi custom (event/state apapun di luar GrowthState) -- override lewat CheckCustomResearchCondition
 }
 
 /// <summary>
@@ -38,6 +38,11 @@ public enum ResearchTrigger
  *            - auto-unlock begitu sebuah event/fungsi tertentu pernah ke-trigger (mis. efek mood-zero)
  *            - auto-unlock begitu suhu ruangan >= entry.customValue (ambang diatur per-entry di Inspector)
  *            - kombinasi apapun, termasuk yang benar-benar "rahasia"/tersembunyi dari player
+ *
+ * CATATAN soal durasi (baru) : hanya berlaku untuk entry Manual yang diselesaikan lewat
+ * TryResearch()/TryResearchNext(). Entry Auto tetap selesai INSTAN lewat CheckAutoResearch()
+ * begitu syaratnya terpenuhi -- tidak ada konsep "durasi" untuk Auto, karena tidak ada
+ * employee/aksi yang "mengerjakan"-nya.
  */
 
 /// <summary>
@@ -72,7 +77,7 @@ public struct ResearchEntry
 
 /// <summary>
 /// Bagian MonsterBase yang mengurus sistem Research : daftar entry, syarat unlock per entry,
-/// dan aksi research (manual maupun auto).
+/// durasi proses research (mirip Feeding), dan aksi research (manual maupun auto).
 /// </summary>
 public partial class MonsterBase
 {
@@ -86,13 +91,25 @@ public partial class MonsterBase
              "'condition' & 'trigger' di tiap entry.")]
     [SerializeField] private ResearchEntry[] researchEntries;
 
+    [Header("Research Timing")]
+    [Tooltip("Durasi 'research' BAWAAN monster ini (detik), dipakai sebagai fallback kalau TryResearch()/TryResearchNext() " +
+             "dipanggil tanpa durasi eksplisit dari luar. Beda-beda tiap jenis monster -- sama seperti feedDuration.")]
+    [SerializeField] protected float researchDuration = 1f;
+
     private readonly HashSet<string> completedResearchIds = new HashSet<string>();
+
+    protected float researchDurationTimer = 0f;
+    private string pendingResearchId;
 
     //────────────────────────────────────────────────────────
     // Events
     //────────────────────────────────────────────────────────
 
+    /// <summary>Invoked begitu satu entry SELESAI diselesaikan (Manual setelah durasi habis, atau Auto instan).</summary>
     public System.Action<ResearchEntry> OnResearchCompleted;
+
+    /// <summary>Invoked begitu proses research Manual yang sedang berjalan selesai (durasi habis) -- mirror OnFeedFinished.</summary>
+    public System.Action OnResearchFinished;
 
     //────────────────────────────────────────────────────────
     // Properties
@@ -100,6 +117,53 @@ public partial class MonsterBase
 
     /// <summary>Daftar mentah semua ResearchEntry yang dikonfigurasi lewat Inspector untuk monster ini.</summary>
     public IReadOnlyList<ResearchEntry> ResearchEntries => researchEntries;
+
+    /// <summary>
+    /// Durasi research BAWAAN monster ini, tanpa modifikasi apapun dari luar.
+    /// Ini murni data milik monster (dipakai Employee sebagai basis perhitungan
+    /// durasi final lewat Employee.CalculateResearchDuration).
+    /// </summary>
+    public float ResearchDuration
+    {
+        get => researchDuration;
+        protected set => researchDuration = value;
+    }
+
+    /// <summary>True selagi monster sedang dalam proses di-research (dari TryResearch/TryResearchNext sampai durasi habis).</summary>
+    public bool IsResearching => researchDurationTimer > 0f;
+
+    /// <summary>Boleh dimulai research baru hanya kalau tidak sedang research lain.</summary>
+    public bool CanBeResearched => !IsResearching;
+
+    //────────────────────────────────────────────────────────
+    // Tick
+    //────────────────────────────────────────────────────────
+
+    private void TickResearchDuration()
+    {
+        if (researchDurationTimer <= 0f)
+            return;
+
+        researchDurationTimer -= Time.deltaTime;
+
+        if (researchDurationTimer <= 0f)
+            CompleteResearchInProgress();
+    }
+
+    private void CompleteResearchInProgress()
+    {
+        researchDurationTimer = 0f;
+
+        string id = pendingResearchId;
+        pendingResearchId = null;
+
+        if (!string.IsNullOrEmpty(id))
+            CompleteResearch(id);
+
+        OnResearchFinished?.Invoke();
+
+        Debug.Log($"[{MonsterName}] Proses research selesai.");
+    }
 
     //────────────────────────────────────────────────────────
     // Condition Evaluation
@@ -154,6 +218,9 @@ public partial class MonsterBase
     /// tapi belum selesai. Dipanggil tiap frame dari Update() (MonsterBase.cs) dan sekali di Awake,
     /// jadi otomatis mendukung kondisi apapun (GrowthState maupun Custom) tanpa perlu instrumentasi
     /// manual tambahan di child class.
+    ///
+    /// CATATAN: Auto SELALU instan, tidak lewat sistem durasi -- tidak terpengaruh dan tidak
+    /// men-set IsResearching.
     /// </summary>
     protected void CheckAutoResearch()
     {
@@ -200,9 +267,15 @@ public partial class MonsterBase
     /// <summary>Sudah pernah diselesaikan atau belum.</summary>
     public bool IsResearchCompleted(string id) => completedResearchIds.Contains(id);
 
-    /// <summary>True kalau entry ini trigger Manual, syaratnya terpenuhi SEKARANG, dan belum selesai.</summary>
+    /// <summary>
+    /// True kalau entry ini trigger Manual, syaratnya terpenuhi SEKARANG, belum selesai,
+    /// DAN monster ini sedang tidak dalam proses research lain.
+    /// </summary>
     public bool CanResearch(string id)
     {
+        if (IsResearching)
+            return false;
+
         if (!TryFindResearchEntry(id, out var entry))
             return false;
 
@@ -212,28 +285,48 @@ public partial class MonsterBase
     }
 
     /// <summary>
-    /// Coba selesaikan satu research entry spesifik lewat aksi manual (mis. dipanggil dari Employee).
-    /// Return true kalau berhasil diselesaikan sekarang.
+    /// Mulai proses research entry spesifik lewat aksi manual (mis. dipanggil dari Employee).
     /// </summary>
-    public bool TryResearch(string id)
+    /// <param name="id">ID entry yang mau di-research.</param>
+    /// <param name="durationOverride">
+    /// Durasi research FINAL (detik) yang sudah dihitung oleh pemanggil (biasanya
+    /// Employee.CalculateResearchDuration, yang nantinya bisa memperhitungkan
+    /// multiplier per jenis employee / level / skill).
+    /// Kalau null, fallback ke <see cref="ResearchDuration"/> bawaan monster ini,
+    /// supaya TryResearch() tetap aman dipanggil langsung tanpa lewat Employee
+    /// (misal dari testing atau sistem lain).
+    /// </param>
+    /// <returns>
+    /// True kalau proses research berhasil DIMULAI sekarang. Ini BUKAN berarti sudah
+    /// selesai -- selesainya dilaporkan lewat event OnResearchFinished (dan
+    /// OnResearchCompleted untuk entry-nya), kecuali durationOverride &lt;= 0 (instan).
+    /// </returns>
+    public bool TryResearch(string id, float? durationOverride = null)
     {
         if (!CanResearch(id))
         {
-            Debug.Log($"[{MonsterName}] Research '{id}' gagal : syarat belum terpenuhi atau sudah selesai.");
+            Debug.Log($"[{MonsterName}] Research '{id}' gagal : syarat belum terpenuhi, sudah selesai, atau sedang research lain.");
             return false;
         }
 
-        CompleteResearch(id);
+        StartResearchTimer(id, durationOverride);
         return true;
     }
 
     /// <summary>
-    /// Cari & selesaikan entry Manual pertama (urut dari level terkecil) yang syaratnya sudah
+    /// Cari & mulai research entry Manual pertama (urut dari level terkecil) yang syaratnya sudah
     /// terpenuhi dan belum selesai. Berguna kalau pemanggil tidak peduli entry spesifik yang mana,
     /// cuma mau "research aja yang bisa sekarang".
     /// </summary>
-    public bool TryResearchNext()
+    /// <param name="durationOverride">Sama seperti di TryResearch(string, float?).</param>
+    public bool TryResearchNext(float? durationOverride = null)
     {
+        if (IsResearching)
+        {
+            Debug.Log($"[{MonsterName}] Tidak bisa mulai research baru : masih dalam proses research lain.");
+            return false;
+        }
+
         ResearchEntry? next = null;
 
         foreach (var entry in researchEntries ?? System.Array.Empty<ResearchEntry>())
@@ -252,8 +345,20 @@ public partial class MonsterBase
             return false;
         }
 
-        CompleteResearch(next.Value.id);
+        StartResearchTimer(next.Value.id, durationOverride);
         return true;
+    }
+
+    private void StartResearchTimer(string id, float? durationOverride)
+    {
+        pendingResearchId = id;
+        researchDurationTimer = Mathf.Max(0f, durationOverride ?? researchDuration);
+
+        Debug.Log($"[{MonsterName}] Mulai research '{id}', durasi : {researchDurationTimer}s");
+
+        // Durasi 0 = research instan, langsung selesai di frame yang sama.
+        if (researchDurationTimer <= 0f)
+            CompleteResearchInProgress();
     }
 
     /// <summary>Entry Manual yang syaratnya terpenuhi sekarang & belum selesai -- siap di-research.</summary>

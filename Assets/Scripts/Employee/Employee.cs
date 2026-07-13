@@ -215,31 +215,50 @@ public class Employee : MonoBehaviour
     //==============================
 
     /// <summary>
-    /// Coba jalankan satu aksi research pada monster target.
+    /// Coba mulai satu aksi research pada monster target.
     /// - researchId null/kosong -> coba research APA SAJA yang available sekarang (TryResearchNext).
     /// - researchId diisi        -> coba entry spesifik itu (TryResearch(id)).
-    /// Return false kalau target null, atau tidak ada research yang syaratnya terpenuhi sekarang.
+    /// Durasi FINAL dihitung lewat CalculateResearchDuration() sebelum dioper ke MonsterBase.
+    /// Return false kalau target null, atau tidak ada research yang syaratnya terpenuhi sekarang
+    /// (termasuk kalau monster sedang dalam proses research lain).
     ///
-    /// Dipisah dari MonsterBase (sama seperti CalculateFeedDuration) supaya nanti kalau mau
-    /// ada faktor "siapa yang research" (skill employee, kecepatan, dsb), tinggal ditambah di
-    /// sini lewat override tanpa menyentuh MonsterBase.
+    /// PENTING: return true di sini artinya proses research BERHASIL DIMULAI, bukan berarti
+    /// sudah selesai -- selesainya dilaporkan lewat MonsterBase.OnResearchFinished (mirror FeedMonster).
     /// </summary>
     public virtual bool TryResearch(MonsterBase target, string researchId = null)
     {
         if (target == null)
             return false;
 
+        float finalResearchDuration = CalculateResearchDuration(target);
+
         bool success = string.IsNullOrEmpty(researchId)
-            ? target.TryResearchNext()
-            : target.TryResearch(researchId);
+            ? target.TryResearchNext(finalResearchDuration)
+            : target.TryResearch(researchId, finalResearchDuration);
 
         if (success)
-            Debug.Log($"[Employee] {employeeName} berhasil melakukan research pada {target.MonsterName}.");
+            Debug.Log($"[Employee] {employeeName} mulai research pada {target.MonsterName} (durasi : {finalResearchDuration}s).");
         else
             Debug.Log($"[Employee] {employeeName} gagal research pada {target.MonsterName} " +
-                      $"(syarat belum terpenuhi / sudah selesai / tidak ada yang available sekarang).");
+                      $"(syarat belum terpenuhi / sudah selesai / sedang research lain / tidak ada yang available sekarang).");
 
         return success;
+    }
+
+    /// <summary>
+    /// Menghitung durasi research FINAL (detik) untuk target monster, dari sudut pandang
+    /// employee ini yang sedang melakukan research.
+    ///
+    /// Sengaja dipisah dari MonsterBase.ResearchDuration (sama seperti CalculateFeedDuration)
+    /// supaya monster tidak perlu tahu siapa yang meneliti. Faktor "siapa yang bekerja"
+    /// (jenis employee, level, skill, buff, dsb) nantinya tinggal ditambahkan di sini lewat
+    /// override, tanpa menyentuh MonsterBase maupun subclass Employee lain.
+    ///
+    /// Default: tidak ada modifikasi, sama persis dengan ResearchDuration bawaan monster.
+    /// </summary>
+    protected virtual float CalculateResearchDuration(MonsterBase target)
+    {
+        return target.ResearchDuration;
     }
 
     //==============================

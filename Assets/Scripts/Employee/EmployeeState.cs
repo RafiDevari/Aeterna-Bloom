@@ -2,5 +2,6 @@ public enum EmployeeState
 {
     Idle,
     Moving,
-    Feeding
+    Feeding,
+    Researching,
 }

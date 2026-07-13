@@ -1,17 +1,8 @@
-using UnityEngine;
-
 //==============================================================
-// Task: coba selesaikan satu research entry pada monster target, dengan
-// validasi ulang (monster/unit bisa berubah selama employee dalam perjalanan) --
-// pola sama seperti FeedMonsterTask.
-//
-// Beda dengan FeedMonsterTask: TryResearch()/TryResearchNext() di MonsterBase
-// SYNCHRONOUS (tidak ada durasi/event selesai seperti OnFeedFinished), jadi
-// onComplete/onFail langsung dipanggil dalam Start(), tidak perlu subscribe
-// event apapun atau nunggu tick berikutnya.
-//
-// - researchId null/kosong -> coba TryResearchNext() (research apa saja yang available)
-// - researchId diisi        -> coba TryResearch(id) buat entry spesifik itu
+// Task: mulai research pada monster target, dengan validasi ulang
+// (monster/unit bisa berubah selama employee dalam perjalanan).
+// Sekarang punya durasi (mirror FeedMonsterTask) -- task ini menunggu
+// MonsterBase.OnResearchFinished sebelum memanggil onComplete.
 //==============================================================
 public class ResearchMonsterTask : EmployeeTask
 {
@@ -19,6 +10,13 @@ public class ResearchMonsterTask : EmployeeTask
     private readonly MonsterBase targetMonster;
     private readonly string researchId;
 
+    private System.Action onComplete;
+    private bool isWaitingForResearchToFinish;
+
+    /// <param name="researchId">
+    /// Null/kosong -> employee akan research entry APA SAJA yang available begitu sampai
+    /// (TryResearchNext). Diisi -> coba entry spesifik itu (TryResearch(id)).
+    /// </param>
     public ResearchMonsterTask(ContainmentUnit unit, MonsterBase targetMonster, string researchId = null)
     {
         this.unit = unit;
@@ -40,12 +38,32 @@ public class ResearchMonsterTask : EmployeeTask
             return;
         }
 
+        this.onComplete = onComplete;
+        isWaitingForResearchToFinish = true;
+
+        // NOTE: pastikan EmployeeState punya value Researching. Kalau belum ada,
+        // tambahkan dulu di enum EmployeeState, atau ganti baris ini ke state lain
+        // yang paling sesuai buat sementara.
+        employee.SetState(EmployeeState.Researching);
+        targetMonster.OnResearchFinished += HandleResearchFinished;
+    }
+
+    private void HandleResearchFinished()
+    {
+        if (!isWaitingForResearchToFinish)
+            return;
+
+        isWaitingForResearchToFinish = false;
+        targetMonster.OnResearchFinished -= HandleResearchFinished;
         onComplete?.Invoke();
     }
 
     public void Cancel()
     {
-        // Task ini synchronous -- selesai/gagal langsung di Start(), tidak ada
-        // state atau subscription event yang perlu dibersihkan saat di-cancel.
+        if (!isWaitingForResearchToFinish)
+            return;
+
+        isWaitingForResearchToFinish = false;
+        targetMonster.OnResearchFinished -= HandleResearchFinished;
     }
 }

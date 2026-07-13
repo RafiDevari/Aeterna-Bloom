@@ -6,7 +6,7 @@ using UnityEngine;
 ///   - MonsterBase.cs           : identity, visual, mood, environment, references, lifecycle Unity (file ini)
 ///   - MonsterBase.Growth.cs    : GrowthState, growth stages, sprite-per-state
 ///   - MonsterBase.Feeding.cs   : sistem makan (Feed, cooldown, durasi)
-///   - MonsterBase.Research.cs  : sistem research (level, condition, trigger)
+///   - MonsterBase.Research.cs  : sistem research (level, condition, trigger, durasi)
 /// Semua file di atas adalah SATU class yang sama (partial) -- child class (mis. MonsterTest1234)
 /// tidak perlu tahu ini di-split, API-nya sama persis seperti sebelum di-pecah.
 /// </summary>
@@ -174,10 +174,11 @@ public partial class MonsterBase : MonoBehaviour
 
     protected virtual void Update()
     {
-        TickFeedDuration();   // MonsterBase.Feeding.cs
-        TickFeedCooldown();   // MonsterBase.Feeding.cs
-        TickPassiveGrowth();  // MonsterBase.Growth.cs
-        CheckAutoResearch();  // MonsterBase.Research.cs -- dicek tiap frame, kondisi Custom bisa berubah kapan saja
+        TickFeedDuration();     // MonsterBase.Feeding.cs
+        TickFeedCooldown();     // MonsterBase.Feeding.cs
+        TickPassiveGrowth();    // MonsterBase.Growth.cs
+        TickResearchDuration(); // MonsterBase.Research.cs -- jalanin timer research Manual yang sedang berlangsung
+        CheckAutoResearch();    // MonsterBase.Research.cs -- dicek tiap frame, kondisi Custom bisa berubah kapan saja
 
         switch (CurrentGrowthState)
         {
