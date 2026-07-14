@@ -3,15 +3,12 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Popup yang muncul saat ContainmentUnit (yang punya monster) ditekan.
-/// Berisi 4 pilihan: Nutrisi, Research, Info, Close.
+/// Berisi pilihan: Nutrisi, Research, Harvest (kondisional), Info, Close.
 ///
 /// PENTING: script ini harus ada di GameObject yang SELALU AKTIF (misalnya
 /// langsung di Canvas, atau GameObject controller kosong terpisah) -- BUKAN
 /// di GameObject visual popup (popupRoot) yang di-toggle aktif/nonaktif.
 /// Lihat komentar di PopupBase.cs untuk alasannya.
-///
-/// Untuk sekarang setiap pilihan cuma nge-print ke console lalu popup
-/// otomatis close.
 /// </summary>
 public class ContainmentPopup : PopupBase
 {
@@ -20,6 +17,7 @@ public class ContainmentPopup : PopupBase
     [Header("Buttons")]
     [SerializeField] private Button nutrisiButton;
     [SerializeField] private Button researchButton;
+    [SerializeField] private Button harvestButton;
     [SerializeField] private Button infoButton;
     [SerializeField] private Button closeButton;
 
@@ -33,6 +31,7 @@ public class ContainmentPopup : PopupBase
 
         nutrisiButton.onClick.AddListener(OnNutrisiClicked);
         researchButton.onClick.AddListener(OnResearchClicked);
+        harvestButton.onClick.AddListener(OnHarvestClicked);
         infoButton.onClick.AddListener(OnInfoClicked);
         closeButton.onClick.AddListener(Close);
 
@@ -52,6 +51,12 @@ public class ContainmentPopup : PopupBase
     public void Open(ContainmentUnit unit)
     {
         targetUnit = unit;
+
+        // Tombol Harvest cuma muncul kalau growth monster-nya sudah lewat 100% (Overgrowth).
+        // Lihat MonsterBase.IsOvergrown (MonsterBase.Harvest.cs).
+        bool showHarvest = unit != null && unit.HasMonster && unit.Monster.IsOvergrown;
+        harvestButton.gameObject.SetActive(showHarvest);
+
         base.Open();
     }
 
@@ -73,14 +78,30 @@ public class ContainmentPopup : PopupBase
     private void OnResearchClicked()
     {
         Debug.Log($"[ContainmentUnitPopup] Research ditekan untuk unit: {targetUnit?.UnitName}");
- 
+
         // Sama seperti Nutrisi: tidak perlu panggil Close() di sini kalau PopupManager
         // otomatis menutup popup ini begitu EmployeeSelectPopup dibuka.
         if (EmployeeSelectPopup.Instance != null)
         {
             ContainmentUnit unit = targetUnit; // capture, targetUnit di-reset saat popup ini close
- 
+
             EmployeeSelectPopup.Instance.Open(employee => employee.GoResearch(unit));
+        }
+        else
+            Debug.LogError("[ContainmentUnitPopup] EmployeeSelectPopup.Instance belum ada. Pastikan component EmployeeSelectPopup sudah ditambahkan ke scene.");
+    }
+
+    private void OnHarvestClicked()
+    {
+        Debug.Log($"[ContainmentUnitPopup] Harvest ditekan untuk unit: {targetUnit?.UnitName}");
+
+        // Sama seperti Research/Nutrisi: tidak perlu panggil Close() di sini kalau PopupManager
+        // otomatis menutup popup ini begitu EmployeeSelectPopup dibuka.
+        if (EmployeeSelectPopup.Instance != null)
+        {
+            ContainmentUnit unit = targetUnit; // capture, targetUnit di-reset saat popup ini close
+
+            EmployeeSelectPopup.Instance.Open(employee => employee.GoHarvest(unit));
         }
         else
             Debug.LogError("[ContainmentUnitPopup] EmployeeSelectPopup.Instance belum ada. Pastikan component EmployeeSelectPopup sudah ditambahkan ke scene.");
@@ -89,7 +110,7 @@ public class ContainmentPopup : PopupBase
     private void OnInfoClicked()
     {
         Debug.Log($"[ContainmentUnitPopup] Info ditekan untuk unit: {targetUnit?.UnitName}");
- 
+
         // Sama seperti Nutrisi: tidak perlu panggil Close() di sini kalau PopupManager
         // otomatis menutup popup ini begitu MonsterInfoPopup dibuka.
         if (MonsterInfoPopup.Instance != null)

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 58fe1d613333b6049be85a7421ebcfd2
+guid: cacbb2d81e011cb4c9e82c673b415251
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7417075999804959461
-    second: bibit_0
+      213: 8748072726004645912
+    second: Tanaman1_mutated_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bibit_0
+      name: Tanaman1_mutated_0
       rect:
         serializedVersion: 2
-        x: 904
-        y: 775
-        width: 79
-        height: 73
+        x: 751
+        y: 777
+        width: 402
+        height: 527
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b15dc8feca0411990800000000000000
-      internalID: -7417075999804959461
+      spriteID: 8104ac68bc5676970800000000000000
+      internalID: 8748072726004645912
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: f774e907e77fe4a48bbf5215c431ebeb
+    spriteID: 8bfcd518ae0480d45a41921b8099ebe2
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      bibit_0: -7417075999804959461
+      Tanaman1_mutated_0: 8748072726004645912
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

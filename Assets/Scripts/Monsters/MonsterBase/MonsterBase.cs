@@ -178,6 +178,7 @@ public partial class MonsterBase : MonoBehaviour
         TickFeedCooldown();     // MonsterBase.Feeding.cs
         TickPassiveGrowth();    // MonsterBase.Growth.cs
         TickResearchDuration(); // MonsterBase.Research.cs -- jalanin timer research Manual yang sedang berlangsung
+        TickHarvestDuration();  // MonsterBase.Harvest.cs -- jalanin timer harvest yang sedang berlangsung
         CheckAutoResearch();    // MonsterBase.Research.cs -- dicek tiap frame, kondisi Custom bisa berubah kapan saja
 
         switch (CurrentGrowthState)

@@ -23,6 +23,7 @@ public class MonsterABC : MonsterBase
 
     private void Awake()
     {
+        base.Awake();   
         MonsterName = "MonsterABC";
     }
 
