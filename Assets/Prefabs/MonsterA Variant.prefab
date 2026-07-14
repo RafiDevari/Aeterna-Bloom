@@ -96,39 +96,44 @@ MonoBehaviour:
   - state: 1
     sprite: {fileID: -2803993944443423045, guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb, type: 3}
   - state: 2
-    sprite: {fileID: -2803993944443423045, guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb, type: 3}
+    sprite: {fileID: 992827972281586748, guid: 88e9b20c33ef82942b6b3aa2d602d5c6, type: 3}
   - state: 3
-    sprite: {fileID: -7417075999804959461, guid: 58fe1d613333b6049be85a7421ebcfd2, type: 3}
+    sprite: {fileID: 8748072726004645912, guid: cacbb2d81e011cb4c9e82c673b415251, type: 3}
   researchEntries:
   - level: 1
     id: r_moodzero
-    resultText: ini yang mood zero
+    resultText: Tanaman ini memakan employee random saat moodnya 0
     condition: 4
     trigger: 1
     customValue: 0
   - level: 2
     id: r1
-    resultText: ini dari research
+    resultText: Research 1, Tanaman ini memiliki suitable temperature sebesar 20
+      derajat, dengan toleransi sebesar 5 derajat
     condition: 0
     trigger: 0
     customValue: 0
   - level: 3
     id: r2
-    resultText: ini dari research part 2 harusnya
+    resultText: Research 2, Tanaman ini tidak menyukai kandungan Natrium, penggunaan
+      natrium akan membuat tanaman ini kehilangan mood
     condition: 1
     trigger: 0
     customValue: 0
+  researchDuration: 1
   monsterName: Unknown Monster
   monsterRenderer: {fileID: 0}
   monsterSprite: {fileID: -2803993944443423045, guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb, type: 3}
   autoFitCollider: 1
   monsterCollider: {fileID: 0}
-  mood: 1
+  mood: 5
   maxMood: 5
   minMood: 0
   suitableTemperature: 20
+  harvestDuration: 1
+  energyGain: 1
   allowedDifference: 5
-  moodInterval: 2.2
+  moodInterval: 1
   roomTempIncrease: 2
   triggerCooldown: 10
 --- !u!212 &4492299306912862189

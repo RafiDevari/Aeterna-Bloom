@@ -45,14 +45,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2233867cb2b963c41b066736ccc84a2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonsterABC
-  monsterName: Monster AB
-  monsterSprite: {fileID: 2572196293222225714, guid: 9515d5205112a0d40b4c6e34d6e5e00e, type: 3}
-  monsterRenderer: {fileID: 0}
+  feedDuration: 1
+  feedCooldown: 5
   growth: 0
+  growThreshold: 0.3
+  overgrowthThreshold: 1
+  mutatedThreshold: 2
+  mutationRecoveryThreshold: 1
+  currentGrowthState: 0
+  passiveGrowthInterval: 4
+  passiveGrowthAmount: 0.01
+  growthStateSprites:
+  - state: 0
+    sprite: {fileID: -7417075999804959461, guid: 58fe1d613333b6049be85a7421ebcfd2, type: 3}
+  - state: 1
+    sprite: {fileID: -2803993944443423045, guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb, type: 3}
+  - state: 2
+    sprite: {fileID: 992827972281586748, guid: 88e9b20c33ef82942b6b3aa2d602d5c6, type: 3}
+  - state: 3
+    sprite: {fileID: 8748072726004645912, guid: cacbb2d81e011cb4c9e82c673b415251, type: 3}
+  researchEntries: []
+  researchDuration: 1
+  monsterName: Monster AB
+  monsterRenderer: {fileID: 0}
+  monsterSprite: {fileID: 2572196293222225714, guid: 9515d5205112a0d40b4c6e34d6e5e00e, type: 3}
+  autoFitCollider: 1
+  monsterCollider: {fileID: 0}
   mood: 3
   maxMood: 5
   minMood: 0
   suitableTemperature: 20
+  harvestDuration: 1
+  energyGain: 1
   moodThresholdForDrain: 2
   energyDrainAmount: 1
   energyDrainInterval: 5
