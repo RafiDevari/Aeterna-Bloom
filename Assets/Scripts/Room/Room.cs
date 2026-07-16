@@ -260,7 +260,7 @@ public abstract class Room : MonoBehaviour
                 Bounds spriteBounds = spriteRenderer.bounds;
 
                 float floorY = spriteBounds.min.y;
-                float height = 1f;
+                float height = 0.5f;
 
                 Vector3 center = new Vector3(
                     spriteBounds.center.x,

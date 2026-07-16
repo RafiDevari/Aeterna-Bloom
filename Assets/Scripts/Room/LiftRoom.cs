@@ -11,7 +11,7 @@ public class Lift : Room
             {
                 Bounds spriteBounds = spriteRenderer.bounds;
 
-                float width = 1f;
+                float width = 0.5f;
 
                 Vector3 center = spriteBounds.center;
                 Vector3 size = new Vector3(width, spriteBounds.size.y, spriteBounds.size.z);
