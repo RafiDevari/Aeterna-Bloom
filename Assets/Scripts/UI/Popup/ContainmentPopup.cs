@@ -85,7 +85,7 @@ public class ContainmentPopup : PopupBase
         {
             ContainmentUnit unit = targetUnit; // capture, targetUnit di-reset saat popup ini close
 
-            EmployeeSelectPopup.Instance.Open(employee => employee.GoResearch(unit));
+            EmployeeSelectPopup.Instance.Open(employee => employee.GoResearch(unit), typeof(DivisionResearcher));
         }
         else
             Debug.LogError("[ContainmentUnitPopup] EmployeeSelectPopup.Instance belum ada. Pastikan component EmployeeSelectPopup sudah ditambahkan ke scene.");
@@ -101,7 +101,7 @@ public class ContainmentPopup : PopupBase
         {
             ContainmentUnit unit = targetUnit; // capture, targetUnit di-reset saat popup ini close
 
-            EmployeeSelectPopup.Instance.Open(employee => employee.GoHarvest(unit));
+            EmployeeSelectPopup.Instance.Open(employee => employee.GoHarvest(unit), typeof(DivisionBotanist));
         }
         else
             Debug.LogError("[ContainmentUnitPopup] EmployeeSelectPopup.Instance belum ada. Pastikan component EmployeeSelectPopup sudah ditambahkan ke scene.");
