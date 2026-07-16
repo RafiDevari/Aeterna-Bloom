@@ -52,6 +52,15 @@ public partial class Employee : MonoBehaviour
 
     private Vector3 targetPosition;
 
+    /// <summary>
+    /// Sisa waypoint yang masih harus dilewati SEBELUM titik akhir (destination asli MoveTo).
+    /// Diisi dari RoomPathfinder di MoveTo() -- tiap waypoint = titik tengah 1 room transit
+    /// yang dilewati, supaya employee jalan "room-per-room" mengikuti room yang benar-benar
+    /// bersebelahan, bukan garis lurus. onArriveCallback baru dipanggil begitu SEMUA waypoint
+    /// (termasuk titik akhir) sudah dilewati.
+    /// </summary>
+    private readonly Queue<Vector3> movementWaypoints = new();
+
     // Lokasi saat ini
     private Room currentRoom;
 
@@ -239,18 +248,61 @@ public partial class Employee : MonoBehaviour
     // Movement
     //==============================
 
+    /// <summary>
+    /// Jalan ke destination, TAPI lewat urutan room yang benar-benar bersebelahan
+    /// (RoomPathfinder), bukan garis lurus. Room lockdown otomatis dihindari sepenuhnya
+    /// (lihat RoomPathfinder.FindRoomPath).
+    ///
+    /// Kalau RoomPathfinder TIDAK menemukan jalur valid (mis. terhalang lockdown, atau posisi
+    /// sekarang/destination tidak ada di room manapun yang terdaftar), employee TIDAK BERGERAK
+    /// SAMA SEKALI -- sengaja tidak ada fallback garis lurus, supaya lockdown beneran memblokir,
+    /// bukan cuma dihindari kalau kebetulan jalurnya ketemu. onArrive TIDAK dipanggil dalam
+    /// kasus ini (belum sampai, memang tidak bisa jalan).
+    ///
+    /// CATATAN: karena onArrive tidak pernah terpanggil di kasus ini, task pemanggil (mis.
+    /// MoveToTask) perlu punya cara sendiri buat mendeteksi "employee tidak akan pernah sampai"
+    /// (mis. re-check validity secara berkala) supaya job tidak nyangkut selamanya -- saya belum
+    /// pernah lihat isi MoveToTask.cs, jadi belum bisa pastikan itu sudah ditangani di sana.
+    /// </summary>
     public virtual void MoveTo(Vector3 destination, System.Action onArrive = null)
     {
         destination.z = 0f;
 
-        targetPosition = destination;
-        isMoving = true;
-        onArriveCallback = onArrive; // <-- store what to do when we arrive
+        List<Vector3> path = RoomPathfinder.FindWaypointPath(transform.position, destination);
+
+        if (path == null)
+        {
+            Debug.LogWarning($"[Employee] {employeeName} BATAL bergerak ke {destination} : " +
+                            "tidak ada jalur yang valid (lockdown, atau posisi tidak ada di room manapun).");
+            return;
+        }
+
+        onArriveCallback = onArrive;
+        movementWaypoints.Clear();
+
+        foreach (Vector3 point in path)
+        {
+            movementWaypoints.Enqueue(point);
+        }
+
+        StartNextWaypoint();
 
         OnMoveCommandReceived?.Invoke(destination);
 
-        Debug.Log($"[Employee] {employeeName} bergerak ke {destination}");
+        Debug.Log($"[Employee] {employeeName} bergerak ke {destination} lewat {movementWaypoints.Count} titik.");
         isSelected = false;
+    }
+
+    private void StartNextWaypoint()
+    {
+        if (movementWaypoints.Count == 0)
+        {
+            isMoving = false;
+            return;
+        }
+
+        targetPosition = movementWaypoints.Dequeue();
+        isMoving = true;
     }
 
     protected virtual void HandleMovement()
@@ -267,9 +319,18 @@ public partial class Employee : MonoBehaviour
         {
             transform.position = targetPosition;
 
-            isMoving = false;
-
-            OnArrived();
+            if (movementWaypoints.Count > 0)
+            {
+                // Baru sampai di 1 waypoint transit, masih ada sisa jalur -- lanjut,
+                // JANGAN panggil OnArrived() dulu.
+                StartNextWaypoint();
+            }
+            else
+            {
+                // Ini titik akhir (destination asli MoveTo) -- beneran sampai.
+                isMoving = false;
+                OnArrived();
+            }
         }
     }
 

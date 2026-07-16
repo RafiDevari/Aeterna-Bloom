@@ -152,10 +152,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0f1911a1d056ee4387f1dd8b3c0800d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EmployeeBotanist
-  employeeName: Irba
-  moveSpeed: 3
-  carriedFood: 0
-  hasFood: 0
   division: 0
   offDivisionMultiplier: 5
+  carriedFood: 0
+  hasFood: 0
+  employeeName: Irba
+  moveSpeed: 3
   offFieldMultiplier: 5
