@@ -46,7 +46,8 @@ public class NutrisiPopup : PopupBase
             ContainmentUnit unit = targetUnit;
 
             // PopupManager akan otomatis menutup popup ini saat popup baru dibuka.
-            EmployeeSelectPopup.Instance.Open(employee => employee.GoFeed(unit, food));
+           // NutrisiPopup
+            EmployeeSelectPopup.Instance.Open(employee => employee.GoFeed(unit, food), typeof(DivisionBotanist));
         }
     }
 

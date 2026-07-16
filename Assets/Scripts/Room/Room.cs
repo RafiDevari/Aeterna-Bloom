@@ -11,14 +11,10 @@ public abstract class Room : MonoBehaviour
     [Header("Room Info")]
     [SerializeField] private string roomName = "Room";
 
+    protected SpriteRenderer spriteRenderer;
+
     [SerializeField]
     private float temperature;
-
-    [Header("Bounds")]
-    [Tooltip("Ukuran area room ini (world unit), dipusatkan di transform.position. " +
-             "Dipakai RoomPathfinder untuk mendeteksi room mana yang bersebelahan " +
-             "(bounds saling bersentuhan/overlap) dan untuk mencari room dari sebuah titik (misal klik mouse).")]
-    [SerializeField] private Vector2 roomSize = new Vector2(4f, 2f);
 
     [Header("Electricity")]
     [Tooltip("Biaya listrik dasar room ini. Total ElectricityCost = base + biaya monster + biaya selisih suhu.")]
@@ -42,6 +38,39 @@ public abstract class Room : MonoBehaviour
         set => roomName = value;
     }
 
+    /// <summary>
+    /// Kumpulan Bounds yang merepresentasikan bentuk NYATA room ini, dipakai untuk
+    /// pathfinding & overlap detection (RoomPathfinder). Default cuma 1 elemen (RoomBounds).
+    ///
+    /// Room berbentuk gabungan (mis. MainRoom yang berbentuk T/⊥) HARUS override ini
+    /// dengan bagian-bagiannya secara terpisah -- BUKAN 1 Bounds hasil Encapsulate/union,
+    /// karena union dari bentuk non-persegi bisa mencakup area kosong yang secara visual
+    /// bukan bagian room (mis. pojok kosong pada bentuk T). RoomPathfinder mengecek
+    /// SETIAP elemen array ini satu-satu, bukan 1 kotak pembungkus.
+    /// </summary>
+    public virtual Bounds[] CollisionBounds
+    {
+        get
+        {
+            return new Bounds[] { RoomBounds };
+        }
+    }
+
+    /// <summary>
+    /// True jika titik berada di salah satu bagian room.
+    /// Pathfinding sebaiknya memakai fungsi ini daripada RoomBounds.Contains().
+    /// </summary>
+    public bool Contains(Vector3 point)
+    {
+        foreach (Bounds bounds in CollisionBounds)
+        {
+            if (bounds.Contains(point))
+                return true;
+        }
+
+        return false;
+    }
+
     public float Temperature
     {
         get => temperature;
@@ -53,12 +82,6 @@ public abstract class Room : MonoBehaviour
 
             Debug.Log($"[{roomName}] Temperature = {temperature:F1}");
         }
-    }
-
-    public Vector2 RoomSize
-    {
-        get => roomSize;
-        set => roomSize = value;
     }
 
     /// <summary>
@@ -143,6 +166,11 @@ public abstract class Room : MonoBehaviour
         temperature = defaultTemperature;
     }
 
+    protected virtual void Awake()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
     protected virtual void Start()
     {
         if (Facility.Instance != null)
@@ -193,33 +221,81 @@ public abstract class Room : MonoBehaviour
     // Gizmos - visualisasi RoomBounds
     //==============================
 
+    /// <summary>
+    /// Daftar kotak yang digambar sebagai gizmo. Default = CollisionBounds,
+    /// supaya visual gizmo SELALU sinkron dengan bounds yang benar-benar
+    /// dipakai pathfinding (tidak ada 2 sumber kebenaran yang bisa beda sendiri).
+    /// </summary>
+    protected virtual Bounds[] GetGizmoBounds()
+    {
+        return CollisionBounds;
+    }
+
     private void OnDrawGizmos()
     {
-        Bounds bounds = RoomBounds;
+        foreach (Bounds bounds in GetGizmoBounds())
+        {
+            Gizmos.color = isLocked
+                ? new Color(1f, 0f, 0f, 0.15f)
+                : new Color(0f, 1f, 1f, 0.12f);
+            Gizmos.DrawCube(bounds.center, bounds.size);
 
+            Gizmos.color = isLocked ? Color.red : Color.cyan;
+            Gizmos.DrawWireCube(bounds.center, bounds.size);
+        }
+    }
+
+    /// <summary>
+    /// Representasi kasar 1-kotak dari room ini. TIDAK dipakai lagi oleh
+    /// RoomPathfinder (yang sekarang pakai CollisionBounds/Contains) -- masih
+    /// dipertahankan untuk keperluan lain (mis. kamera, HUD, label posisi)
+    /// yang cukup butuh 1 Bounds kasar, bukan bentuk detail per-bagian.
+    /// </summary>
+    public virtual Bounds RoomBounds
+    {
+        get
+        {
+            if (spriteRenderer != null)
+            {
+                Bounds spriteBounds = spriteRenderer.bounds;
+
+                float floorY = spriteBounds.min.y;
+                float height = 0.5f;
+
+                Vector3 center = new Vector3(
+                    spriteBounds.center.x,
+                    floorY + height * 0.5f,
+                    spriteBounds.center.z
+                );
+
+                Vector3 size = new Vector3(spriteBounds.size.x, height, spriteBounds.size.z);
+
+                return new Bounds(center, size);
+            }
+
+            return new Bounds(transform.position, new Vector3(1f, 1f, 1f));
+        }
+    }
+
+#if UNITY_EDITOR
+private void OnDrawGizmosSelected()
+{
+    foreach (Bounds bounds in GetGizmoBounds())
+    {
         Gizmos.color = isLocked
-            ? new Color(1f, 0f, 0f, 0.15f)
-            : new Color(0f, 1f, 1f, 0.12f);
+            ? new Color(1f, 0f, 0f, 0.35f)
+            : new Color(0f, 1f, 1f, 0.35f);
         Gizmos.DrawCube(bounds.center, bounds.size);
 
         Gizmos.color = isLocked ? Color.red : Color.cyan;
         Gizmos.DrawWireCube(bounds.center, bounds.size);
+
+        Gizmos.color = Color.white;
+        Gizmos.DrawSphere(bounds.center, 0.05f);
     }
 
-    public Bounds RoomBounds => new Bounds(transform.position, new Vector3(roomSize.x, roomSize.y, 1f));
-
-#if UNITY_EDITOR
-    private void OnDrawGizmosSelected()
-    {
-        Bounds bounds = RoomBounds;
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(bounds.center, bounds.size);
-
-        UnityEditor.Handles.color = Color.white;
-        UnityEditor.Handles.Label(
-            transform.position + Vector3.up * (bounds.extents.y + 0.3f),
-            $"{roomName}\n{roomSize.x:F2} x {roomSize.y:F2}\n{temperature:F1}°C" + (isLocked ? "\n[LOCKDOWN]" : ""));
-    }
+    UnityEditor.Handles.color = Color.white;
+    UnityEditor.Handles.Label(RoomBounds.center, $"{roomName}");
+}
 #endif
 }

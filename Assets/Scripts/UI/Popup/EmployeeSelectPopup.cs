@@ -56,6 +56,7 @@ public class EmployeeSelectPopup : PopupBase
     private readonly List<DivisionRoom> pages = new();
 
     private int currentPageIndex;
+    private System.Type priorityDivisionType;
 
     protected override void Awake()
     {
@@ -74,14 +75,13 @@ public class EmployeeSelectPopup : PopupBase
     /// Buka popup pilih employee. Begitu salah satu employee di-klik, callback
     /// dipanggil dengan employee itu, lalu popup otomatis Close().
     /// </summary>
-    public void Open(System.Action<Employee> onEmployeeSelected)
+    public void Open(System.Action<Employee> onEmployeeSelected, System.Type priorityDivisionType = null)
     {
         this.onEmployeeSelected = onEmployeeSelected;
-
+        this.priorityDivisionType = priorityDivisionType;
         BuildPages();
         currentPageIndex = 0;
         RefreshCurrentPage();
-
         base.Open();
     }
 
@@ -92,14 +92,23 @@ public class EmployeeSelectPopup : PopupBase
     private void BuildPages()
     {
         pages.Clear();
-
         if (Facility.Instance == null)
             return;
 
         // Tiap INSTANCE DivisionRoom jadi 1 halaman sendiri -- kalau ada beberapa room
         // dengan tipe yang sama, semuanya tetap ditampilkan terpisah, bukan digabung.
-        pages.AddRange(Facility.Instance.Rooms.OfType<DivisionRoom>());
-    }
+        IEnumerable<DivisionRoom> rooms = Facility.Instance.Rooms.OfType<DivisionRoom>();
+
+        // Kalau si pemanggil kasih tipe prioritas (mis. Research -> DivisionResearcher),
+        // room dengan tipe itu ditaruh duluan. OrderBy stabil, jadi urutan asli antar
+        // room dengan prioritas sama (baik yang prioritas maupun yang bukan) tetap terjaga.
+        if (priorityDivisionType != null)
+        {
+            rooms = rooms.OrderBy(room => room.GetType() == priorityDivisionType ? 0 : 1);
+        }
+
+        pages.AddRange(rooms);
+    }   
 
     private void RefreshCurrentPage()
     {
@@ -221,6 +230,7 @@ public class EmployeeSelectPopup : PopupBase
     {
         ClearButtons();
         onEmployeeSelected = null;
+        priorityDivisionType = null; // <-- tambahan
         pages.Clear();
         currentPageIndex = 0;
     }
