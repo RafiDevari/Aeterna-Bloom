@@ -83,6 +83,15 @@ public partial class Employee
             : baseDuration;
     }
 
+    protected internal virtual float CalculateTakeStockDuration(StockRoom stockRoom, FoodType food, int amount)
+    {
+        float baseDuration = stockRoom.TakeStockDuration;
+
+        return division == EmployeeDivision.Researcher
+            ? baseDuration * offDivisionMultiplier
+            : baseDuration;
+    }
+
     //────────────────────────────────────────────────────────
     // High-level Commands
     //────────────────────────────────────────────────────────
