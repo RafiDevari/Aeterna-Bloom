@@ -1,7 +1,7 @@
 //==============================================================
 // Task: mulai research pada monster target, dengan validasi ulang
 // (monster/unit bisa berubah selama employee dalam perjalanan).
-// Sekarang punya durasi (mirror FeedMonsterTask) -- task ini menunggu
+// Punya durasi (mirror FeedMonsterTask) -- task ini menunggu
 // MonsterBase.OnResearchFinished sebelum memanggil onComplete.
 //==============================================================
 public class ResearchMonsterTask : EmployeeTask
@@ -10,6 +10,7 @@ public class ResearchMonsterTask : EmployeeTask
     private readonly MonsterBase targetMonster;
     private readonly string researchId;
 
+    private Employee employee;
     private System.Action onComplete;
     private bool isWaitingForResearchToFinish;
 
@@ -38,12 +39,10 @@ public class ResearchMonsterTask : EmployeeTask
             return;
         }
 
+        this.employee = employee;
         this.onComplete = onComplete;
         isWaitingForResearchToFinish = true;
 
-        // NOTE: pastikan EmployeeState punya value Researching. Kalau belum ada,
-        // tambahkan dulu di enum EmployeeState, atau ganti baris ini ke state lain
-        // yang paling sesuai buat sementara.
         employee.SetState(EmployeeState.Researching);
         targetMonster.OnResearchFinished += HandleResearchFinished;
     }
@@ -55,6 +54,12 @@ public class ResearchMonsterTask : EmployeeTask
 
         isWaitingForResearchToFinish = false;
         targetMonster.OnResearchFinished -= HandleResearchFinished;
+
+        // PENTING: balikin state ke Idle di sini. Tanpa ini, currentState employee
+        // nyangkut selamanya di Researching (progress bar & sistem lain yang gantung
+        // pada CurrentState jadi ikut nyangkut).
+        employee.SetState(EmployeeState.Idle);
+
         onComplete?.Invoke();
     }
 
@@ -65,5 +70,9 @@ public class ResearchMonsterTask : EmployeeTask
 
         isWaitingForResearchToFinish = false;
         targetMonster.OnResearchFinished -= HandleResearchFinished;
+
+        // Job diinterupsi di tengah jalan (mis. player klik pindah manual) --
+        // tetap balikin state, jangan biarkan nyangkut di Researching.
+        employee?.SetState(EmployeeState.Idle);
     }
 }

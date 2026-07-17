@@ -54,6 +54,10 @@ public partial class Employee
         if (!target.Feed(carriedFood, finalFeedDuration))
             return false;
 
+        // Simpan durasi final ke progress bar (Employee.ProgressBar.cs) -- start time-nya
+        // baru benar-benar dipatok saat state berubah ke Feeding (dipanggil task sesudah ini).
+        SetActionDuration(finalFeedDuration);
+
         Debug.Log($"[Employee] {employeeName} memberi makan {target.MonsterName} dengan {carriedFood} (durasi : {finalFeedDuration}s).");
 
         hasFood = false;

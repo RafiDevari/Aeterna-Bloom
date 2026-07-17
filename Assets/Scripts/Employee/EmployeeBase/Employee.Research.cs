@@ -33,10 +33,18 @@ public partial class Employee
             : target.TryResearch(researchId, finalResearchDuration);
 
         if (success)
+        {
+            // Simpan durasi final ke progress bar (Employee.ProgressBar.cs) -- start time-nya
+            // baru benar-benar dipatok saat state berubah ke Researching (dipanggil task sesudah ini).
+            SetActionDuration(finalResearchDuration);
+
             Debug.Log($"[Employee] {employeeName} mulai research pada {target.MonsterName} (durasi : {finalResearchDuration}s).");
+        }
         else
+        {
             Debug.Log($"[Employee] {employeeName} gagal research pada {target.MonsterName} " +
                       $"(syarat belum terpenuhi / sudah selesai / sedang research lain / tidak ada yang available sekarang).");
+        }
 
         return success;
     }
