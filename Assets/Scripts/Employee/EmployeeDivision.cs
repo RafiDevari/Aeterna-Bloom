@@ -1,6 +1,7 @@
 public enum EmployeeDivision
 {
     Researcher,
-    Botanist
+    Botanist,
+    Engineer
 }
  

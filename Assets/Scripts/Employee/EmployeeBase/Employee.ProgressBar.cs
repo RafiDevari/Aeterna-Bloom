@@ -43,7 +43,8 @@ public partial class Employee
         EmployeeState.Feeding,
         EmployeeState.Researching,
         EmployeeState.Harvesting,
-        EmployeeState.TakingStock
+        EmployeeState.TakingStock,
+        EmployeeState.FixingElectricity
     };
 
     /// <summary>Daftarkan state tambahan yang harus menampilkan progress bar (mis. Harvesting nanti).</summary>
