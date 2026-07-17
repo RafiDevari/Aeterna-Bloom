@@ -22,6 +22,17 @@ public class Facility : MonoBehaviour
     [SerializeField]
     private List<Employee> employees = new();
 
+    [Header("Blackout Settings")]
+    [SerializeField] private float maxElectricity = 100f;
+    [SerializeField] private float blackoutMoodDecayInterval = 10f;
+    [SerializeField] private int blackoutMoodDecayAmount = 1;
+
+    private bool isBlackout = false;
+    private float blackoutTimer = 0f;
+
+    public bool IsBlackout => isBlackout;
+    public float MaxElectricity => maxElectricity;
+
     //────────────────────────────────────────────────────────
 
     public float Energy
@@ -49,7 +60,7 @@ public class Facility : MonoBehaviour
     /// Murni hasil hitungan, bukan nilai yang di-set manual - selalu mencerminkan
     /// kondisi room-room saat ini (base cost + monster + selisih suhu).
     /// </summary>
-    public float Electricity => rooms.Sum(room => room.ElectricityCost);
+    public float Electricity => isBlackout ? 0f : rooms.Sum(room => room.ElectricityCost);
 
     public IReadOnlyList<Room> Rooms => rooms;
     public IReadOnlyList<Employee> Employees => employees;
@@ -94,6 +105,7 @@ public class Facility : MonoBehaviour
 
         OnRoomAdded?.Invoke(room);
         OnElectricityChanged?.Invoke(Electricity);
+        CheckBlackoutTrigger();
 
         Debug.Log($"[Facility] Room ditambahkan : {room.RoomName}");
     }
@@ -107,12 +119,14 @@ public class Facility : MonoBehaviour
         {
             room.OnElectricityCostChanged -= HandleRoomElectricityCostChanged;
             OnElectricityChanged?.Invoke(Electricity);
+            CheckBlackoutTrigger();
         }
     }
 
     private void HandleRoomElectricityCostChanged(float _)
     {
         OnElectricityChanged?.Invoke(Electricity);
+        CheckBlackoutTrigger();
     }
 
     //────────────────────────────────────────────────────────
@@ -155,5 +169,73 @@ public class Facility : MonoBehaviour
             return null;
 
         return employees[Random.Range(0, employees.Count)];
+    }
+
+    //────────────────────────────────────────────────────────
+    // Blackout Logic & Update
+    //────────────────────────────────────────────────────────
+
+    private void Update()
+    {
+        if (isBlackout)
+        {
+            blackoutTimer += Time.deltaTime;
+            if (blackoutTimer >= blackoutMoodDecayInterval)
+            {
+                blackoutTimer = 0f;
+                ApplyBlackoutMoodPenalty();
+            }
+        }
+        else
+        {
+            blackoutTimer = 0f;
+            CheckBlackoutTrigger();
+        }
+    }
+
+    private void CheckBlackoutTrigger()
+    {
+        if (isBlackout) return;
+
+        // Calculate actual usage from rooms (since Electricity returns 0 during blackout)
+        float actualUsage = rooms.Sum(room => room.ElectricityCost);
+        if (actualUsage > maxElectricity)
+        {
+            TriggerBlackout();
+        }
+    }
+
+    private void TriggerBlackout()
+    {
+        isBlackout = true;
+        blackoutTimer = 0f;
+        OnElectricityChanged?.Invoke(Electricity); // Will trigger with 0f
+        Debug.LogWarning("[Facility] MATI LAMPU! Penggunaan listrik melebihi 100%.");
+    }
+
+    public void ResolveBlackout()
+    {
+        isBlackout = false;
+        blackoutTimer = 0f;
+        OnElectricityChanged?.Invoke(Electricity); // Will trigger with actual usage
+        Debug.Log("[Facility] Listrik telah diperbaiki.");
+    }
+
+    private void ApplyBlackoutMoodPenalty()
+    {
+        Debug.Log("[Facility] Mati lampu! Mood tanaman/monster berkurang 1.");
+        foreach (var room in rooms)
+        {
+            if (room is ContainmentRoom containmentRoom)
+            {
+                foreach (var unit in containmentRoom.ContainmentUnits)
+                {
+                    if (unit != null && unit.HasMonster)
+                    {
+                        unit.Monster.ModifyMood(-blackoutMoodDecayAmount);
+                    }
+                }
+            }
+        }
     }
 }

@@ -64,8 +64,8 @@ public partial class Employee
     {
         float baseDuration = target.ResearchDuration;
 
-        // Research = keahlian Researcher. Botanist yang mengerjakan ini kena penalti.
-        return division == EmployeeDivision.Botanist
+        // Research = keahlian Researcher. Yang lain kena penalti.
+        return division != EmployeeDivision.Researcher
             ? baseDuration * offDivisionMultiplier
             : baseDuration;
     }

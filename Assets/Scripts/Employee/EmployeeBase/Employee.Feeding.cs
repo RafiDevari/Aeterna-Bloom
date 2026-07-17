@@ -81,8 +81,8 @@ public partial class Employee
     {
         float baseDuration = target.FeedDuration;
 
-        // Feed = keahlian Botanist. Researcher yang mengerjakan ini kena penalti.
-        return division == EmployeeDivision.Researcher
+        // Feed = keahlian Botanist. Yang lain kena penalti.
+        return division != EmployeeDivision.Botanist
             ? baseDuration * offDivisionMultiplier
             : baseDuration;
     }
@@ -91,7 +91,8 @@ public partial class Employee
     {
         float baseDuration = stockRoom.TakeStockDuration;
 
-        return division == EmployeeDivision.Researcher
+        // Take Stock = keahlian Botanist. Yang lain kena penalti.
+        return division != EmployeeDivision.Botanist
             ? baseDuration * offDivisionMultiplier
             : baseDuration;
     }

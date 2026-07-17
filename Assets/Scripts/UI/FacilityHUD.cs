@@ -28,7 +28,7 @@ public class FacilityHUD : MonoBehaviour
 
         const float pad = 10f;
         const float panelWidth = 230f;
-        const float panelHeight = 200f;
+        float panelHeight = fac.IsBlackout ? 245f : 200f;
 
         DrawFacilityPanel(fac, pad, pad, panelWidth, panelHeight);
 
@@ -66,6 +66,14 @@ public class FacilityHUD : MonoBehaviour
 
         GUILayout.Space(5);
 
+        if (fac.IsBlackout)
+        {
+            GUI.color = dangerColor;
+            GUILayout.Box("⚠️ SYSTEM BLACKOUT ⚠️\nPower usage exceeded 100%!", GUILayout.ExpandWidth(true));
+            GUI.color = Color.white;
+            GUILayout.Space(5);
+        }
+
         DrawBar("⚡ Energy", fac.Energy, 100, energyColor);
 
         DrawTemperature(
@@ -75,7 +83,7 @@ public class FacilityHUD : MonoBehaviour
         DrawBar(
             "🔌 Electricity",
             fac.Electricity,
-            100,
+            fac.MaxElectricity,
             elecColor);
 
         GUILayout.Space(5);
