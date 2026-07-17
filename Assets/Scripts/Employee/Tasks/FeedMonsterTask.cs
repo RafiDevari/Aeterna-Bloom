@@ -7,6 +7,7 @@ public class FeedMonsterTask : EmployeeTask
     private readonly ContainmentUnit unit;
     private readonly MonsterBase targetMonster;
 
+    private Employee employee;
     private System.Action onComplete;
     private bool isWaitingForFeedToFinish;
 
@@ -30,6 +31,7 @@ public class FeedMonsterTask : EmployeeTask
             return;
         }
 
+        this.employee = employee;
         this.onComplete = onComplete;
         isWaitingForFeedToFinish = true;
 
@@ -44,6 +46,12 @@ public class FeedMonsterTask : EmployeeTask
 
         isWaitingForFeedToFinish = false;
         targetMonster.OnFeedFinished -= HandleFeedFinished;
+
+        // PENTING: balikin state ke Idle di sini. Tanpa ini, currentState employee
+        // nyangkut selamanya di Feeding (progress bar & sistem lain yang gantung
+        // pada CurrentState jadi ikut nyangkut).
+        employee.SetState(EmployeeState.Idle);
+
         onComplete?.Invoke();
     }
 
@@ -54,5 +62,9 @@ public class FeedMonsterTask : EmployeeTask
 
         isWaitingForFeedToFinish = false;
         targetMonster.OnFeedFinished -= HandleFeedFinished;
+
+        // Job diinterupsi di tengah jalan (mis. player klik pindah manual) --
+        // tetap balikin state, jangan biarkan nyangkut di Feeding.
+        employee?.SetState(EmployeeState.Idle);
     }
 }

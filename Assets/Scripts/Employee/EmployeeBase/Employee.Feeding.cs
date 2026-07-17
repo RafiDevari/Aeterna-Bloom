@@ -54,6 +54,10 @@ public partial class Employee
         if (!target.Feed(carriedFood, finalFeedDuration))
             return false;
 
+        // Simpan durasi final ke progress bar (Employee.ProgressBar.cs) -- start time-nya
+        // baru benar-benar dipatok saat state berubah ke Feeding (dipanggil task sesudah ini).
+        SetActionDuration(finalFeedDuration);
+
         Debug.Log($"[Employee] {employeeName} memberi makan {target.MonsterName} dengan {carriedFood} (durasi : {finalFeedDuration}s).");
 
         hasFood = false;
@@ -78,6 +82,15 @@ public partial class Employee
         float baseDuration = target.FeedDuration;
 
         // Feed = keahlian Botanist. Researcher yang mengerjakan ini kena penalti.
+        return division == EmployeeDivision.Researcher
+            ? baseDuration * offDivisionMultiplier
+            : baseDuration;
+    }
+
+    protected internal virtual float CalculateTakeStockDuration(StockRoom stockRoom, FoodType food, int amount)
+    {
+        float baseDuration = stockRoom.TakeStockDuration;
+
         return division == EmployeeDivision.Researcher
             ? baseDuration * offDivisionMultiplier
             : baseDuration;

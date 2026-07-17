@@ -22,17 +22,25 @@ public partial class Employee
     {
         if (target == null)
             return false;
-
+ 
         float finalHarvestDuration = CalculateHarvestDuration(target);
-
+ 
         bool success = target.TryHarvest(finalHarvestDuration);
-
+ 
         if (success)
+        {
+            // Simpan durasi final ke progress bar (Employee.ProgressBar.cs) -- start time-nya
+            // baru benar-benar dipatok saat state berubah ke Harvesting (dipanggil task sesudah ini).
+            SetActionDuration(finalHarvestDuration);
+ 
             Debug.Log($"[Employee] {employeeName} mulai harvest {target.MonsterName} (durasi : {finalHarvestDuration}s).");
+        }
         else
+        {
             Debug.Log($"[Employee] {employeeName} gagal harvest {target.MonsterName} " +
                       $"(growth belum Overgrowth / sedang harvest lain).");
-
+        }
+ 
         return success;
     }
 

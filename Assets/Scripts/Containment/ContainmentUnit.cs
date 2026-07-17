@@ -165,16 +165,16 @@ public class ContainmentUnit : MonoBehaviour
     }
 
     // ── Click Handling ────────────────────────────────────────────────────────
-    private void OnMouseDown()
-{
-    if (EventSystem.current != null &&
-        EventSystem.current.IsPointerOverGameObject())
+    private void OnMouseUp()
     {
-        return;
-    }
+        if (EventSystem.current != null &&
+            EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
 
-    HandleClick();
-}
+        HandleClick();
+    }
 
     protected virtual void HandleClick()
     {

@@ -9,6 +9,7 @@ public class HarvestMonsterTask : EmployeeTask
     private readonly ContainmentUnit unit;
     private readonly MonsterBase targetMonster;
 
+    private Employee employee;
     private System.Action onComplete;
     private bool isWaitingForHarvestToFinish;
 
@@ -32,12 +33,10 @@ public class HarvestMonsterTask : EmployeeTask
             return;
         }
 
+        this.employee = employee;
         this.onComplete = onComplete;
         isWaitingForHarvestToFinish = true;
 
-        // NOTE: sama seperti ResearchMonsterTask, pastikan EmployeeState punya value
-        // Harvesting. Kalau belum ada, tambahkan dulu di enum EmployeeState, atau ganti
-        // baris ini ke state lain yang paling sesuai buat sementara.
         employee.SetState(EmployeeState.Harvesting);
         targetMonster.OnHarvestFinished += HandleHarvestFinished;
     }
@@ -49,6 +48,13 @@ public class HarvestMonsterTask : EmployeeTask
 
         isWaitingForHarvestToFinish = false;
         targetMonster.OnHarvestFinished -= HandleHarvestFinished;
+
+        // PENTING: balikin state ke Idle di sini. Tanpa ini, currentState employee
+        // nyangkut selamanya di Harvesting (progress bar & sistem lain yang gantung
+        // pada CurrentState jadi ikut nyangkut) -- sama bug yang kemarin ada di
+        // FeedMonsterTask/ResearchMonsterTask.
+        employee.SetState(EmployeeState.Idle);
+
         onComplete?.Invoke();
     }
 
@@ -59,5 +65,9 @@ public class HarvestMonsterTask : EmployeeTask
 
         isWaitingForHarvestToFinish = false;
         targetMonster.OnHarvestFinished -= HandleHarvestFinished;
+
+        // Job diinterupsi di tengah jalan (mis. player klik pindah manual) --
+        // tetap balikin state, jangan biarkan nyangkut di Harvesting.
+        employee?.SetState(EmployeeState.Idle);
     }
 }
