@@ -541,6 +541,18 @@ public partial class Employee : MonoBehaviour
         }
 
         Debug.LogWarning($"[Employee] {EmployeeName} HAS DIED.");
+
+        // Notifikasi ke semua rekan satu divisi
+        if (Facility.Instance != null && assignedDivision != null)
+        {
+            foreach (var emp in Facility.Instance.Employees)
+            {
+                if (emp != null && emp != this)
+                {
+                    emp.NotifyColleagueDeath(this);
+                }
+            }
+        }
     }
 
     private Employee FindRandomFriend()

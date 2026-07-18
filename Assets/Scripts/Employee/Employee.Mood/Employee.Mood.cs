@@ -29,4 +29,16 @@ public partial class Employee
             moodRegenTimer = 0f;
         }
     }
+
+    public void NotifyColleagueDeath(Employee deceased)
+    {
+        if (currentState == EmployeeState.Dead)
+            return;
+
+        if (assignedDivision != null && deceased != null && deceased.AssignedDivision == this.assignedDivision)
+        {
+            ModifyMood(-1);
+            Debug.Log($"[{EmployeeName}] Kehilangan 1 mood karena rekan divisi {deceased.EmployeeName} mati.");
+        }
+    }
 }
