@@ -192,7 +192,23 @@ public class EmployeeSelectPopup : PopupBase
 
             if (label != null)
             {
-                label.text = employee.EmployeeName;
+                if (employee.CurrentState == EmployeeState.Dead)
+                    label.text = $"{employee.EmployeeName} (DEAD)";
+                else if (employee.CurrentState == EmployeeState.Hypnotized)
+                    label.text = $"{employee.EmployeeName} (HYPNOTIZED)";
+                else if (employee.Mood <= 1)
+                    label.text = $"{employee.EmployeeName} (DEPRESSED)";
+                else if (employee.IsBusy)
+                    label.text = $"{employee.EmployeeName} (Working)";
+                else
+                    label.text = employee.EmployeeName;
+            }
+
+            if (employee.CurrentState == EmployeeState.Dead || 
+                employee.CurrentState == EmployeeState.Hypnotized || 
+                employee.Mood <= 1)
+            {
+                btn.interactable = false;
             }
 
             Employee capturedEmployee = employee; // hindari closure bug di foreach

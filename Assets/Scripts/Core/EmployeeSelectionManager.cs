@@ -28,20 +28,7 @@ public class EmployeeSelectionManager : MonoBehaviour
 
     private void Update()
     {
-        if (selectedEmployee == null) return;
-
-        // Left Click → perintahkan bergerak
-        if (Input.GetMouseButtonDown(0))
-        {
-            // Cek apakah klik bukan pada Employee lain atau UI
-            if (!IsPointerOverEmployee())
-            {
-                Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                worldPos.z = 0f;
-                selectedEmployee.MoveTo(worldPos);
-                ShowMoveTarget(worldPos);
-            }
-        }
+        // Manual movement is disabled for now.
     }
 
     public void SelectEmployee(Employee emp)

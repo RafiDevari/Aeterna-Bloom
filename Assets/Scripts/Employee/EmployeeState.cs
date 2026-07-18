@@ -6,5 +6,9 @@ public enum EmployeeState
     Researching,
     Harvesting,
     TakingStock,
-    FixingElectricity
+    FixingElectricity,
+    Hypnotized,
+    Dead,
+    Sleeping,
+    Healing
 }

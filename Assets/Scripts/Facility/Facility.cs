@@ -223,7 +223,7 @@ public class Facility : MonoBehaviour
 
     private void ApplyBlackoutMoodPenalty()
     {
-        Debug.Log("[Facility] Mati lampu! Mood tanaman/monster berkurang 1.");
+        Debug.Log("[Facility] Mati lampu! Mood tanaman/monster/employee berkurang.");
         foreach (var room in rooms)
         {
             if (room is ContainmentRoom containmentRoom)
@@ -235,6 +235,14 @@ public class Facility : MonoBehaviour
                         unit.Monster.ModifyMood(-blackoutMoodDecayAmount);
                     }
                 }
+            }
+        }
+
+        foreach (var employee in employees)
+        {
+            if (employee != null)
+            {
+                employee.ModifyMood(-blackoutMoodDecayAmount);
             }
         }
     }

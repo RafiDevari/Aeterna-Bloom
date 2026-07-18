@@ -162,7 +162,11 @@ public class MonsterTest1234 : MonsterBase
 
         Context.ChangeRoomTemperature(roomTempIncrease);
 
-        Context.SummonRandomEmployee();
+        Employee emp = Context.GetRandomEmployee();
+        if (emp != null)
+        {
+            emp.Hypnotize(Employee.HypnotizedInput.EnterPlantContainment, Context.Unit);
+        }
     }
 
     //────────────────────────────────────────────────────────

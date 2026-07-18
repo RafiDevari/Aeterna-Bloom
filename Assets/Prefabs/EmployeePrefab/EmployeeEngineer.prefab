@@ -11,14 +11,14 @@ GameObject:
   - component: {fileID: 9181824174594429476}
   - component: {fileID: 9199522445211792172}
   - component: {fileID: 2794307623413719988}
-  - component: {fileID: 2527675713155502454}
+  - component: {fileID: -1247808099591183380}
   m_Layer: 0
-  m_Name: EmployeeBotanist 1
+  m_Name: EmployeeEngineer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &9181824174594429476
 Transform:
   m_ObjectHideFlags: 0
@@ -130,7 +130,7 @@ SpriteRenderer:
   m_SortingOrder: 2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
-  m_Color: {r: 0, g: 0.11449802, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0.10849607, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -140,19 +140,20 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
---- !u!114 &2527675713155502454
+--- !u!114 &-1247808099591183380
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2626973981779556983}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0f1911a1d056ee4387f1dd8b3c0800d, type: 3}
+  m_Script: {fileID: 11500000, guid: 679f4fdfcaf43c64695420c347a5f6b0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EmployeeBotanist
-  division: 0
+  m_EditorClassIdentifier: Assembly-CSharp::EmployeeEngineer
+  moodRegenInterval: 60
+  division: 2
   offDivisionMultiplier: 5
   carriedFood: 0
   hasFood: 0
@@ -160,7 +161,12 @@ MonoBehaviour:
   progressBarHeight: 0.08
   progressBarYOffset: 0.7
   progressBarBackgroundColor: {r: 0, g: 0, b: 0, a: 0.65}
-  progressBarFillColor: {r: 0.2, g: 0.85, b: 0.3, a: 1}
-  employeeName: Irba
-  moveSpeed: 3
-  offFieldMultiplier: 5
+  progressBarFillColor: {r: 0.19999999, g: 0.8509804, b: 0.24740162, a: 1}
+  employeeName: Budi
+  moveSpeed: 4
+  hypnotizedMoveSpeed: 1
+  hp: 100
+  maxHp: 100
+  mood: 3
+  maxMood: 5
+  minMood: 0

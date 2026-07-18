@@ -42,6 +42,107 @@ public partial class Employee : MonoBehaviour
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 3f;
+    [SerializeField] private float hypnotizedMoveSpeed = 1f;
+
+    private System.Action onTimedActionComplete;
+    private System.Action onTimedActionFail;
+    private bool hasTimedAction;
+
+    [Header("Employee Stats")]
+    [SerializeField] protected int hp = 100;
+    [SerializeField] protected int maxHp = 100;
+    [SerializeField] protected int mood = 3;
+    [SerializeField] protected int maxMood = 5;
+    [SerializeField] protected int minMood = 0;
+
+    public System.Action<int> OnHpChanged;
+    public System.Action<int> OnMoodChanged;
+
+    public int Hp
+    {
+        get => hp;
+        protected set
+        {
+            if (currentState == EmployeeState.Dead)
+                return;
+
+            int previous = hp;
+            hp = Mathf.Clamp(value, 0, maxHp);
+            if (previous != hp)
+            {
+                OnHpChanged?.Invoke(hp);
+                Debug.Log($"[{EmployeeName}] HP : {previous} -> {hp}");
+                if (hp == 0)
+                {
+                    Die();
+                }
+            }
+        }
+    }
+
+    public int MaxHp
+    {
+        get => maxHp;
+        protected set => maxHp = value;
+    }
+
+    public int Mood
+    {
+        get => mood;
+        protected set
+        {
+            int previous = mood;
+            mood = Mathf.Clamp(value, minMood, maxMood);
+            if (previous != mood)
+            {
+                OnMoodChanged?.Invoke(mood);
+                OnMoodChange(previous, mood);
+                Debug.Log($"[{EmployeeName}] Mood : {previous} -> {mood}");
+            }
+        }
+    }
+
+    public int MaxMood => maxMood;
+    public int MinMood => minMood;
+
+    public string MoodName
+    {
+        get
+        {
+            switch (mood)
+            {
+                case 5: return "Joy";
+                case 4: return "Happy";
+                case 3: return "Normal";
+                case 2: return "Fear";
+                case 1: return "Depressed";
+                case 0: return "Depressed";
+                default: return "Normal";
+            }
+        }
+    }
+
+    protected virtual void OnMoodChange(int oldMood, int newMood) { }
+
+    public void ModifyHp(int delta)
+    {
+        Hp += delta;
+    }
+
+    public void SetHp(int value)
+    {
+        Hp = value;
+    }
+
+    public void ModifyMood(int delta)
+    {
+        Mood += delta;
+    }
+
+    public void SetMood(int value)
+    {
+        Mood = value;
+    }
 
     //==============================
     // State
@@ -134,9 +235,14 @@ public partial class Employee : MonoBehaviour
 
     private void Update()
     {
+        if (currentState == EmployeeState.Dead)
+            return;
+
         HandleMovement();
         HandleGlobalInput();
         ProcessTaskQueue();
+        UpdateTimedAction();
+        UpdateMoodRegen();
     }
 
     //==============================
@@ -165,6 +271,17 @@ public partial class Employee : MonoBehaviour
         }
 
         taskQueue.Clear();
+        movementWaypoints.Clear();
+        isMoving = false;
+
+        if (hasTimedAction)
+        {
+            hasTimedAction = false;
+            var fail = onTimedActionFail;
+            onTimedActionComplete = null;
+            onTimedActionFail = null;
+            fail?.Invoke();
+        }
     }
 
     private void ProcessTaskQueue()
@@ -197,6 +314,9 @@ public partial class Employee : MonoBehaviour
 
     private void SelectThisEmployee()
     {
+        if (currentState == EmployeeState.Dead || currentState == EmployeeState.Hypnotized)
+            return;
+
         if (currentlySelected != null &&
             currentlySelected != this)
         {
@@ -227,21 +347,7 @@ public partial class Employee : MonoBehaviour
 
     private void HandleGlobalInput()
     {
-        if (!isSelected)
-            return;
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector3 worldPos =
-                Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-            worldPos.z = 0f;
-
-            // Klik manual = perintah baru yang membatalkan job otomatis yang sedang berjalan.
-            ClearTasksAndInterrupt();
-
-            MoveTo(worldPos);
-        }
+        // Manual movement is disabled for now.
     }
 
     //==============================
@@ -310,10 +416,12 @@ public partial class Employee : MonoBehaviour
         if (!isMoving)
             return;
 
+        float currentSpeed = (currentState == EmployeeState.Hypnotized) ? hypnotizedMoveSpeed : moveSpeed;
+
         transform.position = Vector3.MoveTowards(
             transform.position,
             targetPosition,
-            moveSpeed * Time.deltaTime);
+            currentSpeed * Time.deltaTime);
 
         if (Vector3.Distance(transform.position, targetPosition) < 0.05f)
         {
@@ -342,6 +450,166 @@ public partial class Employee : MonoBehaviour
         var callback = onArriveCallback;
         onArriveCallback = null;
         callback?.Invoke();
+    }
+
+    //==============================
+    // Hypnotized & Death Implementation
+    //==============================
+
+    public enum HypnotizedInput
+    {
+        AttackFriend,
+        EnterPlantContainment
+    }
+
+    public void Hypnotize(HypnotizedInput input, object target = null)
+    {
+        if (currentState == EmployeeState.Dead)
+            return;
+
+        SetState(EmployeeState.Hypnotized);
+        ClearTasksAndInterrupt();
+
+        Debug.Log($"[Employee] {EmployeeName} has been HYPNOTIZED! Input action: {input}");
+
+        if (input == HypnotizedInput.AttackFriend)
+        {
+            Employee friend = FindRandomFriend();
+            if (friend != null)
+            {
+                Debug.Log($"[Employee] {EmployeeName} is attacking friend {friend.EmployeeName}!");
+                MoveTo(friend.transform.position, () => {
+                    if (friend != null && friend.CurrentState != EmployeeState.Dead)
+                    {
+                        friend.ModifyHp(-50);
+                        Debug.Log($"[Employee] {EmployeeName} attacked {friend.EmployeeName}! HP is now {friend.Hp}.");
+                    }
+                    SetState(EmployeeState.Idle);
+                });
+            }
+            else
+            {
+                Debug.Log($"[Employee] No friends found to attack.");
+                SetState(EmployeeState.Idle);
+            }
+        }
+        else if (input == HypnotizedInput.EnterPlantContainment)
+        {
+            ContainmentUnit containmentUnit = target as ContainmentUnit;
+            if (containmentUnit == null)
+            {
+                containmentUnit = FindRandomContainmentUnit();
+            }
+
+            if (containmentUnit != null)
+            {
+                Debug.Log($"[Employee] {EmployeeName} is walking into plant containment at {containmentUnit.gameObject.name}!");
+                MoveTo(containmentUnit.transform.position, () => {
+                    Debug.Log($"[Employee] {EmployeeName} entered plant containment and was devoured/absorbed.");
+                    Die();
+                });
+            }
+            else
+            {
+                Debug.Log($"[Employee] No containment unit found.");
+                SetState(EmployeeState.Idle);
+            }
+        }
+    }
+
+    public void Die()
+    {
+        if (currentState == EmployeeState.Dead)
+            return;
+
+        hp = 0; // Bypass property setter directly to avoid recursion
+        OnHpChanged?.Invoke(hp);
+
+        SetState(EmployeeState.Dead);
+        ClearTasksAndInterrupt();
+        
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+
+        SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.color = Color.gray;
+        }
+
+        Debug.LogWarning($"[Employee] {EmployeeName} HAS DIED.");
+
+        // Notifikasi ke semua rekan satu divisi
+        if (Facility.Instance != null && assignedDivision != null)
+        {
+            foreach (var emp in Facility.Instance.Employees)
+            {
+                if (emp != null && emp != this)
+                {
+                    emp.NotifyColleagueDeath(this);
+                }
+            }
+        }
+    }
+
+    private Employee FindRandomFriend()
+    {
+        if (Facility.Instance == null) return null;
+        var list = new List<Employee>();
+        foreach (var emp in Facility.Instance.Employees)
+        {
+            if (emp != null && emp != this && emp.CurrentState != EmployeeState.Dead)
+            {
+                list.Add(emp);
+            }
+        }
+        if (list.Count > 0)
+        {
+            return list[Random.Range(0, list.Count)];
+        }
+        return null;
+    }
+
+    private ContainmentUnit FindRandomContainmentUnit()
+    {
+        if (Facility.Instance == null) return null;
+        foreach (var room in Facility.Instance.Rooms)
+        {
+            if (room is ContainmentRoom containmentRoom)
+            {
+                foreach (var unit in containmentRoom.ContainmentUnits)
+                {
+                    if (unit != null) return unit;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void StartTimedAction(float duration, System.Action onComplete, System.Action onFail)
+    {
+        SetActionDuration(duration);
+        onTimedActionComplete = onComplete;
+        onTimedActionFail = onFail;
+        hasTimedAction = true;
+        actionStartTime = Time.time;
+    }
+
+    private void UpdateTimedAction()
+    {
+        if (!hasTimedAction) return;
+
+        if (Time.time >= actionStartTime + actionDuration)
+        {
+            hasTimedAction = false;
+            var complete = onTimedActionComplete;
+            onTimedActionComplete = null;
+            onTimedActionFail = null;
+            complete?.Invoke();
+        }
     }
 
 #if UNITY_EDITOR

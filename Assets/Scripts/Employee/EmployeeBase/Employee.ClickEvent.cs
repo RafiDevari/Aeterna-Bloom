@@ -23,6 +23,11 @@ public partial class Employee
     {
         Debug.Log($"dwedwedwedwd");
 
+        if (currentState != EmployeeState.Dead && currentState != EmployeeState.Hypnotized)
+        {
+            SelectThisEmployee();
+        }
+
         OnAnyEmployeeRightClicked?.Invoke(this);
     }
 }
