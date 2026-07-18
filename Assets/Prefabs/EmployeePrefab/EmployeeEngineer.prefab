@@ -152,6 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 679f4fdfcaf43c64695420c347a5f6b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EmployeeEngineer
+  moodRegenInterval: 60
   division: 2
   offDivisionMultiplier: 5
   carriedFood: 0
@@ -162,4 +163,10 @@ MonoBehaviour:
   progressBarBackgroundColor: {r: 0, g: 0, b: 0, a: 0.65}
   progressBarFillColor: {r: 0.19999999, g: 0.8509804, b: 0.24740162, a: 1}
   employeeName: Budi
-  moveSpeed: 3
+  moveSpeed: 4
+  hypnotizedMoveSpeed: 1
+  hp: 100
+  maxHp: 100
+  mood: 3
+  maxMood: 5
+  minMood: 0

@@ -152,10 +152,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0f1911a1d056ee4387f1dd8b3c0800d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EmployeeBotanist
+  moodRegenInterval: 60
   division: 0
   offDivisionMultiplier: 5
   carriedFood: 0
   hasFood: 0
+  progressBarWidth: 0.6
+  progressBarHeight: 0.08
+  progressBarYOffset: 0.7
+  progressBarBackgroundColor: {r: 0, g: 0, b: 0, a: 0.65}
+  progressBarFillColor: {r: 0.2, g: 0.85, b: 0.3, a: 1}
   employeeName: Irba
-  moveSpeed: 3
+  moveSpeed: 4
+  hypnotizedMoveSpeed: 1
+  hp: 100
+  maxHp: 100
+  mood: 3
+  maxMood: 5
+  minMood: 0
   offFieldMultiplier: 5

@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 3001673155630800646}
   - component: {fileID: 4946242388425233953}
   - component: {fileID: 2197611082585050180}
-  - component: {fileID: 4295588940075538413}
+  - component: {fileID: 4863661536096414419}
   m_Layer: 0
-  m_Name: EmployeeResearcher
+  m_Name: EmployeeMedic
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -140,7 +140,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
---- !u!114 &4295588940075538413
+--- !u!114 &4863661536096414419
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -149,11 +149,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 3293986211116446919}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0ce718ded45d974c86d4601c58629f4, type: 3}
+  m_Script: {fileID: 11500000, guid: 94c86b66d0895ae47b36afcbf386c3cc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EmployeeResearcher
+  m_EditorClassIdentifier: Assembly-CSharp::EmployeeMedic
   moodRegenInterval: 60
-  division: 0
+  division: 3
   offDivisionMultiplier: 5
   carriedFood: 0
   hasFood: 0
@@ -162,7 +162,7 @@ MonoBehaviour:
   progressBarYOffset: 0.7
   progressBarBackgroundColor: {r: 0, g: 0, b: 0, a: 0.65}
   progressBarFillColor: {r: 0.2, g: 0.85, b: 0.3, a: 1}
-  employeeName: Torqi
+  employeeName: Employee
   moveSpeed: 4
   hypnotizedMoveSpeed: 1
   hp: 100
@@ -170,4 +170,3 @@ MonoBehaviour:
   mood: 3
   maxMood: 5
   minMood: 0
-  offFieldMultiplier: 5

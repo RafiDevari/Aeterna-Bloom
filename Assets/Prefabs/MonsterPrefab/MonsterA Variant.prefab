@@ -126,7 +126,7 @@ MonoBehaviour:
   monsterSprite: {fileID: -2803993944443423045, guid: 114439b3c7cd4dd4eaa2ea58dc33f3fb, type: 3}
   autoFitCollider: 1
   monsterCollider: {fileID: 0}
-  mood: 5
+  mood: 1
   maxMood: 5
   minMood: 0
   suitableTemperature: 20

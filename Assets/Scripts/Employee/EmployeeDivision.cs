@@ -2,6 +2,7 @@ public enum EmployeeDivision
 {
     Researcher,
     Botanist,
-    Engineer
+    Engineer,
+    Medic
 }
  

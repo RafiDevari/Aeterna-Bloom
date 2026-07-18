@@ -25,6 +25,7 @@ public class EmployeePopup : PopupBase
 
     [Header("Buttons")]
     [SerializeField] private Button closeButton;
+    [SerializeField] private Button takeCareButton;
 
     private Employee targetEmployee;
 
@@ -35,6 +36,8 @@ public class EmployeePopup : PopupBase
         Instance = this;
 
         closeButton.onClick.AddListener(Close);
+        if (takeCareButton != null)
+            takeCareButton.onClick.AddListener(OnTakeCareClicked);
 
         Employee.OnAnyEmployeeRightClicked += HandleEmployeeRightClicked;
     }
@@ -79,7 +82,44 @@ public class EmployeePopup : PopupBase
         if (moodText != null)
             moodText.text = employee != null ? $"Mood: {employee.MoodName} ({employee.Mood}/5)" : "-";
 
+        if (takeCareButton != null)
+        {
+            takeCareButton.gameObject.SetActive(employee != null && employee.CurrentState == EmployeeState.Hypnotized);
+        }
+
         base.Open();
+    }
+
+    private void OnTakeCareClicked()
+    {
+        Employee capturedTarget = targetEmployee;
+
+        Close();
+
+        EmployeeSelectPopup.Instance.Open(healer =>
+        {
+            if (healer != null && capturedTarget != null)
+            {
+                healer.EnqueueTask(new TakeCareTask(capturedTarget));
+                Debug.Log($"[EmployeePopup] {healer.EmployeeName} ditugaskan untuk merawat {capturedTarget.EmployeeName}");
+            }
+        }, typeof(DivisionMedic));
+    }
+
+    private void OnGUI()
+    {
+        if (IsOpen && targetEmployee != null && targetEmployee.CurrentState == EmployeeState.Hypnotized && takeCareButton == null)
+        {
+            float w = 200f;
+            float h = 40f;
+            float x = (Screen.width - w) * 0.5f;
+            float y = Screen.height - 150f;
+
+            if (GUI.Button(new Rect(x, y, w, h), "TAKE CARE"))
+            {
+                OnTakeCareClicked();
+            }
+        }
     }
 
     protected override void OnClosed()
