@@ -19,6 +19,10 @@ public class EmployeePopup : PopupBase
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text divisionText;
 
+    [Header("Stats (Optional)")]
+    [SerializeField] private TMP_Text hpText;
+    [SerializeField] private TMP_Text moodText;
+
     [Header("Buttons")]
     [SerializeField] private Button closeButton;
 
@@ -53,7 +57,27 @@ public class EmployeePopup : PopupBase
             nameText.text = employee != null ? employee.EmployeeName : "-";
 
         if (divisionText != null)
-            divisionText.text = employee != null ? employee.Division.ToString() : "-";
+        {
+            if (employee != null)
+            {
+                string text = employee.Division.ToString();
+                if (hpText == null || moodText == null)
+                {
+                    text += $"\nHP: {employee.Hp}/{employee.MaxHp}\nMood: {employee.MoodName} ({employee.Mood}/5)";
+                }
+                divisionText.text = text;
+            }
+            else
+            {
+                divisionText.text = "-";
+            }
+        }
+
+        if (hpText != null)
+            hpText.text = employee != null ? $"HP: {employee.Hp}/{employee.MaxHp}" : "-";
+
+        if (moodText != null)
+            moodText.text = employee != null ? $"Mood: {employee.MoodName} ({employee.Mood}/5)" : "-";
 
         base.Open();
     }

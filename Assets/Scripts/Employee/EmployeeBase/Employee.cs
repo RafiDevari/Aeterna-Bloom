@@ -43,6 +43,95 @@ public partial class Employee : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 3f;
 
+    [Header("Employee Stats")]
+    [SerializeField] protected int hp = 100;
+    [SerializeField] protected int maxHp = 100;
+    [SerializeField] protected int mood = 3;
+    [SerializeField] protected int maxMood = 5;
+    [SerializeField] protected int minMood = 0;
+
+    public System.Action<int> OnHpChanged;
+    public System.Action<int> OnMoodChanged;
+
+    public int Hp
+    {
+        get => hp;
+        protected set
+        {
+            int previous = hp;
+            hp = Mathf.Clamp(value, 0, maxHp);
+            if (previous != hp)
+            {
+                OnHpChanged?.Invoke(hp);
+                Debug.Log($"[{EmployeeName}] HP : {previous} -> {hp}");
+            }
+        }
+    }
+
+    public int MaxHp
+    {
+        get => maxHp;
+        protected set => maxHp = value;
+    }
+
+    public int Mood
+    {
+        get => mood;
+        protected set
+        {
+            int previous = mood;
+            mood = Mathf.Clamp(value, minMood, maxMood);
+            if (previous != mood)
+            {
+                OnMoodChanged?.Invoke(mood);
+                OnMoodChange(previous, mood);
+                Debug.Log($"[{EmployeeName}] Mood : {previous} -> {mood}");
+            }
+        }
+    }
+
+    public int MaxMood => maxMood;
+    public int MinMood => minMood;
+
+    public string MoodName
+    {
+        get
+        {
+            switch (mood)
+            {
+                case 5: return "Joy";
+                case 4: return "Happy";
+                case 3: return "Normal";
+                case 2: return "Fear";
+                case 1: return "Depressed";
+                case 0: return "Depressed";
+                default: return "Normal";
+            }
+        }
+    }
+
+    protected virtual void OnMoodChange(int oldMood, int newMood) { }
+
+    public void ModifyHp(int delta)
+    {
+        Hp += delta;
+    }
+
+    public void SetHp(int value)
+    {
+        Hp = value;
+    }
+
+    public void ModifyMood(int delta)
+    {
+        Mood += delta;
+    }
+
+    public void SetMood(int value)
+    {
+        Mood = value;
+    }
+
     //==============================
     // State
     //==============================
