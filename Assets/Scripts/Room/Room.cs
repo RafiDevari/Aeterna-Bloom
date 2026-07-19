@@ -14,7 +14,7 @@ public abstract class Room : MonoBehaviour
     protected SpriteRenderer spriteRenderer;
 
     [SerializeField]
-    private float temperature;
+    private float temperature = 20f;
 
     [Header("Electricity")]
     [Tooltip("Biaya listrik dasar room ini. Total ElectricityCost = base + biaya monster + biaya selisih suhu.")]
