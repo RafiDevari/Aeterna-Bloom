@@ -81,22 +81,49 @@ public class EmployeeAnimator : MonoBehaviour
 
     private void LateUpdate()
     {
-        HandleFlipping();
+        HandleFlippingAndElevatorMovement();
     }
 
     /// <summary>
-    /// Tracks position delta to automatically flip the visuals root left or right.
+    /// Tracks position delta to automatically flip left/right,
+    /// and pauses walking animation (switches to Idle) when riding elevators vertically.
     /// </summary>
-    private void HandleFlipping()
+    private void HandleFlippingAndElevatorMovement()
     {
         Vector3 currentPosition = transform.position;
         float deltaX = currentPosition.x - lastPosition.x;
+        float deltaY = currentPosition.y - lastPosition.y;
 
-        // Apply flip if there is a significant movement threshold to avoid micro-jitter
+        // Flip character based on horizontal movement
         if (Mathf.Abs(deltaX) > 0.005f)
         {
             bool faceLeft = deltaX < 0f;
             SetFacingLeft(faceLeft);
+        }
+
+        // If employee is in Moving state, check if movement is purely vertical (elevator/lift)
+        if (employee != null && employee.CurrentState == EmployeeState.Moving)
+        {
+            bool isPurelyVertical = Mathf.Abs(deltaX) < 0.01f && Mathf.Abs(deltaY) > 0.01f;
+
+            if (isPurelyVertical)
+            {
+                // Temporarily pause walking animation while riding elevator up/down
+                if (animator != null && animator.enabled)
+                {
+                    animator.SetInteger(StateHash, (int)EmployeeState.Idle);
+                    SetBoolIfExists(IsMovingHash, false);
+                }
+            }
+            else if (Mathf.Abs(deltaX) >= 0.01f)
+            {
+                // Resume horizontal walking animation
+                if (animator != null && animator.enabled)
+                {
+                    animator.SetInteger(StateHash, (int)EmployeeState.Moving);
+                    SetBoolIfExists(IsMovingHash, true);
+                }
+            }
         }
 
         lastPosition = currentPosition;
