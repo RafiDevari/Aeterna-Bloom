@@ -163,7 +163,7 @@ public abstract class Room : MonoBehaviour
 
     public virtual void InitFromFacility(float defaultTemperature)
     {
-        temperature = defaultTemperature;
+        Temperature = defaultTemperature;
     }
 
     protected virtual void Awake()
@@ -178,6 +178,10 @@ public abstract class Room : MonoBehaviour
             if (!Facility.Instance.Rooms.Contains(this))
             {
                 Facility.Instance.AddRoom(this);
+            }
+            else
+            {
+                InitFromFacility(Facility.Instance.DefaultRoomTemperature);
             }
 
             Facility.Instance.OnDefaultRoomTemperatureChanged += HandleGlobalTemperatureChanged;
