@@ -34,7 +34,7 @@ using System.Collections.Generic;
 /// persis seperti sebelum di-pecah, subclass (mis. Researcher, Botanist) tidak perlu
 /// tahu ini di-split.
 /// </summary>
-[RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(BoxCollider2D))]
 public partial class Employee : MonoBehaviour
 {
     [Header("Employee Info")]
@@ -42,6 +42,16 @@ public partial class Employee : MonoBehaviour
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 3f;
+
+    [Header("Collider Settings")]
+    [Tooltip("Otomatis sesuaikan ukuran & offset BoxCollider2D mengikuti bounds sprite/visuals employee.")]
+    [SerializeField] private bool autoFitCollider = true;
+
+    [Tooltip("BoxCollider2D milik employee ini. Auto-cari kalau kosong.")]
+    [SerializeField] private BoxCollider2D employeeCollider;
+
+    [Tooltip("Margin/padding tambahan untuk collider (x = lebar extra, y = tinggi extra).")]
+    [SerializeField] private Vector2 colliderPadding = Vector2.zero;
 
     //==============================
     // State
@@ -106,14 +116,102 @@ public partial class Employee : MonoBehaviour
     public Room CurrentRoom => currentRoom;
 
     //==============================
-    // Unity
+    // Unity & Collider Auto-Fit
     //==============================
+
+    private void OnValidate()
+    {
+        if (autoFitCollider)
+        {
+            AutoFitCollider();
+        }
+    }
 
     private void Start()
     {
         targetPosition = transform.position;
 
+        if (autoFitCollider)
+        {
+            AutoFitCollider();
+        }
+
         Facility.Instance?.RegisterEmployee(this);
+    }
+
+    /// <summary>
+    /// Otomatis menyesuaikan ukuran dan offset BoxCollider2D mengikuti gabungan bounds
+    /// dari semua SpriteRenderer pada Employee ini (body, head, hair, dll).
+    /// </summary>
+    [ContextMenu("Auto Fit Collider")]
+    public void AutoFitCollider()
+    {
+        if (!autoFitCollider) return;
+
+        if (employeeCollider == null)
+            employeeCollider = GetComponent<BoxCollider2D>();
+
+        if (employeeCollider == null)
+            employeeCollider = GetComponentInChildren<BoxCollider2D>();
+
+        if (employeeCollider == null) return;
+
+        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        if (renderers == null || renderers.Length == 0) return;
+
+        Transform root = transform.Find("Visuals") ?? transform.Find("Visual") ?? transform;
+
+        bool foundAny = false;
+        float minX = float.MaxValue;
+        float maxX = float.MinValue;
+        float minY = float.MaxValue;
+        float maxY = float.MinValue;
+
+        foreach (var r in renderers)
+        {
+            if (r == null || !r.enabled || r.sprite == null) continue;
+
+            Bounds b = r.sprite.bounds;
+
+            Vector3[] localCorners = new Vector3[4]
+            {
+                new Vector3(b.min.x, b.min.y, 0f),
+                new Vector3(b.min.x, b.max.y, 0f),
+                new Vector3(b.max.x, b.min.y, 0f),
+                new Vector3(b.max.x, b.max.y, 0f)
+            };
+
+            for (int i = 0; i < 4; i++)
+            {
+                Vector3 worldPos = r.transform.TransformPoint(localCorners[i]);
+                Vector3 rootLocal = root.InverseTransformPoint(worldPos);
+
+                // Ignore scale flipping so facing left/right doesn't distort bounds calculation
+                if (root != transform && root.localScale.x < 0)
+                {
+                    rootLocal.x = -rootLocal.x;
+                }
+
+                minX = Mathf.Min(minX, rootLocal.x);
+                maxX = Mathf.Max(maxX, rootLocal.x);
+                minY = Mathf.Min(minY, rootLocal.y);
+                maxY = Mathf.Max(maxY, rootLocal.y);
+                foundAny = true;
+            }
+        }
+
+        if (!foundAny) return;
+
+        Vector3 rootPosInEmp = transform.InverseTransformPoint(root.position);
+        float width = (maxX - minX) + colliderPadding.x;
+        float height = (maxY - minY) + colliderPadding.y;
+        Vector2 center = new Vector2(rootPosInEmp.x + (minX + maxX) * 0.5f, rootPosInEmp.y + (minY + maxY) * 0.5f);
+
+        if (width > 0f && height > 0f)
+        {
+            employeeCollider.size = new Vector2(width, height);
+            employeeCollider.offset = center;
+        }
     }
 
     private void OnDestroy()
@@ -287,6 +385,11 @@ public partial class Employee : MonoBehaviour
 
         StartNextWaypoint();
 
+        if (isMoving)
+        {
+            SetState(EmployeeState.Moving);
+        }
+
         OnMoveCommandReceived?.Invoke(destination);
 
         Debug.Log($"[Employee] {employeeName} bergerak ke {destination} lewat {movementWaypoints.Count} titik.");
@@ -337,6 +440,11 @@ public partial class Employee : MonoBehaviour
     protected virtual void OnArrived()
     {
         Debug.Log($"[Employee] {employeeName} tiba di tujuan.");
+
+        if (currentState == EmployeeState.Moving)
+        {
+            SetState(EmployeeState.Idle);
+        }
 
         // Fire once, then clear, so it doesn't leak into the next MoveTo call
         var callback = onArriveCallback;
