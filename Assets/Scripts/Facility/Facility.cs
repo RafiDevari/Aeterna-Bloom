@@ -89,6 +89,20 @@ public class Facility : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    private void Start()
+    {
+        foreach (var room in rooms)
+        {
+            if (room != null)
+            {
+                room.InitFromFacility(DefaultRoomTemperature);
+                room.OnElectricityCostChanged -= HandleRoomElectricityCostChanged;
+                room.OnElectricityCostChanged += HandleRoomElectricityCostChanged;
+            }
+        }
+        OnElectricityChanged?.Invoke(Electricity);
+    }
+
     //────────────────────────────────────────────────────────
     // Room
     //────────────────────────────────────────────────────────
