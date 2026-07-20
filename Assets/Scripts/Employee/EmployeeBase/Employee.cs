@@ -285,28 +285,27 @@ public partial class Employee : MonoBehaviour
             for (int i = 0; i < 4; i++)
             {
                 Vector3 worldPos = r.transform.TransformPoint(localCorners[i]);
-                Vector3 rootLocal = root.InverseTransformPoint(worldPos);
+                Vector3 empLocal = transform.InverseTransformPoint(worldPos);
 
                 // Ignore scale flipping so facing left/right doesn't distort bounds calculation
-                if (root != transform && root.localScale.x < 0)
+                if (transform.localScale.x < 0)
                 {
-                    rootLocal.x = -rootLocal.x;
+                    empLocal.x = -empLocal.x;
                 }
 
-                minX = Mathf.Min(minX, rootLocal.x);
-                maxX = Mathf.Max(maxX, rootLocal.x);
-                minY = Mathf.Min(minY, rootLocal.y);
-                maxY = Mathf.Max(maxY, rootLocal.y);
+                minX = Mathf.Min(minX, empLocal.x);
+                maxX = Mathf.Max(maxX, empLocal.x);
+                minY = Mathf.Min(minY, empLocal.y);
+                maxY = Mathf.Max(maxY, empLocal.y);
                 foundAny = true;
             }
         }
 
         if (!foundAny) return;
 
-        Vector3 rootPosInEmp = transform.InverseTransformPoint(root.position);
         float width = (maxX - minX) + colliderPadding.x;
         float height = (maxY - minY) + colliderPadding.y;
-        Vector2 center = new Vector2(rootPosInEmp.x + (minX + maxX) * 0.5f, rootPosInEmp.y + (minY + maxY) * 0.5f);
+        Vector2 center = new Vector2((minX + maxX) * 0.5f, (minY + maxY) * 0.5f);
 
         if (width > 0f && height > 0f)
         {
