@@ -557,6 +557,8 @@ MonoBehaviour:
     employeePrefab: {fileID: 2527675713155502454, guid: 6b5334ac52d2d15498b07cde10945061, type: 3}
   - employeeName: Devari
     employeePrefab: {fileID: 2527675713155502454, guid: 6b5334ac52d2d15498b07cde10945061, type: 3}
+  - employeeName: Phoveus
+    employeePrefab: {fileID: 2527675713155502454, guid: 6b5334ac52d2d15498b07cde10945061, type: 3}
 --- !u!61 &102129681
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -439,7 +439,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.013511151, y: 0.052892692}
+  m_Offset: {x: 0.014785301, y: 0.052548133}
   m_SpriteTilingProperty:
     border: {x: 0.049999997, y: 0.049999997, z: 0.049999997, w: 0.049999997}
     pivot: {x: 0.5, y: 0.5}
@@ -449,7 +449,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.18066254, y: 0.21895216}
+  m_Size: {x: 0.17811424, y: 0.21826304}
   m_EdgeRadius: 0
 --- !u!114 &2527675713155502454
 MonoBehaviour:
@@ -484,6 +484,10 @@ MonoBehaviour:
   autoFitCollider: 1
   employeeCollider: {fileID: 9199522445211792172}
   colliderPadding: {x: 0, y: 0}
+  enableSocializing: 1
+  conversationDistance: 1.5
+  conversationMoodDuration: 5
+  postMoveSocialCooldown: 1.2
   offFieldMultiplier: 5
 --- !u!114 &198776187203225793
 MonoBehaviour:
@@ -562,7 +566,7 @@ Transform:
   m_GameObject: {fileID: 4475646776024997995}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.53, y: -0.87, z: -0}
+  m_LocalPosition: {x: 0.41, y: -1.23, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -730,7 +734,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5513448549630694389}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0.047455154, w: 0.9988734}
+  m_LocalRotation: {x: 0, y: 0, z: 0.032544624, w: 0.9994703}
   m_LocalPosition: {x: 1.84, y: 1.23, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -738,7 +742,7 @@ Transform:
   - {fileID: 1458170428476474801}
   - {fileID: 1991976916972786170}
   m_Father: {fileID: 7100763759351979368}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 5.44}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 3.73}
 --- !u!212 &7004072402089296681
 SpriteRenderer:
   serializedVersion: 3

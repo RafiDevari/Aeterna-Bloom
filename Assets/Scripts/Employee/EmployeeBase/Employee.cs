@@ -214,7 +214,27 @@ public partial class Employee : MonoBehaviour
 
     public bool IsSelected => isSelected;
 
-    public Room CurrentRoom => currentRoom;
+    public Room CurrentRoom => GetCurrentRoom();
+
+    public Room GetCurrentRoom()
+    {
+        if (currentRoom != null && currentRoom.Contains(transform.position))
+            return currentRoom;
+
+        if (Facility.Instance != null)
+        {
+            foreach (var room in Facility.Instance.Rooms)
+            {
+                if (room != null && room.Contains(transform.position))
+                {
+                    currentRoom = room;
+                    return room;
+                }
+            }
+        }
+
+        return currentRoom;
+    }
 
     //==============================
     // Unity & Collider Auto-Fit
@@ -287,12 +307,6 @@ public partial class Employee : MonoBehaviour
                 Vector3 worldPos = r.transform.TransformPoint(localCorners[i]);
                 Vector3 empLocal = transform.InverseTransformPoint(worldPos);
 
-                // Ignore scale flipping so facing left/right doesn't distort bounds calculation
-                if (transform.localScale.x < 0)
-                {
-                    empLocal.x = -empLocal.x;
-                }
-
                 minX = Mathf.Min(minX, empLocal.x);
                 maxX = Mathf.Max(maxX, empLocal.x);
                 minY = Mathf.Min(minY, empLocal.y);
@@ -314,6 +328,24 @@ public partial class Employee : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Dipanggil saat karakter membalik arah hadap (facing left/right)
+    /// agar BoxCollider2D otomatis menyesuaikan posisinya dengan visual.
+    /// </summary>
+    public void OnFacingDirectionChanged(bool isDefaultFacing)
+    {
+        if (autoFitCollider)
+        {
+            AutoFitCollider();
+        }
+        else if (employeeCollider != null)
+        {
+            Vector2 offset = employeeCollider.offset;
+            offset.x = isDefaultFacing ? Mathf.Abs(offset.x) : -Mathf.Abs(offset.x);
+            employeeCollider.offset = offset;
+        }
+    }
+
     private void OnDestroy()
     {
         Facility.Instance?.UnregisterEmployee(this);
@@ -325,6 +357,11 @@ public partial class Employee : MonoBehaviour
     {
         if (currentState == newState)
             return;
+
+        if (currentState == EmployeeState.Conversing && newState != EmployeeState.Conversing)
+        {
+            EndConversation();
+        }
 
         currentState = newState;
         OnStateChanged?.Invoke(currentState);
@@ -340,6 +377,7 @@ public partial class Employee : MonoBehaviour
         ProcessTaskQueue();
         UpdateTimedAction();
         UpdateMoodRegen();
+        UpdateSocializing();
     }
 
     //==============================
@@ -351,6 +389,7 @@ public partial class Employee : MonoBehaviour
         if (task == null)
             return;
 
+        EndConversation();
         taskQueue.Enqueue(task);
     }
 
@@ -361,6 +400,8 @@ public partial class Employee : MonoBehaviour
     /// </summary>
     public void ClearTasksAndInterrupt()
     {
+        EndConversation();
+
         if (currentTask != null)
         {
             currentTask.Cancel();
@@ -469,6 +510,8 @@ public partial class Employee : MonoBehaviour
     /// </summary>
     public virtual void MoveTo(Vector3 destination, System.Action onArrive = null)
     {
+        EndConversation();
+
         destination.z = 0f;
 
         List<Vector3> path = RoomPathfinder.FindWaypointPath(transform.position, destination);
@@ -552,6 +595,8 @@ public partial class Employee : MonoBehaviour
         {
             SetState(EmployeeState.Idle);
         }
+
+        SetSocialCooldown(postMoveSocialCooldown);
 
         // Fire once, then clear, so it doesn't leak into the next MoveTo call
         var callback = onArriveCallback;
