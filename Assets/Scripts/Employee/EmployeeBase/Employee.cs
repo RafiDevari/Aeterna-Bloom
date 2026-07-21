@@ -58,6 +58,11 @@ public partial class Employee : MonoBehaviour
     public System.Action<int> OnHpChanged;
     public System.Action<int> OnMoodChanged;
 
+    [Header("Poison Mechanics")]
+    [SerializeField] private float poisonInterval = 1.0f;
+    [SerializeField] private int poisonDamageAmount = 5;
+    private float poisonTimer = 0f;
+
     public int Hp
     {
         get => hp;
@@ -390,6 +395,24 @@ public partial class Employee : MonoBehaviour
         UpdateTimedAction();
         UpdateMoodRegen();
         UpdateSocializing();
+        HandleRoomHazards();
+    }
+
+    private void HandleRoomHazards()
+    {
+        poisonTimer += Time.deltaTime;
+        if (poisonTimer >= poisonInterval)
+        {
+            poisonTimer = 0f;
+            Room room = RoomPathfinder.FindRoomAt(transform.position);
+            if (room != null && (room.IsPoisoned || room.IsSterilizing))
+            {
+                ModifyHp(-poisonDamageAmount);
+                string hazardType = room.IsSterilizing ? "Sterilisasi" : "Racun";
+                // Menampilkan debug opsional agar developer tahu
+                Debug.Log($"[{EmployeeName}] Terkena damage {hazardType} -{poisonDamageAmount} HP di ruangan {room.RoomName}. HP tersisa: {hp}");
+            }
+        }
     }
 
     //==============================
@@ -526,7 +549,8 @@ public partial class Employee : MonoBehaviour
 
         destination.z = 0f;
 
-        List<Vector3> path = RoomPathfinder.FindWaypointPath(transform.position, destination);
+        bool canEnterLockedRooms = (this is EmployeeSecurity);
+        List<Vector3> path = RoomPathfinder.FindWaypointPath(transform.position, destination, canEnterLockedRooms);
 
         if (path == null)
         {

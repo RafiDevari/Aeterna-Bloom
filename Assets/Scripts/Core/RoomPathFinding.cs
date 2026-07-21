@@ -40,7 +40,7 @@ public static class RoomPathfinder
         }
     }
 
-    private static List<RoomPart> CollectParts()
+    private static List<RoomPart> CollectParts(bool canEnterLockedRooms = false)
     {
         var parts = new List<RoomPart>();
 
@@ -49,7 +49,7 @@ public static class RoomPathfinder
 
         foreach (Room room in Facility.Instance.Rooms)
         {
-            if (room == null || room.IsLocked)
+            if (room == null || (!canEnterLockedRooms && room.IsLocked))
                 continue;
 
             foreach (Bounds bounds in room.CollisionBounds)
@@ -111,7 +111,7 @@ public static class RoomPathfinder
     /// </summary>
     public static Room FindRoomAt(Vector3 worldPosition)
     {
-        var parts = CollectParts();
+        var parts = CollectParts(false);
         return TryFindPartAt(parts, worldPosition, out int idx) ? parts[idx].room : null;
     }
 
@@ -146,9 +146,9 @@ public static class RoomPathfinder
     /// Return null kalau from/to tidak ada di bagian room manapun, atau memang tidak
     /// ada jalur yang menghubungkan keduanya (mis. terhalang lockdown).
     /// </summary>
-    public static List<Vector3> FindWaypointPath(Vector3 from, Vector3 to)
+    public static List<Vector3> FindWaypointPath(Vector3 from, Vector3 to, bool canEnterLockedRooms = false)
     {
-        var parts = CollectParts();
+        var parts = CollectParts(canEnterLockedRooms);
 
         if (!TryFindPartAt(parts, from, out int startIdx))
             return null;

@@ -11,5 +11,6 @@ public enum EmployeeState
     Dead,
     Sleeping,
     Healing,
-    Conversing
+    Conversing,
+    Sterilizing
 }
