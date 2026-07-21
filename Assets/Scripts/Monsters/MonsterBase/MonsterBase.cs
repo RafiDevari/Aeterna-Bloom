@@ -202,6 +202,15 @@ public partial class MonsterBase : MonoBehaviour
 
     protected virtual void OnMonsterUpdate() { }
 
+    /// <summary>
+    /// Dipanggil ketika Employee yang terhipnosis tiba di ContainmentUnit tempat monster ini berada.
+    /// Subclass monster dapat me-override method ini untuk menentukan efeknya (misal: membunuh employee, mengurangi HP/Mood, dll).
+    /// </summary>
+    public virtual void OnHypnotizedEmployeeArrived(Employee employee)
+    {
+        Debug.Log($"[{MonsterName}] Employee {employee?.EmployeeName} tiba di containment unit.");
+    }
+
     //────────────────────────────────────────────────────────
     // Helper
     //────────────────────────────────────────────────────────

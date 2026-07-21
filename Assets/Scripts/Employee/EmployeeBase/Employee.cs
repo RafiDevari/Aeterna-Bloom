@@ -650,7 +650,7 @@ public partial class Employee : MonoBehaviour
         EnterPlantContainment
     }
 
-    public void Hypnotize(HypnotizedInput input, object target = null)
+    public void Hypnotize(HypnotizedInput input, object target = null, System.Action<Employee> onArriveAction = null)
     {
         if (currentState == EmployeeState.Dead)
             return;
@@ -672,11 +672,20 @@ public partial class Employee : MonoBehaviour
                         friend.ModifyHp(-50);
                         Debug.Log($"[Employee] {EmployeeName} attacked {friend.EmployeeName}! HP is now {friend.Hp}.");
                     }
+                    if (onArriveAction != null)
+                    {
+                        onArriveAction.Invoke(this);
+                    }
+                    else
+                    {
+                        SetState(EmployeeState.Normal);
+                    }
                 });
             }
             else
             {
                 Debug.Log($"[Employee] No friends found to attack.");
+                SetState(EmployeeState.Normal);
             }
         }
         else if (input == HypnotizedInput.EnterPlantContainment)
@@ -691,13 +700,25 @@ public partial class Employee : MonoBehaviour
             {
                 Debug.Log($"[Employee] {EmployeeName} is walking into plant containment at {containmentUnit.gameObject.name}!");
                 MoveTo(containmentUnit.transform.position, () => {
-                    Debug.Log($"[Employee] {EmployeeName} entered plant containment and was devoured/absorbed.");
-                    Die();
+                    Debug.Log($"[Employee] {EmployeeName} arrived at plant containment.");
+                    if (onArriveAction != null)
+                    {
+                        onArriveAction.Invoke(this);
+                    }
+                    else if (containmentUnit.Monster != null)
+                    {
+                        containmentUnit.Monster.OnHypnotizedEmployeeArrived(this);
+                    }
+                    else
+                    {
+                        SetState(EmployeeState.Normal);
+                    }
                 });
             }
             else
             {
                 Debug.Log($"[Employee] No containment unit found.");
+                SetState(EmployeeState.Normal);
             }
         }
     }
