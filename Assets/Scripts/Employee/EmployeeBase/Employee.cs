@@ -58,6 +58,11 @@ public partial class Employee : MonoBehaviour
     public System.Action<int> OnHpChanged;
     public System.Action<int> OnMoodChanged;
 
+    [Header("Poison Mechanics")]
+    [SerializeField] private float poisonInterval = 1.0f;
+    [SerializeField] private int poisonDamageAmount = 5;
+    private float poisonTimer = 0f;
+
     public int Hp
     {
         get => hp;
@@ -340,6 +345,23 @@ public partial class Employee : MonoBehaviour
         ProcessTaskQueue();
         UpdateTimedAction();
         UpdateMoodRegen();
+        HandlePoison();
+    }
+
+    private void HandlePoison()
+    {
+        poisonTimer += Time.deltaTime;
+        if (poisonTimer >= poisonInterval)
+        {
+            poisonTimer = 0f;
+            Room room = RoomPathfinder.FindRoomAt(transform.position);
+            if (room != null && room.IsPoisoned)
+            {
+                ModifyHp(-poisonDamageAmount);
+                // Menampilkan debug opsional agar developer tahu
+                Debug.Log($"[{EmployeeName}] Terkena damage racun -{poisonDamageAmount} HP di ruangan {room.RoomName}. HP tersisa: {hp}");
+            }
+        }
     }
 
     //==============================

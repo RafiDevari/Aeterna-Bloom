@@ -28,9 +28,15 @@ public abstract class Room : MonoBehaviour
              "Employee yang sedang berada di dalam room ini otomatis tidak akan menemukan jalan keluar.")]
     [SerializeField] private bool isLocked = false;
 
+    [Header("Poison")]
+    [SerializeField] private bool isPoisoned = false;
+
     public System.Action<float> OnTemperatureChanged;
     public System.Action<bool> OnLockChanged;
     public System.Action<float> OnElectricityCostChanged;
+    public System.Action<bool> OnPoisonChanged;
+
+    private Color originalColor = Color.white;
 
     public string RoomName
     {
@@ -151,6 +157,33 @@ public abstract class Room : MonoBehaviour
         }
     }
 
+    public bool IsPoisoned
+    {
+        get => isPoisoned;
+        set
+        {
+            if (isPoisoned == value) return;
+            isPoisoned = value;
+            OnPoisonChanged?.Invoke(isPoisoned);
+            UpdatePoisonVisuals();
+            Debug.Log($"[{roomName}] Poison State : {(isPoisoned ? "ACTIVE" : "inactive")}");
+        }
+    }
+
+    [ContextMenu("Toggle Poison")]
+    public void TogglePoison()
+    {
+        IsPoisoned = !IsPoisoned;
+    }
+
+    private void UpdatePoisonVisuals()
+    {
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = isPoisoned ? new Color(0.3f, 0.9f, 0.4f, 1f) : originalColor;
+        }
+    }
+
     /// <summary>
     /// Set status lockdown room ini. Sistem lockdown penuh (trigger dari UI, dsb)
     /// belum diimplementasi - ini cuma fondasi supaya RoomPathfinder sudah siap
@@ -169,10 +202,16 @@ public abstract class Room : MonoBehaviour
     protected virtual void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            originalColor = spriteRenderer.color;
+        }
     }
 
     protected virtual void Start()
     {
+        UpdatePoisonVisuals();
+
         if (Facility.Instance != null)
         {
             if (!Facility.Instance.Rooms.Contains(this))
