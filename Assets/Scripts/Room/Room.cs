@@ -28,9 +28,17 @@ public abstract class Room : MonoBehaviour
              "Employee yang sedang berada di dalam room ini otomatis tidak akan menemukan jalan keluar.")]
     [SerializeField] private bool isLocked = false;
 
+    [Header("Poison & Hazard")]
+    [SerializeField] private bool isPoisoned = false;
+    [SerializeField] private bool isSterilizing = false;
+
     public System.Action<float> OnTemperatureChanged;
     public System.Action<bool> OnLockChanged;
     public System.Action<float> OnElectricityCostChanged;
+    public System.Action<bool> OnPoisonChanged;
+    public System.Action<bool> OnSterilizeChanged;
+
+    private Color originalColor = Color.white;
 
     public string RoomName
     {
@@ -151,6 +159,71 @@ public abstract class Room : MonoBehaviour
         }
     }
 
+    public bool IsPoisoned
+    {
+        get => isPoisoned;
+        set
+        {
+            if (isPoisoned == value) return;
+            isPoisoned = value;
+            OnPoisonChanged?.Invoke(isPoisoned);
+            UpdatePoisonVisuals();
+        }
+    }
+
+    public bool IsSterilizing
+    {
+        get => isSterilizing;
+        set
+        {
+            if (isSterilizing == value) return;
+            isSterilizing = value;
+
+            if (isSterilizing)
+            {
+                // Sterilisasi menghilangkan state buruk seperti racun
+                if (IsPoisoned) IsPoisoned = false;
+            }
+
+            OnSterilizeChanged?.Invoke(isSterilizing);
+            UpdatePoisonVisuals();
+            Debug.Log($"[{roomName}] Sterilization State : {(isSterilizing ? "ACTIVE" : "inactive")}");
+        }
+    }
+
+    [ContextMenu("Toggle Poison")]
+    public void TogglePoison()
+    {
+        IsPoisoned = !IsPoisoned;
+    }
+
+    [ContextMenu("Toggle Sterilize")]
+    public void ToggleSterilize()
+    {
+        IsSterilizing = !IsSterilizing;
+    }
+
+    private void UpdatePoisonVisuals()
+    {
+        if (spriteRenderer != null)
+        {
+            if (isSterilizing)
+            {
+                // Warna oranye pudar yang berbeda dari racun
+                spriteRenderer.color = new Color(1f, 0.6f, 0.2f, 1f);
+            }
+            else if (isPoisoned)
+            {
+                // Warna hijau racun
+                spriteRenderer.color = new Color(0.3f, 0.9f, 0.4f, 1f);
+            }
+            else
+            {
+                spriteRenderer.color = originalColor;
+            }
+        }
+    }
+
     /// <summary>
     /// Set status lockdown room ini. Sistem lockdown penuh (trigger dari UI, dsb)
     /// belum diimplementasi - ini cuma fondasi supaya RoomPathfinder sudah siap
@@ -169,6 +242,7 @@ public abstract class Room : MonoBehaviour
     protected virtual void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null) originalColor = spriteRenderer.color;
     }
 
     protected virtual void Start()
