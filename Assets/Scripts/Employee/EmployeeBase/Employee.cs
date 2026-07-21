@@ -678,14 +678,14 @@ public partial class Employee : MonoBehaviour
                     }
                     else
                     {
-                        SetState(EmployeeState.Normal);
+                        SetState(EmployeeState.Idle);
                     }
                 });
             }
             else
             {
                 Debug.Log($"[Employee] No friends found to attack.");
-                SetState(EmployeeState.Normal);
+                SetState(EmployeeState.Idle);
             }
         }
         else if (input == HypnotizedInput.EnterPlantContainment)
@@ -711,14 +711,14 @@ public partial class Employee : MonoBehaviour
                     }
                     else
                     {
-                        SetState(EmployeeState.Normal);
+                        SetState(EmployeeState.Idle);
                     }
                 });
             }
             else
             {
                 Debug.Log($"[Employee] No containment unit found.");
-                SetState(EmployeeState.Normal);
+                SetState(EmployeeState.Idle);
             }
         }
     }
