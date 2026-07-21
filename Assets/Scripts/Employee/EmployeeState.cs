@@ -10,5 +10,6 @@ public enum EmployeeState
     Hypnotized,
     Dead,
     Sleeping,
-    Healing
+    Healing,
+    Sterilizing
 }
