@@ -3,6 +3,7 @@ public enum EmployeeDivision
     Researcher,
     Botanist,
     Engineer,
-    Medic
+    Medic,
+    Security
 }
  
