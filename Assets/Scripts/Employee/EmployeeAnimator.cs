@@ -29,6 +29,7 @@ public class EmployeeAnimator : MonoBehaviour
     private static readonly int IsFixingElectricityHash = Animator.StringToHash("IsFixingElectricity");
     private static readonly int IsConversingHash = Animator.StringToHash("IsConversing");
     private static readonly int IsConversationHash = Animator.StringToHash("IsConversation");
+    private static readonly int IsHypnotizedHash = Animator.StringToHash("IsHypnotized");
 
     private void Awake()
     {
@@ -172,6 +173,7 @@ public class EmployeeAnimator : MonoBehaviour
         SetBoolIfExists(IsFixingElectricityHash, state == EmployeeState.FixingElectricity);
         SetBoolIfExists(IsConversingHash, state == EmployeeState.Conversing);
         SetBoolIfExists(IsConversationHash, state == EmployeeState.Conversing);
+        SetBoolIfExists(IsHypnotizedHash, state == EmployeeState.Hypnotized);
     }
 
     private void SetBoolIfExists(int paramHash, bool value)

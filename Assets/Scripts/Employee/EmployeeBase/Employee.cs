@@ -421,7 +421,7 @@ public partial class Employee : MonoBehaviour
 
     public void EnqueueTask(EmployeeTask task)
     {
-        if (task == null)
+        if (task == null || currentState == EmployeeState.Hypnotized || currentState == EmployeeState.Dead)
             return;
 
         EndConversation();
@@ -459,7 +459,7 @@ public partial class Employee : MonoBehaviour
 
     private void ProcessTaskQueue()
     {
-        if (currentTask != null)
+        if (currentTask != null || currentState == EmployeeState.Hypnotized || currentState == EmployeeState.Dead)
             return;
 
         if (taskQueue.Count == 0)
@@ -569,7 +569,7 @@ public partial class Employee : MonoBehaviour
 
         StartNextWaypoint();
 
-        if (isMoving)
+        if (isMoving && currentState != EmployeeState.Hypnotized)
         {
             SetState(EmployeeState.Moving);
         }
@@ -655,8 +655,8 @@ public partial class Employee : MonoBehaviour
         if (currentState == EmployeeState.Dead)
             return;
 
-        SetState(EmployeeState.Hypnotized);
         ClearTasksAndInterrupt();
+        SetState(EmployeeState.Hypnotized);
 
         Debug.Log($"[Employee] {EmployeeName} has been HYPNOTIZED! Input action: {input}");
 
@@ -672,13 +672,11 @@ public partial class Employee : MonoBehaviour
                         friend.ModifyHp(-50);
                         Debug.Log($"[Employee] {EmployeeName} attacked {friend.EmployeeName}! HP is now {friend.Hp}.");
                     }
-                    SetState(EmployeeState.Idle);
                 });
             }
             else
             {
                 Debug.Log($"[Employee] No friends found to attack.");
-                SetState(EmployeeState.Idle);
             }
         }
         else if (input == HypnotizedInput.EnterPlantContainment)
@@ -700,7 +698,6 @@ public partial class Employee : MonoBehaviour
             else
             {
                 Debug.Log($"[Employee] No containment unit found.");
-                SetState(EmployeeState.Idle);
             }
         }
     }

@@ -666,6 +666,8 @@ MonoBehaviour:
   mood: 3
   maxMood: 5
   minMood: 0
+  poisonInterval: 1
+  poisonDamageAmount: 5
   autoFitCollider: 1
   employeeCollider: {fileID: 9199522445211792172}
   colliderPadding: {x: 0, y: 0}
