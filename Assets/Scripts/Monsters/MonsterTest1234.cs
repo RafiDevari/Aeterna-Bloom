@@ -169,6 +169,18 @@ public class MonsterTest1234 : MonsterBase
         }
     }
 
+    /// <summary>
+    /// Dipanggil saat Employee yang terhipnosis tiba di unit penangkaran monster ini.
+    /// </summary>
+    public override void OnHypnotizedEmployeeArrived(Employee employee)
+    {
+        if (employee != null && employee.CurrentState != EmployeeState.Dead)
+        {
+            Debug.Log($"[{MonsterName}] Memakan/menyerap {employee.EmployeeName} di penangkaran!");
+            employee.Die();
+        }
+    }
+
     //────────────────────────────────────────────────────────
     // Harvest
     //────────────────────────────────────────────────────────
