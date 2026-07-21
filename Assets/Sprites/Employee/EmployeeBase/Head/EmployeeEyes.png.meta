@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: 35d92b7827d07e64bbc82f07f0d1826a
+guid: 6238ba2c47b70f746a50d283cf4c3e69
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2722211737741492293
-    second: Hand_R_0
+      213: 4463360073792619318
+    second: EmployeeEyes_0
+  - first:
+      213: 8127971985535094721
+    second: EmployeeEyes_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,23 +116,67 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Hand_R_0
+      name: EmployeeEyes_0
       rect:
         serializedVersion: 2
-        x: 1125
-        y: 1286
-        width: 88
-        height: 241
-      alignment: 9
-      pivot: {x: 0.3906042, y: 0.7363438}
+        x: 909
+        y: 1772
+        width: 74
+        height: 109
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5400b7f072d37c520800000000000000
-      internalID: 2722211737741492293
+      spriteID: 6330217d65a01fd30800000000000000
+      internalID: 4463360073792619318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EmployeeEyes_1
+      rect:
+        serializedVersion: 2
+        x: 1020
+        y: 1775
+        width: 72
+        height: 89
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1cf452ef47b5cc070800000000000000
+      internalID: 8127971985535094721
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: EmployeeEyes_2
+      rect:
+        serializedVersion: 2
+        x: 801
+        y: 1750
+        width: 386
+        height: 222
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 47eb70ff030794e47aef7868d7f571d5
+      internalID: 1250541562
       vertices: []
       indices: 
       edges: []
@@ -138,7 +185,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: b1dd606ffb54e1a4aaa33b3b84b20f7b
+    spriteID: 27c5fa99fce5e274eb1b6857cb7486f8
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +195,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Hand_R_0: 2722211737741492293
+      EmployeeEyes_0: 4463360073792619318
+      EmployeeEyes_1: 8127971985535094721
+      EmployeeEyes_2: 1250541562
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

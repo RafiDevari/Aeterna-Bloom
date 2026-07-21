@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2197611082585050180}
   - component: {fileID: 6871295272495438118}
   m_Layer: 0
-  m_Name: EmployeeResearcher 1
+  m_Name: EmployeeSecurity
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -175,3 +175,7 @@ MonoBehaviour:
   autoFitCollider: 1
   employeeCollider: {fileID: 4946242388425233953}
   colliderPadding: {x: 0, y: 0}
+  enableSocializing: 1
+  conversationDistance: 0.85
+  conversationMoodDuration: 5
+  postMoveSocialCooldown: 1.2

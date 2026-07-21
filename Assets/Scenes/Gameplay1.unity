@@ -415,6 +415,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
   employeesToSpawn:
   - employeeName: Torqi
     employeePrefab: {fileID: 4295588940075538413, guid: 99e9f840534bbe540a95ca7245a19cb0, type: 3}
@@ -552,10 +554,14 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
   employeesToSpawn:
   - employeeName: Rafi
     employeePrefab: {fileID: 2527675713155502454, guid: 6b5334ac52d2d15498b07cde10945061, type: 3}
   - employeeName: Devari
+    employeePrefab: {fileID: 2527675713155502454, guid: 6b5334ac52d2d15498b07cde10945061, type: 3}
+  - employeeName: Phoveus
     employeePrefab: {fileID: 2527675713155502454, guid: 6b5334ac52d2d15498b07cde10945061, type: 3}
 --- !u!61 &102129681
 BoxCollider2D:
@@ -689,6 +695,8 @@ MonoBehaviour:
   temperature: 0
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
   containmentUnits:
   - {fileID: 1358181302}
 --- !u!61 &126076262
@@ -823,6 +831,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
   containmentUnits:
   - {fileID: 43846251}
 --- !u!61 &127104235
@@ -1063,6 +1073,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!1 &145961317
 GameObject:
   m_ObjectHideFlags: 0
@@ -1759,6 +1771,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!61 &272250455
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2225,6 +2239,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!61 &324923943
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2431,6 +2447,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!61 &340886159
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3608,6 +3626,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
   employeesToSpawn:
   - employeeName: Said
     employeePrefab: {fileID: 4863661536096414419, guid: 40266e00bbc80e54fbaaea19f771401b, type: 3}
@@ -5150,6 +5170,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!61 &806017461
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -7056,6 +7078,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
   stock: 15
   maxStock: 15
   restockDuration: 20
@@ -7569,6 +7593,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!61 &1186849468
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -8487,6 +8513,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
   fixDuration: 5
 --- !u!1 &1293736696
 GameObject:
@@ -10978,6 +11006,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!61 &1717294155
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -11641,8 +11671,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 935311781}
   - {fileID: 468246466}
+  - {fileID: 935311781}
   m_Father: {fileID: 876105379}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -11676,6 +11706,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!61 &1894615227
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -11808,6 +11840,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!61 &1930902099
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -12014,6 +12048,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
   employeesToSpawn:
   - employeeName: Budi the Engineer
     employeePrefab: {fileID: -1247808099591183380, guid: 8a04dc67ae7b6614c853db19a01209ac, type: 3}
@@ -12302,6 +12338,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!61 &1989913259
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -12537,6 +12575,8 @@ MonoBehaviour:
   temperature: 20
   baseElectricityCost: 2
   isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
 --- !u!61 &2025030540
 BoxCollider2D:
   m_ObjectHideFlags: 0

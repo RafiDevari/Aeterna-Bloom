@@ -27,6 +27,9 @@ public class EmployeeAnimator : MonoBehaviour
     private static readonly int IsHarvestingHash = Animator.StringToHash("IsHarvesting");
     private static readonly int IsTakingStockHash = Animator.StringToHash("IsTakingStock");
     private static readonly int IsFixingElectricityHash = Animator.StringToHash("IsFixingElectricity");
+    private static readonly int IsConversingHash = Animator.StringToHash("IsConversing");
+    private static readonly int IsConversationHash = Animator.StringToHash("IsConversation");
+    private static readonly int IsHypnotizedHash = Animator.StringToHash("IsHypnotized");
 
     private void Awake()
     {
@@ -136,10 +139,18 @@ public class EmployeeAnimator : MonoBehaviour
     {
         if (visualsRoot == null) return;
 
+        float targetScaleX = (faceLeft == defaultFacingLeft) ? originalScaleX : -originalScaleX;
+        if (Mathf.Approximately(visualsRoot.localScale.x, targetScaleX))
+            return;
+
         Vector3 scale = visualsRoot.localScale;
-        // Flip scale.x based on whether target direction matches default facing direction
-        scale.x = (faceLeft == defaultFacingLeft) ? originalScaleX : -originalScaleX;
+        scale.x = targetScaleX;
         visualsRoot.localScale = scale;
+
+        if (employee != null)
+        {
+            employee.OnFacingDirectionChanged(faceLeft == defaultFacingLeft);
+        }
     }
 
     /// <summary>
@@ -160,6 +171,9 @@ public class EmployeeAnimator : MonoBehaviour
         SetBoolIfExists(IsHarvestingHash, state == EmployeeState.Harvesting);
         SetBoolIfExists(IsTakingStockHash, state == EmployeeState.TakingStock);
         SetBoolIfExists(IsFixingElectricityHash, state == EmployeeState.FixingElectricity);
+        SetBoolIfExists(IsConversingHash, state == EmployeeState.Conversing);
+        SetBoolIfExists(IsConversationHash, state == EmployeeState.Conversing);
+        SetBoolIfExists(IsHypnotizedHash, state == EmployeeState.Hypnotized);
     }
 
     private void SetBoolIfExists(int paramHash, bool value)
