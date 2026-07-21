@@ -206,6 +206,18 @@ public partial class Employee : MonoBehaviour
     // Properties
     //==============================
 
+    private EmployeeAppearance appearance;
+
+    /// <summary>Access the EmployeeAppearance component attached to this Employee.</summary>
+    public EmployeeAppearance Appearance
+    {
+        get
+        {
+            if (appearance == null) appearance = GetComponent<EmployeeAppearance>();
+            return appearance;
+        }
+    }
+
     public string EmployeeName
     {
         get => employeeName;
