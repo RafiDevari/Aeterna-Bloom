@@ -111,7 +111,7 @@ public static class RoomPathfinder
     /// </summary>
     public static Room FindRoomAt(Vector3 worldPosition)
     {
-        var parts = CollectParts(false);
+        var parts = CollectParts(true);
         return TryFindPartAt(parts, worldPosition, out int idx) ? parts[idx].room : null;
     }
 
