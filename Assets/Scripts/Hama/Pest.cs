@@ -17,9 +17,9 @@ public class Pest : MonoBehaviour
     [Header("Hazard Mechanics")]
     [SerializeField] private float hazardInterval = 1.0f;
     [SerializeField] private int hazardDamageAmount = 5;
-    private float hazardTimer = 0f;
+    protected float hazardTimer = 0f;
 
-    private bool isDead = false;
+    protected bool isDead = false;
 
     public int Hp
     {
@@ -35,14 +35,14 @@ public class Pest : MonoBehaviour
         }
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         if (isDead) return;
 
         HandleRoomHazards();
     }
 
-    private void HandleRoomHazards()
+    protected virtual void HandleRoomHazards()
     {
         hazardTimer += Time.deltaTime;
         if (hazardTimer >= hazardInterval)
@@ -60,7 +60,7 @@ public class Pest : MonoBehaviour
         }
     }
 
-    private void Die()
+    protected virtual void Die()
     {
         isDead = true;
         Debug.Log($"[Hama] {pestName} telah mati.");
