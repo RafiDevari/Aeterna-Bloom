@@ -10,6 +10,11 @@ public class Jamur : Pest
     [SerializeField] private float poisonSpreadInterval = 10f;
     private float poisonTimer = 0f;
 
+    private void Awake()
+    {
+        immuneToPoison = true;
+    }
+
     protected override void Update()
     {
         base.Update();

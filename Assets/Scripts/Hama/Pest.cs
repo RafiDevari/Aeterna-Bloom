@@ -14,6 +14,9 @@ public class Pest : MonoBehaviour
     [SerializeField] private int hp = 20;
     [SerializeField] private int maxHp = 20;
 
+    [Header("Immunities")]
+    [SerializeField] protected bool immuneToPoison = false;
+
     [Header("Hazard Mechanics")]
     [SerializeField] private float hazardInterval = 1.0f;
     [SerializeField] private int hazardDamageAmount = 5;
@@ -51,10 +54,13 @@ public class Pest : MonoBehaviour
             Room room = RoomPathfinder.FindRoomAt(transform.position);
             
             // Hama terkena damage dari Racun ATAU Sterilisasi
-            if (room != null && (room.IsPoisoned || room.IsSterilizing))
+            bool takesPoisonDamage = room != null && room.IsPoisoned && !immuneToPoison;
+            bool takesSterilizeDamage = room != null && room.IsSterilizing;
+
+            if (takesPoisonDamage || takesSterilizeDamage)
             {
                 Hp -= hazardDamageAmount;
-                string hazardType = room.IsSterilizing ? "Sterilisasi" : "Racun";
+                string hazardType = takesSterilizeDamage ? "Sterilisasi" : "Racun";
                 Debug.Log($"[Hama] {pestName} terkena {hazardType}! HP tersisa: {hp}");
             }
         }
@@ -78,4 +84,42 @@ public class Pest : MonoBehaviour
 
         // Destroy(gameObject, 2f); // Boleh di-uncomment jika ingin otomatis terhapus
     }
+
+    private static bool hasSpawned = false;
+
+    public static void Spawn()
+    {
+        if (hasSpawned) return;
+        hasSpawned = true;
+
+#if UNITY_EDITOR
+        GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/PestPrefabs/Jamur.prefab");
+#else
+        GameObject prefab = null;
+#endif
+        if (prefab == null)
+        {
+            Debug.LogError("[Pest] Prefab Jamur tidak ditemukan di Assets/Prefabs/PestPrefabs/Jamur.prefab!");
+            return;
+        }
+
+        if (Facility.Instance != null && Facility.Instance.Rooms.Count > 0)
+        {
+            var rooms = Facility.Instance.Rooms;
+            Room targetRoom = rooms[Random.Range(0, rooms.Count)];
+            
+            Bounds[] boundsList = targetRoom.CollisionBounds;
+            if (boundsList != null && boundsList.Length > 0)
+            {
+                Bounds bounds = boundsList[Random.Range(0, boundsList.Length)];
+                float randomX = Random.Range(bounds.min.x, bounds.max.x);
+                float spawnY = bounds.center.y;
+                Vector3 spawnPos = new Vector3(randomX, spawnY, 0f);
+
+                Instantiate(prefab, spawnPos, Quaternion.identity);
+                Debug.Log($"[Pest] Jamur berhasil di-spawn secara random di ruangan {targetRoom.RoomName} pada posisi {spawnPos}");
+            }
+        }
+    }
 }
+
