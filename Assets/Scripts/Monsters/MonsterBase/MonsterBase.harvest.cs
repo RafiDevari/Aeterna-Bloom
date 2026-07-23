@@ -25,6 +25,7 @@ public partial class MonsterBase
     [SerializeField] protected float harvestDuration = 1f;
 
     protected float harvestDurationTimer = 0f;
+    protected Employee currentHarvester;
 
     //────────────────────────────────────────────────────────
     // Harvest Reward
@@ -104,6 +105,7 @@ public partial class MonsterBase
         ResetGrowthForHarvest();         // kembalikan growth persis ke growThreshold
 
         OnHarvestFinished?.Invoke();
+        currentHarvester = null;
 
         Debug.Log($"[{MonsterName}] Harvest selesai. Growth {growthAtHarvest:0.##} -> {growThreshold:0.##}, " +
                   $"energy : {energyGain} x {excessGrowth:0.##} x {multiplier:0.##} = {energyAmount:0.##}");
@@ -167,7 +169,7 @@ public partial class MonsterBase
     /// True kalau proses harvest berhasil DIMULAI sekarang. Bukan berarti sudah selesai --
     /// selesainya dilaporkan lewat OnHarvestFinished, kecuali durationOverride &lt;= 0 (instan).
     /// </returns>
-    public bool TryHarvest(float? durationOverride = null)
+    public bool TryHarvest(float? durationOverride = null, Employee harvester = null)
     {
         if (!CanBeHarvested)
         {
@@ -175,6 +177,7 @@ public partial class MonsterBase
             return false;
         }
 
+        currentHarvester = harvester;
         harvestDurationTimer = Mathf.Max(0f, durationOverride ?? harvestDuration);
 
         Debug.Log($"[{MonsterName}] Mulai harvest, durasi : {harvestDurationTimer}s");

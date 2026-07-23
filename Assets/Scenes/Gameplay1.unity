@@ -8937,7 +8937,7 @@ MonoBehaviour:
   autoFitCollider: 1
   unitSprite: {fileID: -2978890002145281910, guid: a4499c9eb68de58468a8786b072285a7, type: 3}
   unitRenderer: {fileID: 0}
-  monsterPrefab: {fileID: 5644013395477952881, guid: 471bd091ef53d084994c68c8a4e01347, type: 3}
+  monsterPrefab: {fileID: 5947585611737482222, guid: 2039da81bb8966b4ea5d9ef5dc3e26f7, type: 3}
 --- !u!61 &1358181303
 BoxCollider2D:
   m_ObjectHideFlags: 0

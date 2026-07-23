@@ -25,7 +25,7 @@ public partial class Employee
  
         float finalHarvestDuration = CalculateHarvestDuration(target);
  
-        bool success = target.TryHarvest(finalHarvestDuration);
+        bool success = target.TryHarvest(finalHarvestDuration, this);
  
         if (success)
         {
