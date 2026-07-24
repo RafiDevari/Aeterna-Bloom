@@ -69,6 +69,16 @@ public class ContainmentUnit : MonoBehaviour
     {
         boxCollider = GetComponent<BoxCollider2D>();
         ApplySprite();
+
+        // Auto-find parent room if null (for pre-placed units)
+        if (parentRoom == null)
+        {
+            parentRoom = GetComponentInParent<Room>();
+            if (parentRoom != null)
+            {
+                Context = new MonsterContext(this);
+            }
+        }
     }
 
 
