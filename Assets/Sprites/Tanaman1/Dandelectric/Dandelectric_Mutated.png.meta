@@ -119,12 +119,12 @@ TextureImporter:
       name: Dandelectric_Mutated_0
       rect:
         serializedVersion: 2
-        x: 484
-        y: 675
+        x: 486
+        y: 672
         width: 8
-        height: 6
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        height: 8
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -145,8 +145,8 @@ TextureImporter:
         y: 264
         width: 294
         height: 409
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -163,7 +163,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 4311435bb43fd424cb256f97216ab7b5
     internalID: 0
     vertices: []
     indices: 
@@ -175,6 +175,7 @@ TextureImporter:
     nameFileIdTable:
       Dandelectric_Mutated_0: 9095430031287997196
       Dandelectric_Mutated_1: 7015881845714089253
+      Dandelectric_Mutated_2: -904754225
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

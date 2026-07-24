@@ -105,26 +105,40 @@ public class Dandelectric : MonsterBase
         if (Facility.Instance == null || Facility.Instance.Rooms == null || Facility.Instance.Rooms.Count == 0)
             return;
 
-        // Choose a random room
-        int randomIndex = Random.Range(0, Facility.Instance.Rooms.Count);
-        Room targetRoom = Facility.Instance.Rooms[randomIndex];
         int damage = Mathf.RoundToInt(energy);
 
-        Debug.LogWarning($"[{MonsterName}] ELECTRIC SHOCK! Target Room: {targetRoom.RoomName}, Damage: {damage}");
-
-        // Deal damage to all alive employees inside the chosen room
-        if (Facility.Instance.Employees != null)
+        // Choose 5 random unique rooms (or all if total rooms < 5)
+        List<Room> availableRooms = new List<Room>(Facility.Instance.Rooms);
+        List<Room> targetRooms = new List<Room>();
+        int roomsToSelect = Mathf.Min(5, availableRooms.Count);
+        for (int i = 0; i < roomsToSelect; i++)
         {
-            var employees = new List<Employee>(Facility.Instance.Employees);
-            foreach (var emp in employees)
-            {
-                if (emp == null || emp.CurrentState == EmployeeState.Dead)
-                    continue;
+            int randomIndex = Random.Range(0, availableRooms.Count);
+            targetRooms.Add(availableRooms[randomIndex]);
+            availableRooms.RemoveAt(randomIndex);
+        }
 
-                if (targetRoom.Contains(emp.transform.position))
+        foreach (var targetRoom in targetRooms)
+        {
+            Debug.LogWarning($"[{MonsterName}] ELECTRIC SHOCK! Target Room: {targetRoom.RoomName}, Damage: {damage}");
+
+            // TEST: Flash target room sprite to black to visualize the shock room
+            StartCoroutine(TestRoomFlashBlack(targetRoom));
+
+            // Deal damage to all alive employees inside the chosen room
+            if (Facility.Instance.Employees != null)
+            {
+                var employees = new List<Employee>(Facility.Instance.Employees);
+                foreach (var emp in employees)
                 {
-                    emp.ModifyHp(-damage);
-                    Debug.Log($"[{MonsterName}] Shock hit {emp.EmployeeName} in {targetRoom.RoomName} for {damage} damage.");
+                    if (emp == null || emp.CurrentState == EmployeeState.Dead)
+                        continue;
+
+                    if (targetRoom.Contains(emp.transform.position))
+                    {
+                        emp.ModifyHp(-damage);
+                        Debug.Log($"[{MonsterName}] Shock hit {emp.EmployeeName} in {targetRoom.RoomName} for {damage} damage.");
+                    }
                 }
             }
         }
@@ -240,5 +254,23 @@ public class Dandelectric : MonsterBase
             }
         }
         return closest;
+    }
+
+    /// <summary>
+    /// Coroutine for testing: turns the target room's sprite black for 1.5 seconds, then restores it.
+    /// </summary>
+    private System.Collections.IEnumerator TestRoomFlashBlack(Room room)
+    {
+        SpriteRenderer sr = room.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            Color oldColor = sr.color;
+            sr.color = Color.black;
+            yield return new WaitForSeconds(1.5f);
+            if (sr != null)
+            {
+                sr.color = oldColor;
+            }
+        }
     }
 }
