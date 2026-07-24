@@ -15,6 +15,8 @@ public class SunflowerMonster : MonsterBase
     // Track active employees interacting with this monster
     private Dictionary<Employee, float> employeeInteractionTimers = new Dictionary<Employee, float>();
 
+    private float currentTempModifier = 0f;
+
     protected override void Awake()
     {
         base.Awake();
@@ -24,31 +26,41 @@ public class SunflowerMonster : MonsterBase
         allowedDifference = 3f;
     }
 
-    protected virtual void Start()
+    private void UpdateTemperatureModifier(float newModifier)
     {
-        // Requirement: saat pertama kali tanaman ini ada, tingkatkan suhu global facility nya sebanyak (5 - Mood tanaman ini) derajat.
+        float change = newModifier - currentTempModifier;
+        if (Mathf.Approximately(change, 0f)) return;
+
         if (Context != null && Context.Facility != null)
         {
-            float initialTempDelta = 5f - Mood;
-            Context.ChangeFacilityTemperature(initialTempDelta);
+            Context.ChangeFacilityTemperature(change);
             foreach (var room in Context.Facility.Rooms)
             {
                 if (room != null)
                 {
-                    room.Temperature += initialTempDelta;
+                    room.Temperature += change;
                 }
             }
-            Debug.Log($"[{MonsterName}] Menyesuaikan suhu global facility awal sebesar +{initialTempDelta:F1}°C (5 - Mood).");
+            Debug.Log($"[{MonsterName}] Suhu global facility disesuaikan sebesar {(change > 0 ? "+" : "")}{change:F1}°C karena perubahan mood. Total tambahan: {newModifier:F1}°C.");
         }
+        currentTempModifier = newModifier;
+    }
+
+    protected virtual void Start()
+    {
+        UpdateTemperatureModifier(5f - Mood);
     }
 
     private void OnDisable()
     {
-        // Clean up Mood 0 effect if active when disabled/destroyed
+        // Revert temporary mood 0 effect
         if (isMoodZeroEffectActive)
         {
             RemoveMoodZeroEffect();
         }
+
+        // Revert global temperature modifier
+        UpdateTemperatureModifier(0f);
     }
 
     protected override void OnMonsterUpdate()
@@ -132,6 +144,9 @@ public class SunflowerMonster : MonsterBase
     protected override void OnMoodChange(int oldMood, int newMood)
     {
         base.OnMoodChange(oldMood, newMood);
+
+        // Update temperature modifier dynamically
+        UpdateTemperatureModifier(5f - newMood);
 
         // Requirement: ketika mood tanaman ini 0, tingkatkan suhu fasility sebanyak 10, lalu turunkan suitable temperature untuk tanaman yang satu room dengannya sebanyak 10 derajat selama mood nya 0.
         if (newMood == 0 && !isMoodZeroEffectActive)

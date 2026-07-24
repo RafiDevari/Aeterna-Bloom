@@ -32,6 +32,10 @@ public class Facility : MonoBehaviour
 
     public bool IsBlackout => isBlackout;
     public float MaxElectricity => maxElectricity;
+    [Header("Overload Settings")]
+    [SerializeField] private float overloadToleranceDuration = 10f;
+    private float overloadTimer = 0f;
+    private float debugOverloadTimer = 0f;
 
     //────────────────────────────────────────────────────────
 
@@ -209,7 +213,30 @@ public class Facility : MonoBehaviour
         else
         {
             blackoutTimer = 0f;
-            CheckBlackoutTrigger();
+
+            // Overload tolerance check
+            float actualUsage = rooms.Sum(room => room.ElectricityCost);
+            if (actualUsage > maxElectricity)
+            {
+                overloadTimer += Time.deltaTime;
+                debugOverloadTimer += Time.deltaTime;
+
+                if (debugOverloadTimer >= 1.0f)
+                {
+                    debugOverloadTimer = 0f;
+                    Debug.LogWarning($"[Facility] Kebutuhan listrik berlebih ({actualUsage:F1} / {maxElectricity:F1}). Blackout dalam {Mathf.Max(0f, overloadToleranceDuration - overloadTimer):F1} detik.");
+                }
+
+                if (overloadTimer >= overloadToleranceDuration)
+                {
+                    TriggerBlackout();
+                }
+            }
+            else
+            {
+                overloadTimer = 0f;
+                debugOverloadTimer = 0f;
+            }
         }
     }
 
@@ -217,11 +244,12 @@ public class Facility : MonoBehaviour
     {
         if (isBlackout) return;
 
-        // Calculate actual usage from rooms (since Electricity returns 0 during blackout)
+        // Reset overload timers if current usage drops below capacity
         float actualUsage = rooms.Sum(room => room.ElectricityCost);
-        if (actualUsage > maxElectricity)
+        if (actualUsage <= maxElectricity)
         {
-            TriggerBlackout();
+            overloadTimer = 0f;
+            debugOverloadTimer = 0f;
         }
     }
 
