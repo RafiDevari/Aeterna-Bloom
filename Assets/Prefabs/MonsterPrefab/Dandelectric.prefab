@@ -124,7 +124,32 @@ MonoBehaviour:
     sprite: {fileID: 5411576281342212095, guid: 109d40e5718b9da448a023c1d500fde7, type: 3}
   - state: 3
     sprite: {fileID: 7015881845714089253, guid: 0616e04afe2c0de48811a1f1cdc70039, type: 3}
-  researchEntries: []
+  researchEntries:
+  - level: 1
+    id: 1
+    resultText: Tanaman ini memiliki suitable temperature di angka 30 derajat
+    condition: 0
+    trigger: 0
+    customValue: 0
+  - level: 2
+    id: 2
+    resultText: Tanaman ini tidak menyukai natrium
+    condition: 0
+    trigger: 0
+    customValue: 0
+  - level: 3
+    id: 3
+    resultText: Tanaman ini akan menyerap energy sebanyak 5 saat mood < 3 , untuk
+      apa?
+    condition: 1
+    trigger: 0
+    customValue: 0
+  - level: 4
+    id: shock
+    resultText: tanaman ini akan menyetrum beberapa ruangan kalau mood mencapai 0
+    condition: 4
+    trigger: 1
+    customValue: 0
   researchDuration: 1
   monsterName: Dandelectric
   monsterRenderer: {fileID: 0}

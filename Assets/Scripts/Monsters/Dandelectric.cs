@@ -31,6 +31,7 @@ public class Dandelectric : MonsterBase
 
     private float energyTickTimer;
     private float myPassiveGrowthTimer;
+    private bool hasTriggeredShock = false;
 
     public float Energy => energy;
 
@@ -142,6 +143,9 @@ public class Dandelectric : MonsterBase
                 }
             }
         }
+
+        // Mark shock as triggered for custom research auto-unlock
+        hasTriggeredShock = true;
 
         // Reset mood to 4
         SetMood(4);
@@ -271,6 +275,20 @@ public class Dandelectric : MonsterBase
             {
                 sr.color = oldColor;
             }
+        }
+    }
+
+    /// <summary>
+    /// Evaluates custom research conditions.
+    /// </summary>
+    protected override bool CheckCustomResearchCondition(ResearchEntry entry)
+    {
+        switch (entry.id)
+        {
+            case "shock":
+                return hasTriggeredShock;
+            default:
+                return false;
         }
     }
 }
