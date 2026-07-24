@@ -29,18 +29,11 @@ using UnityEngine;
 /// </summary>
 public class MonsterTest1234 : MonsterBase
 {
-    [Header("Temperature")]
-    [SerializeField] private float allowedDifference = 5f;
-
-    [Tooltip("Interval penurunan mood jika suhu tidak sesuai.")]
-    [SerializeField] private float moodInterval = 30f;
-
     [Header("Mood 0 Effect")]
     [SerializeField] private float roomTempIncrease = 2f;
 
     [SerializeField] private float triggerCooldown = 10f;
 
-    private float temperatureTimer;
     private float cooldownTimer;
 
     private bool hasTriggeredAtMoodZero;
@@ -51,22 +44,7 @@ public class MonsterTest1234 : MonsterBase
         MonsterName = "MonsterTest1234";
     }
 
-    protected override void OnGrowingUpdate()
-    {
-        if (Context == null || Context.CurrentRoom == null)
-            return;
 
-        float difference = Mathf.Abs(Context.CurrentRoom.Temperature - SuitableTemperature);
-
-        if (difference <= allowedDifference)
-        {
-            temperatureTimer = 0f;
-        }
-        else if (Every(ref temperatureTimer, moodInterval))
-        {
-            ModifyMood(-1);
-        }
-    }
 
     // cooldown effect mood-zero ini biar tetap jalan walau state udah pindah,
     // jadi tetap di OnMonsterUpdate (jalan di semua state)

@@ -128,10 +128,24 @@ public partial class MonsterBase : MonoBehaviour
     [SerializeField]
     protected float suitableTemperature = 20f;
 
+    [Header("Temperature Settings (Base)")]
+    [Tooltip("Tolerance difference for suitable temperature.")]
+    [SerializeField] protected float allowedDifference = 5f;
+
+    [Tooltip("Interval (seconds) for mood to decay if temperature is out of range.")]
+    [SerializeField] protected float moodInterval = 30f;
+
+    protected float temperatureTimer;
+
     public float SuitableTemperature
     {
         get => suitableTemperature;
         protected set => suitableTemperature = value;
+    }
+
+    public void ModifySuitableTemperature(float delta)
+    {
+        suitableTemperature += delta;
     }
 
     //────────────────────────────────────────────────────────
@@ -170,6 +184,15 @@ public partial class MonsterBase : MonoBehaviour
         ApplySprite();
         SyncInitialGrowthState();  // MonsterBase.Growth.cs
         CheckAutoResearch();       // MonsterBase.Research.cs -- jaga-jaga growth awal sudah penuhi syarat Auto
+
+        if (myUnit == null)
+        {
+            myUnit = GetComponentInParent<ContainmentUnit>();
+            if (myUnit != null)
+            {
+                context = new MonsterContext(myUnit);
+            }
+        }
     }
 
     protected virtual void Update()
@@ -180,6 +203,9 @@ public partial class MonsterBase : MonoBehaviour
         TickResearchDuration(); // MonsterBase.Research.cs -- jalanin timer research Manual yang sedang berlangsung
         TickHarvestDuration();  // MonsterBase.Harvest.cs -- jalanin timer harvest yang sedang berlangsung
         CheckAutoResearch();    // MonsterBase.Research.cs -- dicek tiap frame, kondisi Custom bisa berubah kapan saja
+
+        // Handle Temperature-based Mood Decay for all monsters in all states
+        HandleTemperatureMoodDecay();
 
         switch (CurrentGrowthState)
         {
@@ -228,5 +254,22 @@ public partial class MonsterBase : MonoBehaviour
 
         timer = 0f;
         return true;
+    }
+
+    protected virtual void HandleTemperatureMoodDecay()
+    {
+        if (Context != null && Context.CurrentRoom != null)
+        {
+            float difference = Mathf.Abs(Context.CurrentRoom.Temperature - suitableTemperature);
+            if (difference <= allowedDifference)
+            {
+                temperatureTimer = 0f;
+            }
+            else if (Every(ref temperatureTimer, moodInterval))
+            {
+                ModifyMood(-1);
+                Debug.Log($"[{MonsterName}] Suhu tidak sesuai ({Context.CurrentRoom.Temperature:F1}°C, target: {suitableTemperature:F1}°C ± {allowedDifference}°C). Mood berkurang.");
+            }
+        }
     }
 }
