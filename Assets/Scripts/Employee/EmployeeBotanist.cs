@@ -9,7 +9,7 @@ public class EmployeeBotanist : Employee
 {
     [Header("Botanist Penalty")]
     [Tooltip("Multiplier durasi saat botanist terpaksa research (bukan bidangnya).")]
-    [SerializeField] private float offFieldMultiplier = 5f;
+    [SerializeField] private float offFieldMultiplier = 6f;
 
     protected override float CalculateResearchDuration(MonsterBase target)
     {
