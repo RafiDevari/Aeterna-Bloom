@@ -479,6 +479,7 @@ public partial class Employee : MonoBehaviour
         Debug.Log($"[Employee] {employeeName} job dibatalkan: salah satu task gagal, sisa antrean dibersihkan.");
         currentTask = null;
         taskQueue.Clear();
+        BackToDivision();
     }
 
     //==============================
