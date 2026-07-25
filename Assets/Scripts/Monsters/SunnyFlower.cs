@@ -158,7 +158,7 @@ public class SunflowerMonster : MonsterBase
         UpdateTemperatureModifier(5f - newMood);
 
         // Requirement: ketika mood tanaman ini 0, tingkatkan suhu fasility sebanyak 10, lalu turunkan suitable temperature untuk tanaman yang satu room dengannya sebanyak 10 derajat selama mood nya 0.
-        if (newMood == 0 && !isMoodZeroEffectActive)
+        if (newMood == 0 && !isMoodZeroEffectActive && CurrentGrowthState != GrowthState.Seed)
         {
             ApplyMoodZeroEffect();
         }

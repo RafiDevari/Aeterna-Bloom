@@ -249,6 +249,10 @@ public partial class MonsterBase
 
     public void ModifyGrowth(float delta)
     {
+        if (delta > 0 && Mood == 0 && CurrentGrowthState == GrowthState.Seed)
+        {
+            return;
+        }
         Growth += delta;
     }
 }

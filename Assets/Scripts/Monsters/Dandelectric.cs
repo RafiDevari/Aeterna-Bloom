@@ -91,7 +91,7 @@ public class Dandelectric : MonsterBase
     {
         base.OnMoodChange(oldMood, newMood);
 
-        if (newMood == 0)
+        if (newMood == 0 && CurrentGrowthState != GrowthState.Seed)
         {
             ElectricShock();
         }
