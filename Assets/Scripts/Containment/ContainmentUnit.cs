@@ -33,6 +33,7 @@ public class ContainmentUnit : MonoBehaviour
     // ── Events ────────────────────────────────────────────────────────────────
     public System.Action<ContainmentUnit> OnUnitClicked;
     public System.Action<MonsterBase> OnMonsterAssigned;
+    public System.Action OnMonsterRemoved;
 
     public static System.Action<ContainmentUnit> OnAnyUnitClicked;
 
@@ -78,6 +79,12 @@ public class ContainmentUnit : MonoBehaviour
             {
                 Context = new MonsterContext(this);
             }
+        }
+
+        // Auto-add ContainmentUnitOverlay script to handle growth and mood display
+        if (GetComponent<ContainmentUnitOverlay>() == null)
+        {
+            gameObject.AddComponent<ContainmentUnitOverlay>();
         }
     }
 
@@ -171,6 +178,7 @@ public class ContainmentUnit : MonoBehaviour
         {
             Destroy(monster.gameObject);
             monster = null;
+            OnMonsterRemoved?.Invoke();
         }
     }
 

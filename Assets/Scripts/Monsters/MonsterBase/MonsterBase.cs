@@ -87,6 +87,9 @@ public partial class MonsterBase : MonoBehaviour
     [SerializeField] protected int maxMood = 5;
     [SerializeField] protected int minMood = 0;
 
+    public int MaxMood => maxMood;
+    public int MinMood => minMood;
+
     public System.Action<int> OnMoodChanged;
 
     public int Mood

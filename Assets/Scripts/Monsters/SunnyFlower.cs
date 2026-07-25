@@ -8,6 +8,7 @@ public class SunflowerMonster : MonsterBase
     [SerializeField] private float growthBoostTimer = 0f;
     private float myPassiveGrowthTimer;
     private bool isMoodZeroEffectActive = false;
+    private float potassiumTimer = 0f;
 
     // Track monsters that had their suitable temperature decreased by us
     private List<MonsterBase> affectedMonsters = new List<MonsterBase>();
@@ -67,7 +68,14 @@ public class SunflowerMonster : MonsterBase
     {
         base.OnMonsterUpdate();
 
-
+        // 1. Potassium Feeding Timer
+        potassiumTimer += Time.deltaTime;
+        if (potassiumTimer >= 60f)
+        {
+            ModifyMood(-1);
+            potassiumTimer = 0f;
+            Debug.Log($"[{MonsterName}] Tidak diberi makan Kalium dalam 1 menit, Mood berkurang 1.");
+        }
 
         // 2. Growth Boost Timer
         if (growthBoostTimer > 0f)
@@ -252,6 +260,7 @@ public class SunflowerMonster : MonsterBase
             case FoodType.Kalium:
                 growthSpeedMultiplier = 2f;
                 growthBoostTimer = 15f;
+                potassiumTimer = 0f; // Reset potassium feeding starvation timer
                 Debug.Log($"[{MonsterName}] Diberi makan Kalium: growth speed 2x.");
                 break;
         }
