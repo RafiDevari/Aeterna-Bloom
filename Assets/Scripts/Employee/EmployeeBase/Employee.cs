@@ -41,7 +41,7 @@ public partial class Employee : MonoBehaviour
     [SerializeField] private string employeeName = "Employee";
 
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 3f;
+    [SerializeField] protected float moveSpeed = 3f;
     [SerializeField] private float hypnotizedMoveSpeed = 1f;
 
     private System.Action onTimedActionComplete;
@@ -479,6 +479,7 @@ public partial class Employee : MonoBehaviour
         Debug.Log($"[Employee] {employeeName} job dibatalkan: salah satu task gagal, sisa antrean dibersihkan.");
         currentTask = null;
         taskQueue.Clear();
+        BackToDivision();
     }
 
     //==============================

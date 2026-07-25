@@ -4,6 +4,7 @@ public enum EmployeeDivision
     Botanist,
     Engineer,
     Medic,
-    Security
+    Security,
+    Clerk
 }
  

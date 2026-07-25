@@ -105,7 +105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcc92821c7dc42649ac80937636e1475, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SunflowerMonster
-  feedDuration: 1
+  feedDuration: 5
   feedCooldown: 5
   growth: 0
   growThreshold: 0.3
@@ -124,7 +124,33 @@ MonoBehaviour:
     sprite: {fileID: -366652284039658825, guid: ec7117d844cbef948b29f2e8d47128a7, type: 3}
   - state: 3
     sprite: {fileID: -894750582788028668, guid: b4b30300afeb2464fa6c8e01aefb6164, type: 3}
-  researchEntries: []
+  researchEntries:
+  - level: 1
+    id: 1
+    resultText: 'Tanaman ini idealnya pada temperature suhu 20 derajat '
+    condition: 0
+    trigger: 0
+    customValue: 0
+  - level: 2
+    id: 2
+    resultText: Tanaman ini lebih suka diberi natrium dan kalium
+    condition: 0
+    trigger: 0
+    customValue: 0
+  - level: 3
+    id: 3
+    resultText: Tanaman ini HARUS diberi kalium, jika tidak diberi kalium dalam 1
+      menit, tanaman ini akan kehilangan mood
+    condition: 1
+    trigger: 0
+    customValue: 0
+  - level: 4
+    id: mood0
+    resultText: 'Tanaman ini akan mengubah suhu nyaman dari tanaman yang satu room
+      dengannya sebanyak 10 derajat lebih dingin '
+    condition: 4
+    trigger: 1
+    customValue: 0
   researchDuration: 1
   monsterName: Sunny Flower
   monsterRenderer: {fileID: 0}
@@ -135,9 +161,9 @@ MonoBehaviour:
   maxMood: 5
   minMood: 0
   suitableTemperature: 20
-  harvestDuration: 1
-  energyGain: 1
   allowedDifference: 3
   moodInterval: 30
+  harvestDuration: 1
+  energyGain: 1
   growthSpeedMultiplier: 1
   growthBoostTimer: 0

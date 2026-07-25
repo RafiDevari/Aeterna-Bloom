@@ -8,6 +8,7 @@ public class SunflowerMonster : MonsterBase
     [SerializeField] private float growthBoostTimer = 0f;
     private float myPassiveGrowthTimer;
     private bool isMoodZeroEffectActive = false;
+    private bool hasMoodReachedZero = false;
     private float potassiumTimer = 0f;
 
     // Track monsters that had their suitable temperature decreased by us
@@ -157,7 +158,7 @@ public class SunflowerMonster : MonsterBase
         UpdateTemperatureModifier(5f - newMood);
 
         // Requirement: ketika mood tanaman ini 0, tingkatkan suhu fasility sebanyak 10, lalu turunkan suitable temperature untuk tanaman yang satu room dengannya sebanyak 10 derajat selama mood nya 0.
-        if (newMood == 0 && !isMoodZeroEffectActive)
+        if (newMood == 0 && !isMoodZeroEffectActive && CurrentGrowthState != GrowthState.Seed)
         {
             ApplyMoodZeroEffect();
         }
@@ -167,9 +168,19 @@ public class SunflowerMonster : MonsterBase
         }
     }
 
+    protected override bool CheckCustomResearchCondition(ResearchEntry entry)
+    {
+        if (entry.id == "mood0")
+        {
+            return hasMoodReachedZero;
+        }
+        return base.CheckCustomResearchCondition(entry);
+    }
+
     private void ApplyMoodZeroEffect()
     {
         isMoodZeroEffectActive = true;
+        hasMoodReachedZero = true;
         Debug.LogWarning($"[{MonsterName}] Mood mencapai 0! Mengaktifkan efek temperatur.");
 
         // 1. Increase facility temperature by 10
