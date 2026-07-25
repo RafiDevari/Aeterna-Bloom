@@ -132,7 +132,7 @@ public partial class Employee
     // CATATAN: bar TIDAK dibuat di sini. Bar dibuat on-demand (lazy) tepat saat
     // dibutuhkan (masuk ProgressStates) dan di-DESTROY (bukan cuma disembunyikan)
     // begitu keluar dari ProgressStates -- lihat HandleStateChangedForProgressBar.
-    private void Awake()
+    protected virtual void Awake()
     {
         OnStateChanged += HandleStateChangedForProgressBar;
     }
