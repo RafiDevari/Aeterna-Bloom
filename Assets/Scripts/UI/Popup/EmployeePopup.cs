@@ -63,6 +63,7 @@ public class EmployeePopup : PopupBase
         {
             string nameStr = employee != null ? employee.EmployeeName : "-";
             if (employee != null && employee.IsSick) nameStr += " (SICK)";
+            if (employee != null && employee.CurrentState == EmployeeState.Sleeping) nameStr += " (Resting)";
             nameText.text = nameStr;
         }
 
@@ -72,6 +73,7 @@ public class EmployeePopup : PopupBase
             {
                 string text = employee.Division.ToString();
                 if (employee.IsSick) text += " [SICK]";
+                if (employee.CurrentState == EmployeeState.Sleeping) text += " [Resting]";
                 if (hpText == null || moodText == null)
                 {
                     text += $"\nHP: {employee.Hp}/{employee.MaxHp}\nMood: {employee.MoodName} ({employee.Mood}/5)";
@@ -88,6 +90,7 @@ public class EmployeePopup : PopupBase
         {
             string hpStr = employee != null ? $"HP: {employee.Hp}/{employee.MaxHp}" : "-";
             if (employee != null && employee.IsSick) hpStr += " (SICK)";
+            if (employee != null && employee.CurrentState == EmployeeState.Sleeping) hpStr += " (Resting)";
             hpText.text = hpStr;
         }
 

@@ -87,6 +87,10 @@ public class HealSickTask : EmployeeTask
 
         Debug.Log($"[HealSick] {healerEmployee.EmployeeName} telah sampai di posisi {targetEmployee.EmployeeName}. Memulai proses pengobatan...");
 
+        // Target tertidur, batalkan gerakan & task mereka saat pengobatan dimulai
+        targetEmployee.SetState(EmployeeState.Sleeping);
+        targetEmployee.ClearTasksAndInterrupt();
+
         healerEmployee.SetState(EmployeeState.Healing);
         healerEmployee.StartTimedAction(healDuration, HealingCompleted, HealingInterrupted);
     }
@@ -133,6 +137,12 @@ public class HealSickTask : EmployeeTask
 
         StopFollowCoroutine();
         targetEmployee.OnStateChanged -= HandleTargetStateChanged;
+
+        // Bangunkan target jika pengobatan terganggu
+        if (targetEmployee != null && targetEmployee.CurrentState == EmployeeState.Sleeping)
+        {
+            targetEmployee.SetState(EmployeeState.Idle);
+        }
 
         var failCallback = onFail;
         onFail = null;

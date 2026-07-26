@@ -72,9 +72,11 @@ public partial class Employee : MonoBehaviour
 
     private float sickHpTimer = 0f;
     private float coughTimer = 0f;
+    private float virusImmunityTimer = 0f;
+    private float postCureSleepTimer = 0f;
 
     public bool IsSick => isSick;
-    public bool IsImmuneToVirus => division == EmployeeDivision.Medic || this is EmployeeMedic;
+    public bool IsImmuneToVirus => division == EmployeeDivision.Medic || this is EmployeeMedic || virusImmunityTimer > 0f;
 
     public System.Action<bool> OnSickStatusChanged;
 
@@ -412,6 +414,26 @@ public partial class Employee : MonoBehaviour
         UpdateSocializing();
         HandleRoomHazards();
         HandleSickMechanics();
+        UpdateVirusTimers();
+    }
+
+    private void UpdateVirusTimers()
+    {
+        if (virusImmunityTimer > 0f)
+        {
+            virusImmunityTimer -= Time.deltaTime;
+        }
+
+        if (currentState == EmployeeState.Sleeping && postCureSleepTimer > 0f)
+        {
+            postCureSleepTimer -= Time.deltaTime;
+            if (postCureSleepTimer <= 0f)
+            {
+                SetState(EmployeeState.Idle);
+                BackToDivision();
+                Debug.Log($"[{EmployeeName}] Selesai tidur pemulihan pasca sembuh dari virus, kembali bekerja.");
+            }
+        }
     }
 
     private void HandleRoomHazards()
@@ -452,6 +474,13 @@ public partial class Employee : MonoBehaviour
         coughTimer = 0f;
         OnSickStatusChanged?.Invoke(false);
         Debug.Log($"[{EmployeeName}] Sembuh dari Virus!");
+
+        // Efek tambahan pasca disembuhkan:
+        virusImmunityTimer = 180f; // Imun terhadap virus selama 180 detik
+        postCureSleepTimer = 60f;  // Tidur selama 60 detik
+        SetState(EmployeeState.Sleeping);
+        ClearTasksAndInterrupt();
+        Debug.Log($"[{EmployeeName}] Masuk status Sleeping selama 60 detik pasca sembuh dari virus.");
     }
 
     private void HandleSickMechanics()
@@ -502,7 +531,7 @@ public partial class Employee : MonoBehaviour
 
     public void EnqueueTask(EmployeeTask task)
     {
-        if (task == null || currentState == EmployeeState.Hypnotized || currentState == EmployeeState.Dead)
+        if (task == null || currentState == EmployeeState.Hypnotized || currentState == EmployeeState.Dead || currentState == EmployeeState.Sleeping)
             return;
 
         EndConversation();
@@ -540,7 +569,7 @@ public partial class Employee : MonoBehaviour
 
     private void ProcessTaskQueue()
     {
-        if (currentTask != null || currentState == EmployeeState.Hypnotized || currentState == EmployeeState.Dead)
+        if (currentTask != null || currentState == EmployeeState.Hypnotized || currentState == EmployeeState.Dead || currentState == EmployeeState.Sleeping)
             return;
 
         if (taskQueue.Count == 0)
