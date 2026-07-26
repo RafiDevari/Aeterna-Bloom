@@ -63,6 +63,23 @@ public partial class Employee : MonoBehaviour
     [SerializeField] private int poisonDamageAmount = 5;
     private float poisonTimer = 0f;
 
+    [Header("Virus & Sickness Mechanics")]
+    [SerializeField] private bool isSick = false;
+    [SerializeField] private float sickHpInterval = 20.0f;
+    [SerializeField] private int sickHpDamage = 3;
+    [SerializeField] private float coughInterval = 30.0f;
+    [SerializeField] private float coughSpreadRadius = 2.5f;
+
+    private float sickHpTimer = 0f;
+    private float coughTimer = 0f;
+    private float virusImmunityTimer = 0f;
+    private float postCureSleepTimer = 0f;
+
+    public bool IsSick => isSick;
+    public bool IsImmuneToVirus => division == EmployeeDivision.Medic || this is EmployeeMedic || virusImmunityTimer > 0f;
+
+    public System.Action<bool> OnSickStatusChanged;
+
     public int Hp
     {
         get => hp;
@@ -396,6 +413,27 @@ public partial class Employee : MonoBehaviour
         UpdateMoodRegen();
         UpdateSocializing();
         HandleRoomHazards();
+        HandleSickMechanics();
+        UpdateVirusTimers();
+    }
+
+    private void UpdateVirusTimers()
+    {
+        if (virusImmunityTimer > 0f)
+        {
+            virusImmunityTimer -= Time.deltaTime;
+        }
+
+        if (currentState == EmployeeState.Sleeping && postCureSleepTimer > 0f)
+        {
+            postCureSleepTimer -= Time.deltaTime;
+            if (postCureSleepTimer <= 0f)
+            {
+                SetState(EmployeeState.Idle);
+                BackToDivision();
+                Debug.Log($"[{EmployeeName}] Selesai tidur pemulihan pasca sembuh dari virus, kembali bekerja.");
+            }
+        }
     }
 
     private void HandleRoomHazards()
@@ -415,13 +453,85 @@ public partial class Employee : MonoBehaviour
         }
     }
 
+    public void InfectVirus()
+    {
+        if (isSick || IsImmuneToVirus || currentState == EmployeeState.Dead)
+            return;
+
+        isSick = true;
+        sickHpTimer = 0f;
+        coughTimer = 0f;
+        OnSickStatusChanged?.Invoke(true);
+        Debug.LogWarning($"[{EmployeeName}] TERINFEKSI VIRUS! Memasuki status SICK (-3 HP / 20s, -30% Speed, batuk / 30s).");
+    }
+
+    public void CureVirus()
+    {
+        if (!isSick) return;
+
+        isSick = false;
+        sickHpTimer = 0f;
+        coughTimer = 0f;
+        OnSickStatusChanged?.Invoke(false);
+        Debug.Log($"[{EmployeeName}] Sembuh dari Virus!");
+
+        // Efek tambahan pasca disembuhkan:
+        virusImmunityTimer = 180f; // Imun terhadap virus selama 180 detik
+        postCureSleepTimer = 60f;  // Tidur selama 60 detik
+        SetState(EmployeeState.Sleeping);
+        ClearTasksAndInterrupt();
+        Debug.Log($"[{EmployeeName}] Masuk status Sleeping selama 60 detik pasca sembuh dari virus.");
+    }
+
+    private void HandleSickMechanics()
+    {
+        if (!isSick || currentState == EmployeeState.Dead) return;
+
+        // Damage HP per 20 detik
+        sickHpTimer += Time.deltaTime;
+        if (sickHpTimer >= sickHpInterval)
+        {
+            sickHpTimer = 0f;
+            ModifyHp(-sickHpDamage);
+            Debug.Log($"[{EmployeeName}] Kehilangan {sickHpDamage} HP akibat virus! Sisa HP: {hp}");
+        }
+
+        // Batuk per 30 detik
+        coughTimer += Time.deltaTime;
+        if (coughTimer >= coughInterval)
+        {
+            coughTimer = 0f;
+            Cough();
+        }
+    }
+
+    private void Cough()
+    {
+        Debug.LogWarning($"[{EmployeeName}] *UHUK UHUK* (Batuk akibat virus!)");
+
+        if (Facility.Instance == null) return;
+
+        foreach (var emp in Facility.Instance.Employees)
+        {
+            if (emp != null && emp != this && emp.CurrentState != EmployeeState.Dead && !emp.IsSick && !emp.IsImmuneToVirus)
+            {
+                float distance = Vector3.Distance(transform.position, emp.transform.position);
+                if (distance <= coughSpreadRadius)
+                {
+                    emp.InfectVirus();
+                    Debug.LogWarning($"[{emp.EmployeeName}] Tertular virus dari batuk {EmployeeName} (Jarak: {distance:F2} unit)!");
+                }
+            }
+        }
+    }
+
     //==============================
     // Task Queue Handling
     //==============================
 
     public void EnqueueTask(EmployeeTask task)
     {
-        if (task == null || currentState == EmployeeState.Hypnotized || currentState == EmployeeState.Dead)
+        if (task == null || currentState == EmployeeState.Hypnotized || currentState == EmployeeState.Dead || currentState == EmployeeState.Sleeping)
             return;
 
         EndConversation();
@@ -459,7 +569,7 @@ public partial class Employee : MonoBehaviour
 
     private void ProcessTaskQueue()
     {
-        if (currentTask != null || currentState == EmployeeState.Hypnotized || currentState == EmployeeState.Dead)
+        if (currentTask != null || currentState == EmployeeState.Hypnotized || currentState == EmployeeState.Dead || currentState == EmployeeState.Sleeping)
             return;
 
         if (taskQueue.Count == 0)
@@ -599,6 +709,10 @@ public partial class Employee : MonoBehaviour
             return;
 
         float currentSpeed = (currentState == EmployeeState.Hypnotized) ? hypnotizedMoveSpeed : moveSpeed;
+        if (isSick)
+        {
+            currentSpeed *= 0.7f;
+        }
 
         transform.position = Vector3.MoveTowards(
             transform.position,
