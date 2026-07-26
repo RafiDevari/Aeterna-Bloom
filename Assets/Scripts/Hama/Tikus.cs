@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// Hama jenis Tikus.
@@ -24,6 +25,10 @@ public class Tikus : Pest
     private bool isWandering = false;
 
     private Employee currentTargetEmployee;
+
+    private List<Vector3> chasePath = null;
+    private float repathTimer = 0f;
+    private const float repathInterval = 0.5f;
 
     private void Start()
     {
@@ -79,10 +84,37 @@ public class Tikus : Pest
     {
         isWandering = false;
 
-        // Gerak mengejar target
+        repathTimer += Time.deltaTime;
+        if (chasePath == null || repathTimer >= repathInterval)
+        {
+            repathTimer = 0f;
+            chasePath = RoomPathfinder.FindWaypointPath(transform.position, currentTargetEmployee.transform.position, false);
+        }
+
+        Vector3 nextTargetPos = currentTargetEmployee.transform.position;
+        if (chasePath != null && chasePath.Count > 0)
+        {
+            nextTargetPos = chasePath[0];
+            if (Vector3.Distance(transform.position, nextTargetPos) < 0.1f)
+            {
+                chasePath.RemoveAt(0);
+                if (chasePath.Count > 0)
+                {
+                    nextTargetPos = chasePath[0];
+                }
+            }
+        }
+        else
+        {
+            // Jika target tidak terjangkau (misal di locked room), diam atau fallback ke wander
+            HandleWander();
+            return;
+        }
+
+        // Gerak mengejar target melewati waypoint agar tidak menembus dinding
         transform.position = Vector3.MoveTowards(
             transform.position,
-            currentTargetEmployee.transform.position,
+            nextTargetPos,
             moveSpeed * Time.deltaTime);
 
         float distance = Vector3.Distance(transform.position, currentTargetEmployee.transform.position);
@@ -109,18 +141,74 @@ public class Tikus : Pest
         attackTimer = 0f;
         wanderTimer += Time.deltaTime;
 
-        if (wanderTimer >= wanderInterval || Vector3.Distance(transform.position, wanderTarget) < 0.1f || !isWandering)
+        Room currentRoom = RoomPathfinder.FindRoomAt(transform.position);
+
+        if (wanderTimer >= wanderInterval || Vector3.Distance(transform.position, wanderTarget) < 0.1f || !isWandering || currentRoom == null)
         {
             wanderTimer = 0f;
             isWandering = true;
-            // Pilih titik acak di sekitar posisi saat ini
-            wanderTarget = transform.position + new Vector3(Random.Range(-2.5f, 2.5f), Random.Range(-0.3f, 0.3f), 0f);
+
+            if (currentRoom != null)
+            {
+                Bounds[] boundsList = currentRoom.CollisionBounds;
+                if (boundsList != null && boundsList.Length > 0)
+                {
+                    Bounds bounds = boundsList[Random.Range(0, boundsList.Length)];
+                    // Pilih titik acak mendatar di dalam bounds ruangan saat ini
+                    float randomX = Random.Range(bounds.min.x, bounds.max.x);
+                    // Pastikan Y tepat di tengah bounds ruangan agar tidak melayang/keluar batas vertikal
+                    wanderTarget = new Vector3(randomX, bounds.center.y, 0f);
+                }
+                else
+                {
+                    // Fallback
+                    wanderTarget = transform.position + new Vector3(Random.Range(-2.5f, 2.5f), 0f, 0f);
+                }
+            }
+            else
+            {
+                // Jika berada di luar ruangan, cari ruangan terdekat untuk masuk kembali
+                Room nearestRoom = FindNearestRoom();
+                if (nearestRoom != null)
+                {
+                    Bounds[] boundsList = nearestRoom.CollisionBounds;
+                    if (boundsList != null && boundsList.Length > 0)
+                    {
+                        Bounds bounds = boundsList[0];
+                        wanderTarget = new Vector3(bounds.center.x, bounds.center.y, 0f);
+                    }
+                }
+                else
+                {
+                    wanderTarget = transform.position;
+                }
+            }
         }
 
         transform.position = Vector3.MoveTowards(
             transform.position,
             wanderTarget,
             moveSpeed * 0.5f * Time.deltaTime);
+    }
+
+    private Room FindNearestRoom()
+    {
+        if (Facility.Instance == null || Facility.Instance.Rooms.Count == 0)
+            return null;
+
+        Room closest = null;
+        float minDist = float.MaxValue;
+        foreach (var room in Facility.Instance.Rooms)
+        {
+            if (room == null) continue;
+            float dist = Vector3.Distance(transform.position, room.transform.position);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = room;
+            }
+        }
+        return closest;
     }
 
     private void OnMouseOver()
