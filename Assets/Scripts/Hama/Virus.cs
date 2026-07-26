@@ -28,6 +28,18 @@ public class Virus : Pest
             collider.isTrigger = true;
         }
 
+        // Memastikan ada Rigidbody2D agar deteksi trigger collision dengan Employee bekerja
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            rb = gameObject.AddComponent<Rigidbody2D>();
+        }
+        if (rb != null)
+        {
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.simulated = true;
+        }
+
         if (makeInvisible)
         {
             SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
@@ -64,8 +76,13 @@ public class Virus : Pest
         }
     }
 
+    private static bool hasSpawned = false;
+
     public static new void Spawn()
     {
+        if (hasSpawned) return;
+        hasSpawned = true;
+
 #if UNITY_EDITOR
         GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/PestPrefabs/Virus.prefab");
         if (prefab == null)
