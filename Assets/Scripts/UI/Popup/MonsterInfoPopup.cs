@@ -94,7 +94,7 @@ public class MonsterInfoPopup : PopupBase
         Lebah activeLebah = FindLebahInUnit(unit);
         if (killBeeButton != null)
         {
-            killBeeButton.gameObject.SetActive(activeLebah != null);
+            killBeeButton.gameObject.SetActive(false); // Dinonaktifkan, diganti klik kanan langsung ke lebah
         }
 
         base.Open();
@@ -141,21 +141,7 @@ public class MonsterInfoPopup : PopupBase
 
     private void OnGUI()
     {
-        if (!IsOpen || targetUnit == null) return;
-
-        Lebah activeLebah = FindLebahInUnit(targetUnit);
-        if (activeLebah != null && killBeeButton == null)
-        {
-            float w = 200f;
-            float h = 40f;
-            float x = (Screen.width - w) * 0.5f;
-            float y = Screen.height - 80f;
-
-            if (GUI.Button(new Rect(x, y, w, h), "KILL BEE (BASMI LEBAH)"))
-            {
-                OnKillBeeClicked();
-            }
-        }
+        // Dinonaktifkan karena diganti dengan klik kanan langsung ke Lebah seperti Tikus
     }
 
     protected override void OnClosed()

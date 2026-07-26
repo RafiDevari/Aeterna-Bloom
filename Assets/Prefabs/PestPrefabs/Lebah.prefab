@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 6255943131628941332}
   - component: {fileID: 5134913089013474995}
-  - component: {fileID: 4986653488765167439}
   - component: {fileID: -1930415558314126696}
+  - component: {fileID: 4308009901973711306}
   m_Layer: 0
-  m_Name: Virus
+  m_Name: Lebah
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -71,8 +71,8 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0}
-    oldSize: {x: 0.08, y: 0.08}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 3.4703717, y: 3.52}
     newSize: {x: 0.08, y: 0.08}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -80,26 +80,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &4986653488765167439
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 600681544057225942}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e55c2f98c3f20b4a850531d470f9aec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Virus
-  pestName: Virus
-  hp: 20
-  maxHp: 20
-  immuneToPoison: 1
-  hazardInterval: 1
-  hazardDamageAmount: 5
-  visualScale: {x: 0.2, y: 0.2, z: 1}
-  makeInvisible: 1
 --- !u!212 &-1930415558314126696
 SpriteRenderer:
   serializedVersion: 3
@@ -149,7 +129,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 9095430031287997196, guid: 0616e04afe2c0de48811a1f1cdc70039, type: 3}
+  m_Sprite: {fileID: 1332664980, guid: 7ca1117f6e621b54b9aa81a224d05d1d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -160,3 +140,26 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &4308009901973711306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 600681544057225942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 304193eb6e325534bb1e0ae8c5644f69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Lebah
+  pestName: Lebah
+  hp: 20
+  maxHp: 20
+  immuneToPoison: 0
+  hazardInterval: 1
+  hazardDamageAmount: 5
+  drainInterval: 5
+  growthDrainAmount: 0.03
+  moveSpeed: 1
+  targetUnit: {fileID: 0}
+  targetMonster: {fileID: 0}
