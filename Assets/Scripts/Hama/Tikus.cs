@@ -170,8 +170,13 @@ public class Tikus : Pest
         // CATATAN: Jangan panggil Destroy(gameObject) agar mayat tidak hilang dari scene!
     }
 
+    private static bool hasSpawned = false;
+
     public static new void Spawn()
     {
+        if (hasSpawned) return;
+        hasSpawned = true;
+
 #if UNITY_EDITOR
         GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/PestPrefabs/Tikus.prefab");
         if (prefab == null)

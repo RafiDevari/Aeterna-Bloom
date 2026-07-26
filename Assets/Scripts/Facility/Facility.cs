@@ -195,10 +195,10 @@ public class Facility : MonoBehaviour
 
     private void Update()
     {
-        // SEMENTARA: Spawn virus jika energy > 75%
+        // SEMENTARA: Spawn tikus jika energy > 75%
         if (energy > 75f)
         {
-            Virus.Spawn();
+            Tikus.Spawn();
         }
 
         if (isBlackout)
