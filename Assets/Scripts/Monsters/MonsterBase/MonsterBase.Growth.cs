@@ -112,6 +112,9 @@ public partial class MonsterBase
     /// <summary>True kalau monster ini pernah mencapai state Tumbuh (tidak bisa balik jadi Benih lagi).</summary>
     public bool HasGrown => hasGrown;
 
+    /// <summary>Threshold growth minimal agar monster menjadi Growing.</summary>
+    public float GrowThreshold => growThreshold;
+
     /// <summary>True selagi status Mutated masih aktif (sticky sampai growth turun ke mutationRecoveryThreshold).</summary>
     public bool IsMutated => isMutated;
 
@@ -211,6 +214,8 @@ public partial class MonsterBase
     /// </summary>
     protected virtual Sprite GetSpriteForState(GrowthState state)
     {
+        if (growthStateSprites == null) return null;
+
         foreach (var entry in growthStateSprites)
         {
             if (entry.state == state && entry.sprite != null)
