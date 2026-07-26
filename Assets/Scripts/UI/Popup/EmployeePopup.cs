@@ -26,6 +26,7 @@ public class EmployeePopup : PopupBase
     [Header("Buttons")]
     [SerializeField] private Button closeButton;
     [SerializeField] private Button takeCareButton;
+    [SerializeField] private Button healSickButton;
 
     private Employee targetEmployee;
 
@@ -38,6 +39,8 @@ public class EmployeePopup : PopupBase
         closeButton.onClick.AddListener(Close);
         if (takeCareButton != null)
             takeCareButton.onClick.AddListener(OnTakeCareClicked);
+        if (healSickButton != null)
+            healSickButton.onClick.AddListener(OnHealSickClicked);
 
         Employee.OnAnyEmployeeRightClicked += HandleEmployeeRightClicked;
     }
@@ -57,13 +60,18 @@ public class EmployeePopup : PopupBase
         targetEmployee = employee;
 
         if (nameText != null)
-            nameText.text = employee != null ? employee.EmployeeName : "-";
+        {
+            string nameStr = employee != null ? employee.EmployeeName : "-";
+            if (employee != null && employee.IsSick) nameStr += " (SICK)";
+            nameText.text = nameStr;
+        }
 
         if (divisionText != null)
         {
             if (employee != null)
             {
                 string text = employee.Division.ToString();
+                if (employee.IsSick) text += " [SICK]";
                 if (hpText == null || moodText == null)
                 {
                     text += $"\nHP: {employee.Hp}/{employee.MaxHp}\nMood: {employee.MoodName} ({employee.Mood}/5)";
@@ -77,7 +85,11 @@ public class EmployeePopup : PopupBase
         }
 
         if (hpText != null)
-            hpText.text = employee != null ? $"HP: {employee.Hp}/{employee.MaxHp}" : "-";
+        {
+            string hpStr = employee != null ? $"HP: {employee.Hp}/{employee.MaxHp}" : "-";
+            if (employee != null && employee.IsSick) hpStr += " (SICK)";
+            hpText.text = hpStr;
+        }
 
         if (moodText != null)
             moodText.text = employee != null ? $"Mood: {employee.MoodName} ({employee.Mood}/5)" : "-";
@@ -85,6 +97,11 @@ public class EmployeePopup : PopupBase
         if (takeCareButton != null)
         {
             takeCareButton.gameObject.SetActive(employee != null && employee.CurrentState == EmployeeState.Hypnotized);
+        }
+
+        if (healSickButton != null)
+        {
+            healSickButton.gameObject.SetActive(employee != null && employee.IsSick);
         }
 
         base.Open();
@@ -106,18 +123,48 @@ public class EmployeePopup : PopupBase
         }, typeof(DivisionMedic));
     }
 
+    private void OnHealSickClicked()
+    {
+        Employee capturedTarget = targetEmployee;
+
+        Close();
+
+        EmployeeSelectPopup.Instance.Open(healer =>
+        {
+            if (healer != null && capturedTarget != null)
+            {
+                healer.EnqueueTask(new HealSickTask(capturedTarget));
+                Debug.Log($"[EmployeePopup] {healer.EmployeeName} ditugaskan untuk mengobati {capturedTarget.EmployeeName}");
+            }
+        }, typeof(DivisionMedic));
+    }
+
     private void OnGUI()
     {
-        if (IsOpen && targetEmployee != null && targetEmployee.CurrentState == EmployeeState.Hypnotized && takeCareButton == null)
+        if (!IsOpen || targetEmployee == null) return;
+
+        float w = 200f;
+        float h = 40f;
+
+        if (targetEmployee.CurrentState == EmployeeState.Hypnotized && takeCareButton == null)
         {
-            float w = 200f;
-            float h = 40f;
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height - 150f;
 
             if (GUI.Button(new Rect(x, y, w, h), "TAKE CARE"))
             {
                 OnTakeCareClicked();
+            }
+        }
+
+        if (targetEmployee.IsSick && healSickButton == null)
+        {
+            float x = (Screen.width - w) * 0.5f;
+            float y = Screen.height - 100f;
+
+            if (GUI.Button(new Rect(x, y, w, h), "HEAL (OBATI)"))
+            {
+                OnHealSickClicked();
             }
         }
     }
