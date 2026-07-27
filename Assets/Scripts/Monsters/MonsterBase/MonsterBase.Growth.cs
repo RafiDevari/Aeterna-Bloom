@@ -13,14 +13,14 @@ public enum GrowthState
 }
 
 /// <summary>
-/// Pasangan GrowthState -> Sprite, dipakai untuk konfigurasi sprite per state
+/// Pasangan GrowthState -> GameObject, dipakai untuk konfigurasi object visual per state
 /// lewat Inspector. Beda-beda tiap prefab child class.
 /// </summary>
 [System.Serializable]
-public struct GrowthStateSprite
+public struct GrowthStateObject
 {
     public GrowthState state;
-    public Sprite sprite;
+    public GameObject visualObject;
 }
 
 /// <summary>
@@ -71,9 +71,9 @@ public partial class MonsterBase
 
     private float passiveGrowthTimer;
 
-    [Tooltip("Sprite untuk tiap GrowthState. Kosongkan salah satu state kalau tidak mau sprite " +
-             "berubah di state itu (sprite terakhir tetap dipakai). Beda-beda tiap prefab child class.")]
-    [SerializeField] private GrowthStateSprite[] growthStateSprites;
+    [Tooltip("GameObject visual untuk tiap GrowthState. Aktifkan visual untuk state saat ini, " +
+             "dan nonaktifkan yang lain. Beda-beda tiap prefab child class.")]
+    [SerializeField] private GrowthStateObject[] growthStateObjects;
 
     //────────────────────────────────────────────────────────
     // Events
@@ -124,10 +124,25 @@ public partial class MonsterBase
 
     protected virtual void TickPassiveGrowth()
     {
-        if (Every(ref passiveGrowthTimer, passiveGrowthInterval))
+        if (IsMutated)
         {
-            ModifyGrowth(passiveGrowthAmount);
+            if (Every(ref passiveGrowthTimer, passiveGrowthInterval * 2f))
+            {
+                ModifyGrowth(-passiveGrowthAmount * GetGrowthSpeedMultiplier());
+            }
         }
+        else
+        {
+            if (Every(ref passiveGrowthTimer, passiveGrowthInterval))
+            {
+                ModifyGrowth(passiveGrowthAmount * GetGrowthSpeedMultiplier());
+            }
+        }
+    }
+
+    protected virtual float GetGrowthSpeedMultiplier()
+    {
+        return 1f;
     }
 
     //────────────────────────────────────────────────────────
@@ -144,7 +159,7 @@ public partial class MonsterBase
         isMutated = growth >= mutatedThreshold;
         currentGrowthState = ComputeGrowthState();
 
-        ApplySpriteForState(currentGrowthState);
+        ApplyVisualObjectForState(currentGrowthState, currentGrowthState);
     }
 
     private GrowthState ComputeGrowthState()
@@ -191,7 +206,7 @@ public partial class MonsterBase
 
         currentGrowthState = computed;
 
-        ApplySpriteForState(currentGrowthState);
+        ApplyVisualObjectForState(currentGrowthState, previous);
 
         OnGrowthStateChanged?.Invoke(previous, computed);
         OnGrowthStateChange(previous, computed);
@@ -202,39 +217,83 @@ public partial class MonsterBase
         // juga lewat CheckAutoResearch() yang jalan tiap frame di Update() (MonsterBase.cs).
     }
 
+    /// <summary>
+    /// Mencari GameObject visual yang aktif berdasarkan GrowthState saat ini.
+    /// </summary>
+    public GameObject GetActiveVisualObject()
+    {
+        return GetVisualObjectForState(currentGrowthState);
+    }
+
     //────────────────────────────────────────────────────────
-    // Sprite per Growth State
+    // GameObject Visual per Growth State
     //────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Cari sprite untuk GrowthState tertentu dari array growthStateSprites.
-    /// Override ini kalau child class butuh logika lebih rumit (mis. random
-    /// variant, kombinasi dengan mood, animasi transisi, dll).
-    /// Return null kalau tidak ada yang cocok -> sprite lama tidak diganti.
+    /// Cari GameObject visual untuk GrowthState tertentu dari array growthStateObjects.
+    /// Override ini kalau child class butuh logika lebih rumit.
+    /// Return null kalau tidak ada yang cocok.
     /// </summary>
-    protected virtual Sprite GetSpriteForState(GrowthState state)
+    protected virtual GameObject GetVisualObjectForState(GrowthState state)
     {
-        if (growthStateSprites == null) return null;
+        if (growthStateObjects == null) return null;
 
-        foreach (var entry in growthStateSprites)
+        foreach (var entry in growthStateObjects)
         {
-            if (entry.state == state && entry.sprite != null)
-                return entry.sprite;
+            if (entry.state == state && entry.visualObject != null)
+                return entry.visualObject;
         }
 
         return null;
     }
 
-    /// <summary>
-    /// Terapkan sprite sesuai GrowthState (lewat GetSpriteForState). Dipanggil
-    /// otomatis tiap kali GrowthState berubah, tapi boleh juga dipanggil manual.
-    /// </summary>
-    protected void ApplySpriteForState(GrowthState state)
+    protected void ApplyVisualObjectForState(GrowthState state, GrowthState previousState)
     {
-        Sprite target = GetSpriteForState(state);
+        if (growthStateObjects != null)
+        {
+            // Tentukan target visual object terlebih dahulu
+            GameObject target = GetVisualObjectForState(state);
 
-        if (target != null)
-            MonsterSprite = target; // pakai property, biar ApplySprite() ikut kepanggil
+            // Jika target visual object ada, kita lakukan toggle active state.
+            // Namun jika target null (sengaja dikosongkan), kita biarkan visual yang
+            // sedang aktif tetap menyala (sebagai fallback).
+            if (target != null)
+            {
+                foreach (var entry in growthStateObjects)
+                {
+                    if (entry.visualObject != null)
+                    {
+                        entry.visualObject.SetActive(entry.visualObject == target);
+                    }
+                }
+
+                // Update monsterAnimator ke Animator milik objek visual yang baru aktif jika ada.
+                // Jika objek visual tidak punya Animator sendiri, coba cari di root.
+                var targetAnimator = target.GetComponent<Animator>();
+                if (targetAnimator != null)
+                {
+                    monsterAnimator = targetAnimator;
+                }
+                else
+                {
+                    // Fallback ke Animator di root jika visual baru tidak punya Animator sendiri
+                    if (monsterAnimator == null || monsterAnimator.gameObject != gameObject)
+                    {
+                        monsterAnimator = GetComponent<Animator>();
+                    }
+                }
+            }
+        }
+
+        // Set parameter setelah memperbarui referensi animator
+        if (monsterAnimator != null)
+        {
+            monsterAnimator.SetInteger("PreviousGrowthState", (int)previousState);
+            monsterAnimator.SetInteger("GrowthState", (int)state);
+        }
+
+        FitColliderToSprite();
+        SyncSortingOrderWithUnit();
     }
 
     //────────────────────────────────────────────────────────

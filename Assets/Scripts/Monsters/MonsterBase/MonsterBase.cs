@@ -34,6 +34,9 @@ public partial class MonsterBase : MonoBehaviour
     [SerializeField] protected SpriteRenderer monsterRenderer;
     [SerializeField] protected Sprite monsterSprite;
 
+    [Tooltip("Animator untuk mengontrol animasi monster. Auto-cari kalau kosong.")]
+    [SerializeField] protected Animator monsterAnimator;
+
     [Tooltip("Otomatis sesuaikan ukuran BoxCollider2D monster ini mengikuti bounds sprite, " +
              "tiap kali sprite berubah (mis. pas GrowthState pindah dan sprite ganti ukuran).")]
     [SerializeField] private bool autoFitCollider = true;
@@ -42,7 +45,20 @@ public partial class MonsterBase : MonoBehaviour
              "auto-cari kalau kosong. Kalau prefab tidak punya Collider2D, fitur ini otomatis di-skip.")]
     [SerializeField] private BoxCollider2D monsterCollider;
 
-    public SpriteRenderer MonsterRenderer => monsterRenderer;
+    public SpriteRenderer MonsterRenderer
+    {
+        get
+        {
+            if (monsterRenderer != null) return monsterRenderer;
+            GameObject activeVisual = GetActiveVisualObject();
+            if (activeVisual != null)
+            {
+                var sr = activeVisual.GetComponentInChildren<SpriteRenderer>();
+                if (sr != null) return sr;
+            }
+            return null;
+        }
+    }
 
     public Sprite MonsterSprite
     {
@@ -70,12 +86,109 @@ public partial class MonsterBase : MonoBehaviour
     private void FitColliderToSprite()
     {
         if (!autoFitCollider || monsterCollider == null) return;
-        if (monsterRenderer == null || monsterRenderer.sprite == null) return;
 
-        Bounds spriteBounds = monsterRenderer.sprite.bounds;
+        // Coba hitung berdasarkan composite bounds dari objek visual yang aktif
+        GameObject activeVisual = GetActiveVisualObject();
+        if (activeVisual != null)
+        {
+            var renderers = activeVisual.GetComponentsInChildren<SpriteRenderer>();
+            if (renderers != null && renderers.Length > 0)
+            {
+                Bounds combinedBounds = new Bounds();
+                bool first = true;
+                foreach (var sr in renderers)
+                {
+                    if (sr == null || sr.sprite == null) continue;
+                    Bounds localBounds = GetLocalBoundsForRenderer(sr);
+                    if (first)
+                    {
+                        combinedBounds = localBounds;
+                        first = false;
+                    }
+                    else
+                    {
+                        combinedBounds.Encapsulate(localBounds);
+                    }
+                }
+                if (!first)
+                {
+                    monsterCollider.size = combinedBounds.size;
+                    monsterCollider.offset = combinedBounds.center;
+                    return;
+                }
+            }
+        }
 
-        monsterCollider.size = spriteBounds.size;
-        monsterCollider.offset = spriteBounds.center;
+        // Fallback ke monsterRenderer bawaan jika objek visual aktif tidak ada/tidak punya SpriteRenderer
+        if (monsterRenderer != null && monsterRenderer.sprite != null)
+        {
+            Bounds spriteBounds = monsterRenderer.sprite.bounds;
+            monsterCollider.size = spriteBounds.size;
+            monsterCollider.offset = spriteBounds.center;
+        }
+    }
+
+    private Bounds GetLocalBoundsForRenderer(SpriteRenderer sr)
+    {
+        if (sr == null || sr.sprite == null) return new Bounds();
+        Vector3 worldMin = sr.bounds.min;
+        Vector3 worldMax = sr.bounds.max;
+        Vector3 localMin = transform.InverseTransformPoint(worldMin);
+        Vector3 localMax = transform.InverseTransformPoint(worldMax);
+        Bounds b = new Bounds();
+        b.SetMinMax(localMin, localMax);
+        return b;
+    }
+
+    /// <summary>
+    /// Menyelaraskan sorting layer dan sorting order dari semua SpriteRenderer aktif pada visual tanaman
+    /// dengan ContainmentUnit tempat ia berada, dengan tetap mempertahankan offset rendering relatifnya.
+    /// </summary>
+    public void SyncSortingOrderWithUnit()
+    {
+        if (myUnit == null) return;
+        SpriteRenderer unitRenderer = myUnit.GetComponent<SpriteRenderer>();
+        if (unitRenderer == null) return;
+
+        int targetLayerID = unitRenderer.sortingLayerID;
+        int targetOrder = unitRenderer.sortingOrder + 1;
+
+        // Sinkronisasi untuk renderer root/legacy
+        if (monsterRenderer != null)
+        {
+            monsterRenderer.sortingLayerID = targetLayerID;
+            monsterRenderer.sortingOrder = targetOrder;
+        }
+
+        // Sinkronisasi untuk semua part dalam visual aktif
+        GameObject activeVisual = GetActiveVisualObject();
+        if (activeVisual != null)
+        {
+            var renderers = activeVisual.GetComponentsInChildren<SpriteRenderer>(true);
+            if (renderers != null && renderers.Length > 0)
+            {
+                // Cari sorting order terkecil (paling belakang) untuk dipakai sebagai jangkar
+                int minOrder = int.MaxValue;
+                foreach (var sr in renderers)
+                {
+                    if (sr != null && sr.sortingOrder < minOrder)
+                    {
+                        minOrder = sr.sortingOrder;
+                    }
+                }
+
+                // Hitung offset dan geser semua renderer agar mempertahankan hierarchy layer-nya
+                int offset = targetOrder - minOrder;
+                foreach (var sr in renderers)
+                {
+                    if (sr != null)
+                    {
+                        sr.sortingLayerID = targetLayerID;
+                        sr.sortingOrder += offset;
+                    }
+                }
+            }
+        }
     }
 
     //────────────────────────────────────────────────────────
@@ -170,6 +283,7 @@ public partial class MonsterBase : MonoBehaviour
     {
         myUnit = unit;
         context = new MonsterContext(unit);
+        SyncSortingOrderWithUnit();
     }
 
     //────────────────────────────────────────────────────────
@@ -183,6 +297,9 @@ public partial class MonsterBase : MonoBehaviour
 
         if (monsterCollider == null)
             monsterCollider = GetComponentInChildren<BoxCollider2D>();
+
+        if (monsterAnimator == null)
+            monsterAnimator = GetComponentInChildren<Animator>();
 
         ApplySprite();
         SyncInitialGrowthState();  // MonsterBase.Growth.cs
