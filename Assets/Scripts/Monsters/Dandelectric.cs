@@ -103,6 +103,11 @@ public class Dandelectric : MonsterBase
     /// </summary>
     public void ElectricShock()
     {
+        if (monsterAnimator != null)
+        {
+            monsterAnimator.SetTrigger("Shock");
+        }
+
         if (Facility.Instance == null || Facility.Instance.Rooms == null || Facility.Instance.Rooms.Count == 0)
             return;
 
