@@ -234,11 +234,6 @@ public partial class MonsterBase
 
     protected void ApplyVisualObjectForState(GrowthState state)
     {
-        if (monsterAnimator != null)
-        {
-            monsterAnimator.SetInteger("GrowthState", (int)state);
-        }
-
         if (growthStateObjects != null)
         {
             // Tentukan target visual object terlebih dahulu
@@ -256,7 +251,29 @@ public partial class MonsterBase
                         entry.visualObject.SetActive(entry.visualObject == target);
                     }
                 }
+
+                // Update monsterAnimator ke Animator milik objek visual yang baru aktif jika ada.
+                // Jika objek visual tidak punya Animator sendiri, coba cari di root.
+                var targetAnimator = target.GetComponent<Animator>();
+                if (targetAnimator != null)
+                {
+                    monsterAnimator = targetAnimator;
+                }
+                else
+                {
+                    // Fallback ke Animator di root jika visual baru tidak punya Animator sendiri
+                    if (monsterAnimator == null || monsterAnimator.gameObject != gameObject)
+                    {
+                        monsterAnimator = GetComponent<Animator>();
+                    }
+                }
             }
+        }
+
+        // Set parameter setelah memperbarui referensi animator
+        if (monsterAnimator != null)
+        {
+            monsterAnimator.SetInteger("GrowthState", (int)state);
         }
 
         FitColliderToSprite();
