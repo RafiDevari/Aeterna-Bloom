@@ -159,7 +159,7 @@ public partial class MonsterBase
         isMutated = growth >= mutatedThreshold;
         currentGrowthState = ComputeGrowthState();
 
-        ApplyVisualObjectForState(currentGrowthState);
+        ApplyVisualObjectForState(currentGrowthState, currentGrowthState);
     }
 
     private GrowthState ComputeGrowthState()
@@ -206,7 +206,7 @@ public partial class MonsterBase
 
         currentGrowthState = computed;
 
-        ApplyVisualObjectForState(currentGrowthState);
+        ApplyVisualObjectForState(currentGrowthState, previous);
 
         OnGrowthStateChanged?.Invoke(previous, computed);
         OnGrowthStateChange(previous, computed);
@@ -247,7 +247,7 @@ public partial class MonsterBase
         return null;
     }
 
-    protected void ApplyVisualObjectForState(GrowthState state)
+    protected void ApplyVisualObjectForState(GrowthState state, GrowthState previousState)
     {
         if (growthStateObjects != null)
         {
@@ -288,6 +288,7 @@ public partial class MonsterBase
         // Set parameter setelah memperbarui referensi animator
         if (monsterAnimator != null)
         {
+            monsterAnimator.SetInteger("PreviousGrowthState", (int)previousState);
             monsterAnimator.SetInteger("GrowthState", (int)state);
         }
 
