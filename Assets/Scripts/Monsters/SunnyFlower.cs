@@ -6,7 +6,6 @@ public class SunflowerMonster : MonsterBase
     [Header("Feeding Growth Speed Boost")]
     [SerializeField] private float growthSpeedMultiplier = 1f;
     [SerializeField] private float growthBoostTimer = 0f;
-    private float myPassiveGrowthTimer;
     private bool isMoodZeroEffectActive = false;
     private bool hasMoodReachedZero = false;
     private float potassiumTimer = 0f;
@@ -239,12 +238,9 @@ public class SunflowerMonster : MonsterBase
         affectedMonsters.Clear();
     }
 
-    protected override void TickPassiveGrowth()
+    protected override float GetGrowthSpeedMultiplier()
     {
-        if (Every(ref myPassiveGrowthTimer, passiveGrowthInterval))
-        {
-            ModifyGrowth(passiveGrowthAmount * growthSpeedMultiplier);
-        }
+        return growthSpeedMultiplier;
     }
 
     protected override void OnMonsterFed(FoodType food)

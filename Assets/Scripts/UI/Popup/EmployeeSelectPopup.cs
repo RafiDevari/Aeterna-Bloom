@@ -196,6 +196,8 @@ public class EmployeeSelectPopup : PopupBase
                     label.text = $"{employee.EmployeeName} (DEAD)";
                 else if (employee.CurrentState == EmployeeState.Hypnotized)
                     label.text = $"{employee.EmployeeName} (HYPNOTIZED)";
+                else if (employee.CurrentState == EmployeeState.Sleeping)
+                    label.text = $"{employee.EmployeeName} (SLEEPING)";
                 else if (employee.Mood <= 1)
                     label.text = $"{employee.EmployeeName} (DEPRESSED)";
                 else if (employee.IsBusy)
@@ -206,6 +208,7 @@ public class EmployeeSelectPopup : PopupBase
 
             if (employee.CurrentState == EmployeeState.Dead || 
                 employee.CurrentState == EmployeeState.Hypnotized || 
+                employee.CurrentState == EmployeeState.Sleeping || 
                 employee.Mood <= 1)
             {
                 btn.interactable = false;

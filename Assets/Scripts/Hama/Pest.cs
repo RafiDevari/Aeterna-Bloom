@@ -24,6 +24,8 @@ public class Pest : MonoBehaviour
 
     protected bool isDead = false;
 
+    public bool IsDead => isDead;
+
     public int Hp
     {
         get => hp;
@@ -36,6 +38,16 @@ public class Pest : MonoBehaviour
                 Die();
             }
         }
+    }
+
+    public void TakeDamage(int amount)
+    {
+        Hp -= amount;
+    }
+
+    public void Kill()
+    {
+        Die();
     }
 
     protected virtual void Update()

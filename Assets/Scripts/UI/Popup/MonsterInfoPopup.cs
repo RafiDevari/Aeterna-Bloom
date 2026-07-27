@@ -46,6 +46,7 @@ public class MonsterInfoPopup : PopupBase
 
     [Header("Buttons")]
     [SerializeField] private Button closeButton;
+    [SerializeField] private Button killBeeButton;
 
     private ContainmentUnit targetUnit;
     private MonsterBase targetMonster;
@@ -60,6 +61,8 @@ public class MonsterInfoPopup : PopupBase
 
         if (closeButton != null)
             closeButton.onClick.AddListener(Close);
+        if (killBeeButton != null)
+            killBeeButton.onClick.AddListener(OnKillBeeClicked);
     }
 
     private void OnDestroy()
@@ -88,7 +91,57 @@ public class MonsterInfoPopup : PopupBase
         RefreshHeader();
         RefreshEntries();
 
+        Lebah activeLebah = FindLebahInUnit(unit);
+        if (killBeeButton != null)
+        {
+            killBeeButton.gameObject.SetActive(false); // Dinonaktifkan, diganti klik kanan langsung ke lebah
+        }
+
         base.Open();
+    }
+
+    private Lebah FindLebahInUnit(ContainmentUnit unit)
+    {
+        if (unit == null) return null;
+
+        Lebah lebah = unit.GetComponentInChildren<Lebah>();
+        if (lebah != null && !lebah.IsDead) return lebah;
+
+        Lebah[] allBees = Object.FindObjectsByType<Lebah>(FindObjectsSortMode.None);
+        foreach (var l in allBees)
+        {
+            if (l != null && !l.IsDead && (l.TargetUnit == unit || Vector3.Distance(l.transform.position, unit.transform.position) < 2.5f))
+            {
+                return l;
+            }
+        }
+        return null;
+    }
+
+    private void OnKillBeeClicked()
+    {
+        Lebah activeLebah = FindLebahInUnit(targetUnit);
+        if (activeLebah == null || activeLebah.IsDead) return;
+
+        Lebah capturedLebah = activeLebah;
+        Close();
+
+        if (EmployeeSelectPopup.Instance != null)
+        {
+            EmployeeSelectPopup.Instance.Open(selectedEmp =>
+            {
+                if (selectedEmp != null && capturedLebah != null && !capturedLebah.IsDead)
+                {
+                    selectedEmp.EnqueueTask(new KillPestTask(capturedLebah));
+                    Debug.Log($"[MonsterInfoPopup] {selectedEmp.EmployeeName} ditugaskan untuk membunuh Lebah pada {targetMonster?.MonsterName}.");
+                }
+            }, typeof(EmployeeSecurity));
+        }
+    }
+
+    private void OnGUI()
+    {
+        // Dinonaktifkan karena diganti dengan klik kanan langsung ke Lebah seperti Tikus
     }
 
     protected override void OnClosed()

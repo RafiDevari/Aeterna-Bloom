@@ -30,8 +30,11 @@ public class Dandelectric : MonsterBase
     [SerializeField] private float growthBoostTimer = 0f;
 
     private float energyTickTimer;
-    private float myPassiveGrowthTimer;
     private bool hasTriggeredShock = false;
+
+    [Header("Mutated Settings")]
+    [SerializeField] private float mutatedShockInterval = 15f;
+    private float mutatedShockTimer;
 
     public float Energy => energy;
 
@@ -101,17 +104,22 @@ public class Dandelectric : MonsterBase
     /// Performs an electric shock on a random room, dealing damage to all employees inside it.
     /// After shock, resets mood to 4.
     /// </summary>
-    public void ElectricShock()
+    public void ElectricShock(int roomCount = 5, bool resetMood = true)
     {
+        if (monsterAnimator != null)
+        {
+            monsterAnimator.SetTrigger("Shock");
+        }
+
         if (Facility.Instance == null || Facility.Instance.Rooms == null || Facility.Instance.Rooms.Count == 0)
             return;
 
         int damage = Mathf.RoundToInt(energy);
 
-        // Choose 5 random unique rooms (or all if total rooms < 5)
+        // Choose random unique rooms (or all if total rooms < roomCount)
         List<Room> availableRooms = new List<Room>(Facility.Instance.Rooms);
         List<Room> targetRooms = new List<Room>();
-        int roomsToSelect = Mathf.Min(5, availableRooms.Count);
+        int roomsToSelect = Mathf.Min(roomCount, availableRooms.Count);
         for (int i = 0; i < roomsToSelect; i++)
         {
             int randomIndex = Random.Range(0, availableRooms.Count);
@@ -147,19 +155,19 @@ public class Dandelectric : MonsterBase
         // Mark shock as triggered for custom research auto-unlock
         hasTriggeredShock = true;
 
-        // Reset mood to 4
-        SetMood(4);
+        if (resetMood)
+        {
+            // Reset mood to 4
+            SetMood(4);
+        }
     }
 
     /// <summary>
-    /// Overriding passive growth tick to integrate growthSpeedMultiplier.
+    /// Provide multiplier for passive growth.
     /// </summary>
-    protected override void TickPassiveGrowth()
+    protected override float GetGrowthSpeedMultiplier()
     {
-        if (Every(ref myPassiveGrowthTimer, passiveGrowthInterval))
-        {
-            ModifyGrowth(passiveGrowthAmount * growthSpeedMultiplier);
-        }
+        return growthSpeedMultiplier;
     }
 
     /// <summary>
@@ -275,6 +283,28 @@ public class Dandelectric : MonsterBase
             {
                 sr.color = oldColor;
             }
+        }
+    }
+
+    protected override void OnMutatedUpdate()
+    {
+        base.OnMutatedUpdate();
+
+        if (Every(ref mutatedShockTimer, mutatedShockInterval))
+        {
+            Debug.Log($"[{MonsterName}] Mutated state: auto-shocking 1 room!");
+            ElectricShock(1, resetMood: false);
+        }
+    }
+
+    protected override void OnGrowthStateChange(GrowthState oldState, GrowthState newState)
+    {
+        base.OnGrowthStateChange(oldState, newState);
+
+        if (newState == GrowthState.Mutated)
+        {
+            mutatedShockTimer = 0f;
+            Debug.Log($"[{MonsterName}] Entered Mutated state. Starting 15s shock timer.");
         }
     }
 

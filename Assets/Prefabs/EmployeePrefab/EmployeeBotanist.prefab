@@ -1161,6 +1161,11 @@ MonoBehaviour:
   minMood: 0
   poisonInterval: 1
   poisonDamageAmount: 5
+  isSick: 0
+  sickHpInterval: 20
+  sickHpDamage: 3
+  coughInterval: 30
+  coughSpreadRadius: 2.5
   autoFitCollider: 1
   employeeCollider: {fileID: 9199522445211792172}
   colliderPadding: {x: 0, y: 0}

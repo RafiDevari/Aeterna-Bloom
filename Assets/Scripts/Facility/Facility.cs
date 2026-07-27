@@ -195,10 +195,10 @@ public class Facility : MonoBehaviour
 
     private void Update()
     {
-        // SEMENTARA: Spawn jamur jika energy > 75%
+        // SEMENTARA: Spawn tikus jika energy > 75%
         if (energy > 75f)
         {
-            Pest.Spawn();
+            Lebah.Spawn();
         }
 
         if (isBlackout)
