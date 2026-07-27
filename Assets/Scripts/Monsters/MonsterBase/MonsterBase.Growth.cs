@@ -124,10 +124,25 @@ public partial class MonsterBase
 
     protected virtual void TickPassiveGrowth()
     {
-        if (Every(ref passiveGrowthTimer, passiveGrowthInterval))
+        if (IsMutated)
         {
-            ModifyGrowth(passiveGrowthAmount);
+            if (Every(ref passiveGrowthTimer, passiveGrowthInterval * 2f))
+            {
+                ModifyGrowth(-passiveGrowthAmount * GetGrowthSpeedMultiplier());
+            }
         }
+        else
+        {
+            if (Every(ref passiveGrowthTimer, passiveGrowthInterval))
+            {
+                ModifyGrowth(passiveGrowthAmount * GetGrowthSpeedMultiplier());
+            }
+        }
+    }
+
+    protected virtual float GetGrowthSpeedMultiplier()
+    {
+        return 1f;
     }
 
     //────────────────────────────────────────────────────────
