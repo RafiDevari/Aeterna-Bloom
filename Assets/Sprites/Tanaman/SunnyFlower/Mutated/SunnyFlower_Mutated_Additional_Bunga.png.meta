@@ -1,0 +1,702 @@
+fileFormatVersion: 2
+guid: 8012fe6540da2784b9773abf4b3501e2
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2493427073098817750
+    second: SunnyFlower_Mutated_Additional_Bunga_0
+  - first:
+      213: -2829876303186763594
+    second: SunnyFlower_Mutated_Additional_Bunga_1
+  - first:
+      213: -1600304616983321722
+    second: SunnyFlower_Mutated_Additional_Bunga_2
+  - first:
+      213: -4599376251130787964
+    second: SunnyFlower_Mutated_Additional_Bunga_3
+  - first:
+      213: -5700219721274709067
+    second: SunnyFlower_Mutated_Additional_Bunga_4
+  - first:
+      213: -2830002028112143961
+    second: SunnyFlower_Mutated_Additional_Bunga_5
+  - first:
+      213: -198480836948064789
+    second: SunnyFlower_Mutated_Additional_Bunga_6
+  - first:
+      213: -9164832156410205642
+    second: SunnyFlower_Mutated_Additional_Bunga_7
+  - first:
+      213: 3129900451197135132
+    second: SunnyFlower_Mutated_Additional_Bunga_8
+  - first:
+      213: 2422242687871406453
+    second: SunnyFlower_Mutated_Additional_Bunga_9
+  - first:
+      213: 815877259033235883
+    second: SunnyFlower_Mutated_Additional_Bunga_10
+  - first:
+      213: 6025061517733914228
+    second: SunnyFlower_Mutated_Additional_Bunga_11
+  - first:
+      213: -1873734265402925802
+    second: SunnyFlower_Mutated_Additional_Bunga_12
+  - first:
+      213: 5443356757612103813
+    second: SunnyFlower_Mutated_Additional_Bunga_13
+  - first:
+      213: 6270402156764841175
+    second: SunnyFlower_Mutated_Additional_Bunga_14
+  - first:
+      213: 7280869218771938571
+    second: SunnyFlower_Mutated_Additional_Bunga_15
+  - first:
+      213: -3761655629237042319
+    second: SunnyFlower_Mutated_Additional_Bunga_16
+  - first:
+      213: -5350765026988547345
+    second: SunnyFlower_Mutated_Additional_Bunga_17
+  - first:
+      213: -5494295022401532146
+    second: SunnyFlower_Mutated_Additional_Bunga_18
+  - first:
+      213: 6220246014947034095
+    second: SunnyFlower_Mutated_Additional_Bunga_19
+  - first:
+      213: -4355826507179256385
+    second: SunnyFlower_Mutated_Additional_Bunga_20
+  - first:
+      213: 350861807880327071
+    second: SunnyFlower_Mutated_Additional_Bunga_21
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_0
+      rect:
+        serializedVersion: 2
+        x: 600
+        y: 774
+        width: 9
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2f5a9aa941956dd0800000000000000
+      internalID: -2493427073098817750
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_1
+      rect:
+        serializedVersion: 2
+        x: 605
+        y: 776
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b0e14ede724ab8d0800000000000000
+      internalID: -2829876303186763594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_2
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 780
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 683aa4cfd639ac9e0800000000000000
+      internalID: -1600304616983321722
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_3
+      rect:
+        serializedVersion: 2
+        x: 620
+        y: 769
+        width: 32
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4874bfa0babbb20c0800000000000000
+      internalID: -4599376251130787964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_4
+      rect:
+        serializedVersion: 2
+        x: 592
+        y: 752
+        width: 14
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bbaeb35d50c4e0b0800000000000000
+      internalID: -5700219721274709067
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_5
+      rect:
+        serializedVersion: 2
+        x: 606
+        y: 746
+        width: 8
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a99db04620d9b8d0800000000000000
+      internalID: -2830002028112143961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_6
+      rect:
+        serializedVersion: 2
+        x: 612
+        y: 766
+        width: 17
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be50dfafabade3df0800000000000000
+      internalID: -198480836948064789
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_7
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 760
+        width: 14
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 63aa71b06b9ffc080800000000000000
+      internalID: -9164832156410205642
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_8
+      rect:
+        serializedVersion: 2
+        x: 646
+        y: 753
+        width: 11
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c19a0ff90e3af6b20800000000000000
+      internalID: 3129900451197135132
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_9
+      rect:
+        serializedVersion: 2
+        x: 378
+        y: 588
+        width: 186
+        height: 164
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 571dc5a14e88d9120800000000000000
+      internalID: 2422242687871406453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_10
+      rect:
+        serializedVersion: 2
+        x: 479
+        y: 746
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba1defc5b04925b00800000000000000
+      internalID: 815877259033235883
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_11
+      rect:
+        serializedVersion: 2
+        x: 592
+        y: 737
+        width: 10
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 476e76a37815d9350800000000000000
+      internalID: 6025061517733914228
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_12
+      rect:
+        serializedVersion: 2
+        x: 608
+        y: 736
+        width: 19
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61d5e23fc982ff5e0800000000000000
+      internalID: -1873734265402925802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_13
+      rect:
+        serializedVersion: 2
+        x: 626
+        y: 736
+        width: 15
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58801338120ba8b40800000000000000
+      internalID: 5443356757612103813
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_14
+      rect:
+        serializedVersion: 2
+        x: 637
+        y: 746
+        width: 6
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d4cfc02a81f40750800000000000000
+      internalID: 6270402156764841175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_15
+      rect:
+        serializedVersion: 2
+        x: 644
+        y: 731
+        width: 12
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0d2af09af7da0560800000000000000
+      internalID: 7280869218771938571
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_16
+      rect:
+        serializedVersion: 2
+        x: 562
+        y: 731
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1734af3a22aebcbc0800000000000000
+      internalID: -3761655629237042319
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_17
+      rect:
+        serializedVersion: 2
+        x: 598
+        y: 721
+        width: 32
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe2a3c9be834eb5b0800000000000000
+      internalID: -5350765026988547345
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_18
+      rect:
+        serializedVersion: 2
+        x: 629
+        y: 723
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0f4f8289c750c3b0800000000000000
+      internalID: -5494295022401532146
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_19
+      rect:
+        serializedVersion: 2
+        x: 374
+        y: 558
+        width: 31
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe305785bc0c25650800000000000000
+      internalID: 6220246014947034095
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_20
+      rect:
+        serializedVersion: 2
+        x: 397
+        y: 535
+        width: 77
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb59950bedefc83c0800000000000000
+      internalID: -4355826507179256385
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SunnyFlower_Mutated_Additional_Bunga_21
+      rect:
+        serializedVersion: 2
+        x: 426
+        y: 522
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9f45ff84f28ed400800000000000000
+      internalID: 350861807880327071
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      SunnyFlower_Mutated_Additional_Bunga_0: -2493427073098817750
+      SunnyFlower_Mutated_Additional_Bunga_1: -2829876303186763594
+      SunnyFlower_Mutated_Additional_Bunga_10: 815877259033235883
+      SunnyFlower_Mutated_Additional_Bunga_11: 6025061517733914228
+      SunnyFlower_Mutated_Additional_Bunga_12: -1873734265402925802
+      SunnyFlower_Mutated_Additional_Bunga_13: 5443356757612103813
+      SunnyFlower_Mutated_Additional_Bunga_14: 6270402156764841175
+      SunnyFlower_Mutated_Additional_Bunga_15: 7280869218771938571
+      SunnyFlower_Mutated_Additional_Bunga_16: -3761655629237042319
+      SunnyFlower_Mutated_Additional_Bunga_17: -5350765026988547345
+      SunnyFlower_Mutated_Additional_Bunga_18: -5494295022401532146
+      SunnyFlower_Mutated_Additional_Bunga_19: 6220246014947034095
+      SunnyFlower_Mutated_Additional_Bunga_2: -1600304616983321722
+      SunnyFlower_Mutated_Additional_Bunga_20: -4355826507179256385
+      SunnyFlower_Mutated_Additional_Bunga_21: 350861807880327071
+      SunnyFlower_Mutated_Additional_Bunga_3: -4599376251130787964
+      SunnyFlower_Mutated_Additional_Bunga_4: -5700219721274709067
+      SunnyFlower_Mutated_Additional_Bunga_5: -2830002028112143961
+      SunnyFlower_Mutated_Additional_Bunga_6: -198480836948064789
+      SunnyFlower_Mutated_Additional_Bunga_7: -9164832156410205642
+      SunnyFlower_Mutated_Additional_Bunga_8: 3129900451197135132
+      SunnyFlower_Mutated_Additional_Bunga_9: 2422242687871406453
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
