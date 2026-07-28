@@ -10,6 +10,7 @@ public class Facility : MonoBehaviour
 
     [Header("Global Resources")]
     [SerializeField] private float energy = 100f;
+    [SerializeField] private float maxEnergy = 100f;
 
     [Tooltip("Suhu awal yang diberikan ke setiap Room saat dibuat.")]
     [SerializeField] private float defaultRoomTemperature = 20f;
@@ -32,6 +33,7 @@ public class Facility : MonoBehaviour
 
     public bool IsBlackout => isBlackout;
     public float MaxElectricity => maxElectricity;
+    public float MaxEnergy => (maxEnergy == 1000f || maxEnergy <= 0f) ? 100f : maxEnergy;
     [Header("Overload Settings")]
     [SerializeField] private float overloadToleranceDuration = 10f;
     private float overloadTimer = 0f;
@@ -44,7 +46,7 @@ public class Facility : MonoBehaviour
         get => energy;
         set
         {
-            energy = Mathf.Max(0, value);
+            energy = Mathf.Clamp(value, 0, maxEnergy);
             OnEnergyChanged?.Invoke(energy);
         }
     }
