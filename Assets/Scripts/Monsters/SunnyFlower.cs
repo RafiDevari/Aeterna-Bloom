@@ -182,6 +182,8 @@ public class SunflowerMonster : MonsterBase
         hasMoodReachedZero = true;
         Debug.LogWarning($"[{MonsterName}] Mood mencapai 0! Mengaktifkan efek temperatur.");
 
+        UpdateAnimatorMoodZero();
+
         // 1. Increase facility temperature by 10
         if (Context != null && Context.Facility != null)
         {
@@ -214,6 +216,8 @@ public class SunflowerMonster : MonsterBase
         isMoodZeroEffectActive = false;
         Debug.Log($"[{MonsterName}] Mood naik di atas 0. Menghapus efek temperatur.");
 
+        UpdateAnimatorMoodZero();
+
         // 1. Revert facility temperature
         if (Context != null && Context.Facility != null)
         {
@@ -236,6 +240,20 @@ public class SunflowerMonster : MonsterBase
             }
         }
         affectedMonsters.Clear();
+    }
+
+    protected override void OnGrowthStateChange(GrowthState oldState, GrowthState newState)
+    {
+        base.OnGrowthStateChange(oldState, newState);
+        UpdateAnimatorMoodZero();
+    }
+
+    private void UpdateAnimatorMoodZero()
+    {
+        if (monsterAnimator != null)
+        {
+            monsterAnimator.SetBool("IsMoodZero", isMoodZeroEffectActive);
+        }
     }
 
     protected override float GetGrowthSpeedMultiplier()
