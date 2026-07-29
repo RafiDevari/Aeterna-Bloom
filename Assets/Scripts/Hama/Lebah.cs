@@ -352,7 +352,7 @@ public class Lebah : Pest
                 selectedEmp.EnqueueTask(new KillPestTask(capturedPest));
                 Debug.Log($"[Lebah] {selectedEmp.EmployeeName} ditugaskan untuk membunuh lebah.");
             }
-        }, typeof(EmployeeSecurity));
+        }, typeof(DivisionSecurity));
     }
 
     private static bool hasSpawned = false;

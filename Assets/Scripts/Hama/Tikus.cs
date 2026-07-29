@@ -236,7 +236,7 @@ public class Tikus : Pest
                 selectedEmp.EnqueueTask(new KillPestTask(capturedPest));
                 Debug.Log($"[Tikus] {selectedEmp.EmployeeName} ditugaskan untuk membunuh tikus.");
             }
-        }, typeof(EmployeeSecurity));
+        }, typeof(DivisionSecurity));
     }
 
     protected override void Die()

@@ -200,7 +200,7 @@ public class Facility : MonoBehaviour
         // SEMENTARA: Spawn tikus jika energy > 75%
         if (energy > 75f)
         {
-            Lebah.Spawn();
+            Jamur.Spawn();
         }
 
         if (isBlackout)

@@ -6,24 +6,6 @@ using UnityEngine;
 /// </summary>
 public class EmployeeSecurity : Employee
 {
-    /// <summary>
-    /// Memerintahkan Security untuk pergi ke ruangan tertentu dan mensterilisasinya.
-    /// </summary>
-    public void GoSterilize(Room targetRoom)
-    {
-        if (targetRoom == null) return;
-
-        ClearTasksAndInterrupt();
-
-        Debug.Log($"[Security] {EmployeeName} ditugaskan mensterilisasi ruangan {targetRoom.RoomName}. Berangkat sekarang!");
-
-        // 1. Bergerak ke target ruangan
-        EnqueueTask(new MoveToTask(() => targetRoom.transform.position, () => targetRoom != null));
-        
-        // 2. Mulai proses sterilisasi setelah sampai
-        EnqueueTask(new SterilizeTask(targetRoom));
-    }
-
     // ==========================================
     // Context Menu untuk Testing Mudah di Editor
     // ==========================================

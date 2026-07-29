@@ -2395,11 +2395,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -18.19
+      value: -18.185
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 11.25
+      value: 11.247
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3777,27 +3777,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
   m_PrefabInstance: {fileID: 1863188051}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &533695999
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 533695997}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8ccecaaf4640494f97e01d9b2c92fde, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DivisionMedic
-  roomName: Room
-  temperature: 20
-  baseElectricityCost: 2
-  isLocked: 0
-  isPoisoned: 0
-  isSterilizing: 0
-  employeesToSpawn:
-  - employeeName: Ibra
-    employeePrefab: {fileID: 6871295272495438118, guid: a8018fa74fa2fae42a6999d5f13635ea, type: 3}
 --- !u!61 &533696000
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3904,6 +3883,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &533696002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 533695997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12c095e339d82394a918f9f7a17b3666, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DivisionSecurity
+  roomName: Room
+  temperature: 20
+  baseElectricityCost: 2
+  isLocked: 0
+  isPoisoned: 0
+  isSterilizing: 0
+  employeesToSpawn:
+  - employeeName: ibrairba
+    employeePrefab: {fileID: 6871295272495438118, guid: a8018fa74fa2fae42a6999d5f13635ea, type: 3}
 --- !u!1 &567025708
 GameObject:
   m_ObjectHideFlags: 0
@@ -10052,11 +10052,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -30.9
+      value: -30.878
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.26
+      value: -3.218
       objectReference: {fileID: 0}
     - target: {fileID: 679117078898937446, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       propertyPath: m_LocalPosition.z
@@ -11741,7 +11741,7 @@ PrefabInstance:
       addedObject: {fileID: 533696000}
     - targetCorrespondingSourceObject: {fileID: 5831366806573048912, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 533695999}
+      addedObject: {fileID: 533696002}
   m_SourcePrefab: {fileID: 100100000, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
 --- !u!1 &1891644032
 GameObject:

@@ -34,7 +34,7 @@ public class SterilizeTask : EmployeeTask
         targetRoom.IsSterilizing = true;
         isWaitingToFinish = true;
 
-        float duration = 5f; // Durasi sterilisasi 5 detik
+        float duration = employee.CalculateSterilizeDuration(targetRoom);
         employee.SetActionDuration(duration);
 
         runningRoutine = employee.StartCoroutine(SterilizeRoutine(duration, onComplete));
@@ -48,11 +48,12 @@ public class SterilizeTask : EmployeeTask
         {
             isWaitingToFinish = false;
             
-            // Selesai sterilisasi: Matikan mode sterilisasi dan buka kunci ruangan
+            // Selesai sterilisasi: Matikan mode sterilisasi, buka kunci ruangan, dan hilangkan racun
             if (targetRoom != null)
             {
                 targetRoom.IsSterilizing = false;
                 targetRoom.SetLocked(false);
+                targetRoom.IsPoisoned = false;
             }
 
             employee.SetState(EmployeeState.Idle);

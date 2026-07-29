@@ -1,11 +1,13 @@
 // Room.cs
 using UnityEngine;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 /// <summary>
 /// Base class semua jenis Room.
 /// Berisi informasi umum yang dimiliki semua Room.
 /// </summary>
+[RequireComponent(typeof(BoxCollider2D))]
 public abstract class Room : MonoBehaviour
 {
     [Header("Room Info")]
@@ -243,11 +245,34 @@ public abstract class Room : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) originalColor = spriteRenderer.color;
+
+        // Ensure BoxCollider2D exists on all Room instances
+        BoxCollider2D col = GetComponent<BoxCollider2D>();
+        if (col == null)
+        {
+            col = gameObject.AddComponent<BoxCollider2D>();
+        }
     }
 
     protected virtual void Start()
     {
         UpdatePoisonVisuals();
+
+        // Configure BoxCollider2D
+        BoxCollider2D col = GetComponent<BoxCollider2D>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = GetComponent<SpriteRenderer>();
+            }
+            if (spriteRenderer != null && spriteRenderer.sprite != null)
+            {
+                col.size = spriteRenderer.sprite.bounds.size;
+                col.offset = spriteRenderer.sprite.bounds.center;
+            }
+        }
 
         if (Facility.Instance != null)
         {
@@ -261,6 +286,41 @@ public abstract class Room : MonoBehaviour
             }
 
             Facility.Instance.OnDefaultRoomTemperatureChanged += HandleGlobalTemperatureChanged;
+        }
+    }
+
+    protected virtual void OnMouseOver()
+    {
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(1)) // Klik Kanan
+        {
+            if (IsPoisoned)
+            {
+                HandlePoisonClick();
+            }
+        }
+    }
+
+    protected void HandlePoisonClick()
+    {
+        Debug.Log($"[{RoomName}] Membuka EmployeeSelectPopup untuk menugaskan sterilisasi.");
+
+        if (EmployeeSelectPopup.Instance != null)
+        {
+            EmployeeSelectPopup.Instance.Open(
+                employee => {
+                    employee.GoSterilize(this);
+                },
+                typeof(DivisionSecurity) // Default ke divisi Security
+            );
+        }
+        else
+        {
+            Debug.LogError("[Room] EmployeeSelectPopup.Instance belum ada. Pastikan component EmployeeSelectPopup sudah ditambahkan ke scene.");
         }
     }
 

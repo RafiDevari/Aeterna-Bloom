@@ -104,7 +104,12 @@ public class EmployeeSelectPopup : PopupBase
         // room dengan prioritas sama (baik yang prioritas maupun yang bukan) tetap terjaga.
         if (priorityDivisionType != null)
         {
-            rooms = rooms.OrderBy(room => room.GetType() == priorityDivisionType ? 0 : 1);
+            System.Type checkType = priorityDivisionType;
+            if (checkType == typeof(EmployeeSecurity))
+            {
+                checkType = typeof(DivisionSecurity);
+            }
+            rooms = rooms.OrderBy(room => room.GetType() == checkType ? 0 : 1);
         }
 
         pages.AddRange(rooms);

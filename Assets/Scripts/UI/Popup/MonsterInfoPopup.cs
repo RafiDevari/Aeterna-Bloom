@@ -135,7 +135,7 @@ public class MonsterInfoPopup : PopupBase
                     selectedEmp.EnqueueTask(new KillPestTask(capturedLebah));
                     Debug.Log($"[MonsterInfoPopup] {selectedEmp.EmployeeName} ditugaskan untuk membunuh Lebah pada {targetMonster?.MonsterName}.");
                 }
-            }, typeof(EmployeeSecurity));
+            }, typeof(DivisionSecurity));
         }
     }
 
