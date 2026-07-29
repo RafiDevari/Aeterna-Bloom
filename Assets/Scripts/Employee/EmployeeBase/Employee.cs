@@ -443,12 +443,26 @@ public partial class Employee : MonoBehaviour
         {
             poisonTimer = 0f;
             Room room = RoomPathfinder.FindRoomAt(transform.position);
-            if (room != null && (room.IsPoisoned || room.IsSterilizing))
+            if (room != null)
             {
-                ModifyHp(-poisonDamageAmount);
-                string hazardType = room.IsSterilizing ? "Sterilisasi" : "Racun";
-                // Menampilkan debug opsional agar developer tahu
-                Debug.Log($"[{EmployeeName}] Terkena damage {hazardType} -{poisonDamageAmount} HP di ruangan {room.RoomName}. HP tersisa: {hp}");
+                // Jika sedang melakukan sterilisasi, employee imun terhadap racun maupun sterilisasi
+                bool takesPoisonDamage = room.IsPoisoned && currentState != EmployeeState.Sterilizing;
+                bool takesSterilizeDamage = room.IsSterilizing && currentState != EmployeeState.Sterilizing;
+
+                if (takesPoisonDamage || takesSterilizeDamage)
+                {
+                    int damage = poisonDamageAmount;
+                    if (takesSterilizeDamage)
+                    {
+                        // Employee biasa yang berada di ruangan yang sedang disterilisasi hanya terkena 50% damage
+                        damage = Mathf.RoundToInt(poisonDamageAmount * 0.5f);
+                    }
+
+                    ModifyHp(-damage);
+                    string hazardType = takesSterilizeDamage ? "Sterilisasi" : "Racun";
+                    // Menampilkan debug opsional agar developer tahu
+                    Debug.Log($"[{EmployeeName}] Terkena damage {hazardType} -{damage} HP di ruangan {room.RoomName}. HP tersisa: {hp}");
+                }
             }
         }
     }

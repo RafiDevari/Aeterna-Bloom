@@ -149,4 +149,32 @@ public class Jamur : Pest
             }
         }
     }
+
+    private void OnMouseOver()
+    {
+        if (isDead) return;
+
+        if (Input.GetMouseButtonDown(1)) // Klik Kanan
+        {
+            HandleRightClick();
+        }
+    }
+
+    private void HandleRightClick()
+    {
+        if (isDead) return;
+
+        Debug.Log($"[Jamur] Di-klik kanan! Membuka EmployeeSelectPopup untuk menugaskan pembasmian.");
+
+        Jamur capturedPest = this;
+
+        EmployeeSelectPopup.Instance.Open(selectedEmp =>
+        {
+            if (selectedEmp != null && capturedPest != null && !capturedPest.IsDead)
+            {
+                selectedEmp.EnqueueTask(new KillPestTask(capturedPest));
+                Debug.Log($"[Jamur] {selectedEmp.EmployeeName} ditugaskan untuk membunuh jamur.");
+            }
+        }, typeof(DivisionSecurity));
+    }
 }
