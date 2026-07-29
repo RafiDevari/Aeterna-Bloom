@@ -10,6 +10,10 @@ public class Jamur : Pest
     [SerializeField] private float poisonSpreadInterval = 10f;
     private float poisonTimer = 0f;
 
+    [Header("Spreading Mechanics")]
+    [SerializeField] private float spreadInterval = 20f;
+    private float spreadTimer = 0f;
+
     private void Awake()
     {
         immuneToPoison = true;
@@ -22,6 +26,7 @@ public class Jamur : Pest
         if (isDead) return;
 
         HandlePoisonSpread();
+        HandleSelfSpreading();
     }
 
     private float debugTimer = 0f;
@@ -81,6 +86,66 @@ public class Jamur : Pest
                         Debug.Log($"[Jamur] Ruangan {currentRoom.RoomName} masih beracun, jamur terus berkembang biak.");
                     }
                 }
+            }
+        }
+    }
+
+    private void HandleSelfSpreading()
+    {
+        spreadTimer += Time.deltaTime;
+        if (spreadTimer >= spreadInterval)
+        {
+            spreadTimer = 0f;
+
+            Room currentRoom = RoomPathfinder.FindRoomAt(transform.position);
+            if (currentRoom != null)
+            {
+                // Kondisi: Jamur masih hidup (isDead == false), ruangan tidak disterilisasi, dan ruangan tidak dilockdown
+                if (!currentRoom.IsSterilizing && !currentRoom.IsLocked)
+                {
+                    Debug.Log($"[Jamur Spreading] Jamur di {currentRoom.RoomName} tidak di-sterilize dan tidak di-lockdown selama {spreadInterval} detik. Spawning jamur baru...");
+                    SpawnNew();
+                }
+                else
+                {
+                    Debug.Log($"[Jamur Spreading] Jamur di {currentRoom.RoomName} batal menyebar karena ruangan dalam status Locked ({currentRoom.IsLocked}) atau Sterilizing ({currentRoom.IsSterilizing}).");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[Jamur Spreading] Jamur di {transform.position} tidak berada dalam ruangan. Batal menyebar.");
+            }
+        }
+    }
+
+    public static void SpawnNew()
+    {
+#if UNITY_EDITOR
+        GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/PestPrefabs/Jamur.prefab");
+#else
+        GameObject prefab = null;
+#endif
+        if (prefab == null)
+        {
+            Debug.LogError("[Jamur] Prefab Jamur tidak ditemukan di Assets/Prefabs/PestPrefabs/Jamur.prefab!");
+            return;
+        }
+
+        if (Facility.Instance != null && Facility.Instance.Rooms.Count > 0)
+        {
+            var rooms = Facility.Instance.Rooms;
+            Room targetRoom = rooms[Random.Range(0, rooms.Count)];
+
+            Bounds[] boundsList = targetRoom.CollisionBounds;
+            if (boundsList != null && boundsList.Length > 0)
+            {
+                Bounds bounds = boundsList[Random.Range(0, boundsList.Length)];
+                float randomX = Random.Range(bounds.min.x, bounds.max.x);
+                float spawnY = bounds.center.y;
+                Vector3 spawnPos = new Vector3(randomX, spawnY, 0f);
+
+                Instantiate(prefab, spawnPos, Quaternion.identity);
+                Debug.Log($"[Jamur] Jamur baru berhasil di-spawn secara random di ruangan {targetRoom.RoomName} pada posisi {spawnPos}");
             }
         }
     }
