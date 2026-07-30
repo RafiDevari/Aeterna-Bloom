@@ -200,7 +200,7 @@ public class Facility : MonoBehaviour
         // SEMENTARA: Spawn tikus jika energy > 75%
         if (energy > 75f)
         {
-            Jamur.Spawn();
+            Pest.Spawn();
         }
 
         if (isBlackout)
