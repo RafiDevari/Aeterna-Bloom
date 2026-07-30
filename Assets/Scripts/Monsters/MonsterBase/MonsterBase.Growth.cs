@@ -65,6 +65,9 @@ public partial class MonsterBase
     // Flag sticky: sekali Mutated, tetap dianggap Mutated sampai growth turun ke mutationRecoveryThreshold.
     private bool isMutated;
 
+    // Menandakan apakah broadcast pertumbuhan > 200% sudah pernah ter-trigger untuk tanaman ini
+    private bool growth200BroadcastTriggered;
+
     [Header("Growth")]
     [SerializeField] protected float passiveGrowthInterval = 4f;
     [SerializeField] protected float passiveGrowthAmount = 0.01f;
@@ -101,6 +104,20 @@ public partial class MonsterBase
 
             OnGrowthChanged?.Invoke(growth);
             UpdateGrowthState();
+
+            // Trigger broadcast when growth crosses 200% (2.0f)
+            if (growth >= 2.0f)
+            {
+                if (!growth200BroadcastTriggered)
+                {
+                    growth200BroadcastTriggered = true;
+                    FacilityHUD.ShowBroadcast($"{MonsterName} growth is more than 200%!", "System");
+                }
+            }
+            else
+            {
+                growth200BroadcastTriggered = false;
+            }
         }
     }
 
@@ -157,6 +174,7 @@ public partial class MonsterBase
     {
         hasGrown = growth >= growThreshold;
         isMutated = growth >= mutatedThreshold;
+        growth200BroadcastTriggered = growth >= 2.0f;
         currentGrowthState = ComputeGrowthState();
 
         ApplyVisualObjectForState(currentGrowthState, currentGrowthState);

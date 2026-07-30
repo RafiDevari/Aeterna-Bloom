@@ -1,10 +1,14 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// Menampilkan HUD Energy dan Electricity gaya Lobotomy Corporation di ujung kiri atas.
 /// </summary>
 public class FacilityHUD : MonoBehaviour
 {
+    private static FacilityHUD instance;
+    public static FacilityHUD Instance => instance;
+
     [Header("Colors & Theme")]
     [SerializeField] private Color outerFrameBgColor = new Color(0.08f, 0.06f, 0.06f, 0.95f);
     [SerializeField] private Color borderGoldColor = new Color(0.85f, 0.58f, 0.22f, 1f);
@@ -20,6 +24,10 @@ public class FacilityHUD : MonoBehaviour
     private GUIStyle titleStyle;
     private GUIStyle labelStyle;
     private GUIStyle iconStyle;
+    private GUIStyle broadcastSenderStyle;
+    private GUIStyle broadcastMessageStyle;
+
+    private List<BroadcastMessage> activeBroadcasts = new List<BroadcastMessage>();
 
     private Texture2D whiteTex;
     private bool stylesInitialized;
@@ -33,6 +41,53 @@ public class FacilityHUD : MonoBehaviour
             whiteTex.Apply();
         }
         return whiteTex;
+    }
+
+    private void Awake()
+    {
+        instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+        {
+            instance = null;
+        }
+    }
+
+    private void Update()
+    {
+        for (int i = activeBroadcasts.Count - 1; i >= 0; i--)
+        {
+            activeBroadcasts[i].Duration -= Time.deltaTime;
+            if (activeBroadcasts[i].Duration <= 0f)
+            {
+                activeBroadcasts.RemoveAt(i);
+            }
+        }
+    }
+
+    public void AddBroadcast(string message, string sender = "System")
+    {
+        activeBroadcasts.Insert(0, new BroadcastMessage
+        {
+            Sender = sender,
+            Message = message,
+            Duration = 10f
+        });
+    }
+
+    public static void ShowBroadcast(string message, string sender = "System")
+    {
+        if (instance != null)
+        {
+            instance.AddBroadcast(message, sender);
+        }
+        else
+        {
+            Debug.LogWarning($"[FacilityHUD] Cannot show broadcast because HUD instance is null. Sender: {sender}, Message: {message}");
+        }
     }
 
     private void OnDisable()
@@ -60,7 +115,25 @@ public class FacilityHUD : MonoBehaviour
         // Draw Lobotomy Corp Energy & Electricity Bar HUD at top-left
         DrawLobotomyTopLeftHUD(fac, hudX, hudY, hudWidth, hudHeight);
 
-        // Draw Room Panels below top-left HUD
+        // Draw Broadcasts in the center left of the screen (larger size)
+        if (activeBroadcasts.Count > 0)
+        {
+            float broadcastWidth = 600f;
+            float broadcastHeight = 48f;
+            float broadcastSpacing = 8f;
+            int count = activeBroadcasts.Count;
+            float totalHeight = count * broadcastHeight + (count - 1) * broadcastSpacing;
+            float startY = (Screen.height - totalHeight) / 2f;
+            float bx = 12f;
+
+            for (int i = 0; i < count; i++)
+            {
+                float by = startY + i * (broadcastHeight + broadcastSpacing);
+                DrawBroadcastPanel(activeBroadcasts[i], bx, by, broadcastWidth, broadcastHeight);
+            }
+        }
+
+        // Draw Room Panels below top-left HUD (no offset needed as broadcasts are center-right)
         float roomY = hudY + hudHeight + 15f;
         const float roomPanelWidth = 220f;
 
@@ -344,5 +417,76 @@ public class FacilityHUD : MonoBehaviour
             fontSize = 18,
             alignment = TextAnchor.MiddleCenter
         };
+
+        broadcastSenderStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = 14,
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleCenter
+        };
+
+        broadcastMessageStyle = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = 14,
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.MiddleLeft
+        };
     }
+
+    private void DrawBroadcastPanel(BroadcastMessage msg, float x, float y, float w, float h)
+    {
+        float alpha = 1f;
+        if (msg.Duration < 1.0f)
+        {
+            alpha = msg.Duration;
+        }
+
+        Color originalColor = GUI.color;
+        GUI.color = new Color(originalColor.r, originalColor.g, originalColor.b, originalColor.a * alpha);
+
+        // Draw outer box
+        // Dark frame background
+        DrawRect(new Rect(x, y, w, h), new Color(0.06f, 0.04f, 0.04f, 0.95f));
+        // Golden/Bronze outline
+        DrawThickOutline(new Rect(x, y, w, h), borderGoldColor, 2);
+
+        // Draw Sender Badge
+        float badgeW = 120f;
+        float badgeH = h - 12f;
+        Rect badgeRect = new Rect(x + 6f, y + 6f, badgeW, badgeH);
+        
+        // Draw sender badge background
+        DrawRect(badgeRect, new Color(0.04f, 0.03f, 0.03f, 0.95f));
+        
+        // Select badge border/text color based on sender (can override)
+        Color badgeColor = borderGoldColor;
+        if (msg.Sender == "System")
+        {
+            badgeColor = new Color(1f, 0.3f, 0.3f, 1f); // Neon red for System
+        }
+        else
+        {
+            badgeColor = new Color(0.3f, 0.8f, 1f, 1f); // Neon blue for others/custom
+        }
+        
+        DrawThickOutline(badgeRect, badgeColor, 1);
+
+        // Sender text
+        broadcastSenderStyle.normal.textColor = badgeColor;
+        GUI.Label(badgeRect, msg.Sender, broadcastSenderStyle);
+
+        // Draw Message
+        Rect msgRect = new Rect(x + badgeW + 16f, y + 6f, w - badgeW - 24f, h - 12f);
+        broadcastMessageStyle.normal.textColor = new Color(0.95f, 0.95f, 0.95f, 1f);
+        GUI.Label(msgRect, msg.Message, broadcastMessageStyle);
+
+        GUI.color = originalColor;
+    }
+}
+
+public class BroadcastMessage
+{
+    public string Sender;
+    public string Message;
+    public float Duration;
 }
