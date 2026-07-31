@@ -184,6 +184,7 @@ public partial class Employee : MonoBehaviour
     private bool isMoving;
 
     private Vector3 targetPosition;
+    private Vector3 lastMoveDestination;
 
     /// <summary>
     /// Sisa waypoint yang masih harus dilewati SEBELUM titik akhir (destination asli MoveTo).
@@ -443,12 +444,26 @@ public partial class Employee : MonoBehaviour
         {
             poisonTimer = 0f;
             Room room = RoomPathfinder.FindRoomAt(transform.position);
-            if (room != null && (room.IsPoisoned || room.IsSterilizing))
+            if (room != null)
             {
-                ModifyHp(-poisonDamageAmount);
-                string hazardType = room.IsSterilizing ? "Sterilisasi" : "Racun";
-                // Menampilkan debug opsional agar developer tahu
-                Debug.Log($"[{EmployeeName}] Terkena damage {hazardType} -{poisonDamageAmount} HP di ruangan {room.RoomName}. HP tersisa: {hp}");
+                // Jika sedang melakukan sterilisasi, employee imun terhadap racun maupun sterilisasi
+                bool takesPoisonDamage = room.IsPoisoned && currentState != EmployeeState.Sterilizing;
+                bool takesSterilizeDamage = room.IsSterilizing && currentState != EmployeeState.Sterilizing;
+
+                if (takesPoisonDamage || takesSterilizeDamage)
+                {
+                    int damage = poisonDamageAmount;
+                    if (takesSterilizeDamage)
+                    {
+                        // Employee biasa yang berada di ruangan yang sedang disterilisasi hanya terkena 50% damage
+                        damage = Mathf.RoundToInt(poisonDamageAmount * 0.5f);
+                    }
+
+                    ModifyHp(-damage);
+                    string hazardType = takesSterilizeDamage ? "Sterilisasi" : "Racun";
+                    // Menampilkan debug opsional agar developer tahu
+                    Debug.Log($"[{EmployeeName}] Terkena damage {hazardType} -{damage} HP di ruangan {room.RoomName}. HP tersisa: {hp}");
+                }
             }
         }
     }
@@ -589,7 +604,20 @@ public partial class Employee : MonoBehaviour
         Debug.Log($"[Employee] {employeeName} job dibatalkan: salah satu task gagal, sisa antrean dibersihkan.");
         currentTask = null;
         taskQueue.Clear();
-        BackToDivision();
+        
+        bool isAlreadyGoingToDivision = false;
+        if (assignedDivision != null)
+        {
+            if (Vector3.Distance(lastMoveDestination, assignedDivision.transform.position) < 0.1f)
+            {
+                isAlreadyGoingToDivision = true;
+            }
+        }
+
+        if (!isAlreadyGoingToDivision)
+        {
+            BackToDivision();
+        }
     }
 
     //==============================
@@ -654,11 +682,12 @@ public partial class Employee : MonoBehaviour
     /// (mis. re-check validity secara berkala) supaya job tidak nyangkut selamanya -- saya belum
     /// pernah lihat isi MoveToTask.cs, jadi belum bisa pastikan itu sudah ditangani di sana.
     /// </summary>
-    public virtual void MoveTo(Vector3 destination, System.Action onArrive = null)
+    public virtual void MoveTo(Vector3 destination, System.Action onArrive = null, System.Action onFail = null)
     {
         EndConversation();
 
         destination.z = 0f;
+        lastMoveDestination = destination;
 
         bool canEnterLockedRooms = (this is EmployeeSecurity);
         List<Vector3> path = RoomPathfinder.FindWaypointPath(transform.position, destination, canEnterLockedRooms);
@@ -667,6 +696,7 @@ public partial class Employee : MonoBehaviour
         {
             Debug.LogWarning($"[Employee] {employeeName} BATAL bergerak ke {destination} : " +
                             "tidak ada jalur yang valid (lockdown, atau posisi tidak ada di room manapun).");
+            onFail?.Invoke();
             return;
         }
 

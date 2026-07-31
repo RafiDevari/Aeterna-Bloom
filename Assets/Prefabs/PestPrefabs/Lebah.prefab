@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 600681544057225942}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.84, y: -3.49, z: 0}
+  m_LocalPosition: {x: -11.84, y: -3.49, z: 10}
   m_LocalScale: {x: 0.2, y: 0.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -158,8 +158,9 @@ MonoBehaviour:
   immuneToPoison: 0
   hazardInterval: 1
   hazardDamageAmount: 5
+  moveSpeed: 1
   drainInterval: 5
   growthDrainAmount: 0.03
-  moveSpeed: 1
-  targetUnit: {fileID: 0}
-  targetMonster: {fileID: 0}
+  wanderInterval: 3
+  currentTargetUnit: {fileID: 0}
+  currentTargetMonster: {fileID: 0}

@@ -40,4 +40,9 @@ public class EmployeeClerk : Employee
     {
         return targetRoom.FixDuration * offFieldMultiplier;
     }
+
+    public override float CalculateSterilizeDuration(Room targetRoom)
+    {
+        return 30f * offFieldMultiplier;
+    }
 }

@@ -25,7 +25,7 @@ public class MoveToTask : EmployeeTask
             return;
         }
 
-        employee.MoveTo(getDestination(), onComplete);
+        employee.MoveTo(getDestination(), onComplete, onFail);
     }
 
     public void Cancel()
