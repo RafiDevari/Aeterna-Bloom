@@ -236,6 +236,79 @@ public abstract class Room : MonoBehaviour
         IsLocked = locked;
     }
 
+    /// <summary>
+    /// Triggers a temporary visual effect in this room.
+    /// Supports loading either an animated Prefab or a static Sprite/PNG.
+    /// </summary>
+    /// <param name="effectPath">The resource path to the Prefab or JPG/PNG sprite.</param>
+    public void TriggerEffect(string effectPath)
+    {
+        if (string.IsNullOrEmpty(effectPath))
+            return;
+
+        BoxCollider2D col = GetComponent<BoxCollider2D>();
+        Vector3 spawnPosition = col != null ? (Vector3)col.offset : Vector3.zero;
+
+        // 1. Try loading as a Prefab first (for animated/complex effects)
+        GameObject effectPrefab = Resources.Load<GameObject>(effectPath);
+        if (effectPrefab != null)
+        {
+            GameObject effectGo = Instantiate(effectPrefab, this.transform);
+            effectGo.transform.localPosition = spawnPosition;
+
+            // Scale to fill the room size (matching prefab's root size if it has a SpriteRenderer)
+            SpriteRenderer prefabSr = effectGo.GetComponentInChildren<SpriteRenderer>();
+            if (prefabSr != null && prefabSr.sprite != null)
+            {
+                ScaleEffectToRoom(effectGo, prefabSr.sprite, col);
+            }
+            return;
+        }
+
+        // 2. Fallback: Load as a Sprite (for simple/un-animated PNG effects)
+        Sprite effectSprite = Resources.Load<Sprite>(effectPath);
+        if (effectSprite == null)
+        {
+            Debug.LogWarning($"[{RoomName}] Could not load effect prefab or sprite at path: {effectPath}");
+            return;
+        }
+
+        GameObject genericEffectGo = new GameObject("RoomEffect_" + effectSprite.name);
+        genericEffectGo.transform.SetParent(this.transform);
+        genericEffectGo.transform.localPosition = spawnPosition;
+
+        ScaleEffectToRoom(genericEffectGo, effectSprite, col);
+
+        int sortingOrder = 10;
+        if (spriteRenderer != null)
+        {
+            sortingOrder = spriteRenderer.sortingOrder + 10;
+        }
+
+        // Attach generic RoomEffect script to handle the Sprite rendering and 3-second lifetime.
+        // For custom animations or behaviors (like LightningRoomEffect), set them up on a Prefab instead of a raw Sprite.
+        var fallbackEffect = genericEffectGo.AddComponent<AeternaBloom.Effects.Room.RoomEffect>();
+        fallbackEffect.Init(effectSprite, sortingOrder);
+    }
+
+    private void ScaleEffectToRoom(GameObject effectGo, Sprite effectSprite, BoxCollider2D col)
+    {
+        Vector2 targetSize = Vector2.one;
+        if (spriteRenderer != null && spriteRenderer.sprite != null)
+        {
+            targetSize = spriteRenderer.sprite.bounds.size;
+        }
+        else if (col != null)
+        {
+            targetSize = col.size;
+        }
+
+        Vector2 spriteSize = effectSprite.bounds.size;
+        float scaleX = spriteSize.x > 0 ? (targetSize.x / spriteSize.x) : 1f;
+        float scaleY = spriteSize.y > 0 ? (targetSize.y / spriteSize.y) : 1f;
+        effectGo.transform.localScale = new Vector3(scaleX, scaleY, 1f);
+    }
+
     public virtual void InitFromFacility(float defaultTemperature)
     {
         Temperature = defaultTemperature;
