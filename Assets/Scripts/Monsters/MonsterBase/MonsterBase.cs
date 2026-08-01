@@ -220,6 +220,12 @@ public partial class MonsterBase : MonoBehaviour
             OnMoodChanged?.Invoke(mood);
             OnMoodChange(previous, mood);
 
+            // Trigger small visual indicator (e.g. broken heart) on containment unit when mood drops
+            if (mood < previous && myUnit != null)
+            {
+                myUnit.TriggerSmallEffect(AeternaBloom.Effects.Room.RoomEffectPaths.MoodDown);
+            }
+
             Debug.Log($"[{MonsterName}] Mood : {previous} -> {mood}");
         }
     }

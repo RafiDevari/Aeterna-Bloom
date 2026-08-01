@@ -36,6 +36,9 @@ public class Dandelectric : MonsterBase
     [SerializeField] private float mutatedShockInterval = 15f;
     private float mutatedShockTimer;
 
+    [Header("Visual Effects Settings")]
+    [SerializeField] private string lightningRoomEffect = AeternaBloom.Effects.Room.RoomEffectPaths.ElectricShock;
+
     public float Energy => energy;
 
     protected override void Awake()
@@ -131,8 +134,11 @@ public class Dandelectric : MonsterBase
         {
             Debug.LogWarning($"[{MonsterName}] ELECTRIC SHOCK! Target Room: {targetRoom.RoomName}, Damage: {damage}");
 
-            // TEST: Flash target room sprite to black to visualize the shock room
-            StartCoroutine(TestRoomFlashBlack(targetRoom));
+            // Trigger room visual effect
+            targetRoom.TriggerEffect(lightningRoomEffect);
+
+            // Dim target room's light to visualize the shock
+            StartCoroutine(DimRoomLight(targetRoom));
 
             // Deal damage to all alive employees inside the chosen room
             if (Facility.Instance.Employees != null)
@@ -269,15 +275,16 @@ public class Dandelectric : MonsterBase
     }
 
     /// <summary>
-    /// Coroutine for testing: turns the target room's sprite black for 1.5 seconds, then restores it.
+    /// Coroutine to temporarily dim the target room's light (low opacity dark overlay style) for 1.5 seconds.
     /// </summary>
-    private System.Collections.IEnumerator TestRoomFlashBlack(Room room)
+    private System.Collections.IEnumerator DimRoomLight(Room room)
     {
         SpriteRenderer sr = room.GetComponent<SpriteRenderer>();
         if (sr != null)
         {
             Color oldColor = sr.color;
-            sr.color = Color.black;
+            // Sets to a very dark color while keeping/mimicking low opacity overlay behavior
+            sr.color = new Color(0.2f, 0.2f, 0.2f, oldColor.a);
             yield return new WaitForSeconds(1.5f);
             if (sr != null)
             {

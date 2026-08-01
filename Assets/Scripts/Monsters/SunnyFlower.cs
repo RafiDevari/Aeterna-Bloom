@@ -197,7 +197,7 @@ public class SunflowerMonster : MonsterBase
             }
         }
 
-        // 2. Lower suitable temperature of other monsters in the same room by 10
+        // 2. Lower suitable temperature of other monsters in the same room by 10 & trigger Heat Effect on their containment unit
         if (Context != null && Context.CurrentRoom is ContainmentRoom containmentRoom)
         {
             foreach (var unit in containmentRoom.ContainmentUnits)
@@ -206,10 +206,14 @@ public class SunflowerMonster : MonsterBase
                 {
                     unit.Monster.ModifySuitableTemperature(-10f);
                     affectedMonsters.Add(unit.Monster);
+
+                    // Trigger Heat visual effect on target containment unit
+                    unit.TriggerEffect(AeternaBloom.Effects.Common.VisualEffectPaths.HeatEffect);
                 }
             }
         }
     }
+
 
     private void RemoveMoodZeroEffect()
     {

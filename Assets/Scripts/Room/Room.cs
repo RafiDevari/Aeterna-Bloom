@@ -236,6 +236,147 @@ public abstract class Room : MonoBehaviour
         IsLocked = locked;
     }
 
+    /// <summary>
+    /// Triggers a temporary visual effect in this room.
+    /// Supports loading either an animated Prefab or a static Sprite/PNG.
+    /// </summary>
+    /// <param name="effectPath">The resource path to the Prefab or JPG/PNG sprite.</param>
+    public void TriggerEffect(string effectPath)
+    {
+        if (string.IsNullOrEmpty(effectPath))
+            return;
+
+        BoxCollider2D col = GetComponent<BoxCollider2D>();
+        Vector3 spawnPosition = col != null ? (Vector3)col.offset : Vector3.zero;
+
+        // 1. Try loading as a Prefab first (for animated/complex effects)
+        GameObject effectPrefab = Resources.Load<GameObject>(effectPath);
+        if (effectPrefab != null)
+        {
+            GameObject effectGo = Instantiate(effectPrefab, this.transform);
+            effectGo.transform.localPosition = spawnPosition;
+
+            // Scale to fill the room size (matching prefab's root size if it has a SpriteRenderer)
+            SpriteRenderer prefabSr = effectGo.GetComponentInChildren<SpriteRenderer>();
+            if (prefabSr != null && prefabSr.sprite != null)
+            {
+                ScaleEffectToRoom(effectGo, prefabSr.sprite, col);
+            }
+            return;
+        }
+
+        // 2. Fallback: Load as a Sprite (for simple/un-animated PNG effects)
+        Sprite effectSprite = Resources.Load<Sprite>(effectPath);
+        if (effectSprite == null)
+        {
+            Debug.LogWarning($"[{RoomName}] Could not load effect prefab or sprite at path: {effectPath}");
+            return;
+        }
+
+        GameObject genericEffectGo = new GameObject("RoomEffect_" + effectSprite.name);
+        genericEffectGo.transform.SetParent(this.transform);
+        genericEffectGo.transform.localPosition = spawnPosition;
+
+        ScaleEffectToRoom(genericEffectGo, effectSprite, col);
+
+        int sortingOrder = 10;
+        if (spriteRenderer != null)
+        {
+            sortingOrder = spriteRenderer.sortingOrder + 10;
+        }
+
+        string lowerPath = effectPath.ToLower();
+        if (lowerPath.Contains("heat"))
+        {
+            var heat = genericEffectGo.AddComponent<AeternaBloom.Effects.Common.HeatEffect>();
+            heat.Init(effectSprite, sortingOrder);
+        }
+        else if (lowerPath.Contains("electric") || lowerPath.Contains("shock") || lowerPath.Contains("lightning"))
+        {
+            var shock = genericEffectGo.AddComponent<AeternaBloom.Effects.Common.LightningEffect>();
+            shock.Init(effectSprite, sortingOrder);
+        }
+        else
+        {
+            var fallbackEffect = genericEffectGo.AddComponent<AeternaBloom.Effects.Room.RoomEffect>();
+            fallbackEffect.Init(effectSprite, sortingOrder);
+        }
+    }
+
+    /// <summary>
+    /// Triggers a temporary small visual effect (e.g., broken heart / mood indicator) 
+    /// placed in the top-left corner of the room for 3 seconds.
+    /// </summary>
+    /// <param name="effectPath">The resource path to the Prefab or JPG/PNG sprite.</param>
+    public void TriggerSmallEffect(string effectPath)
+    {
+        if (string.IsNullOrEmpty(effectPath))
+            return;
+
+        BoxCollider2D col = GetComponent<BoxCollider2D>();
+        Vector3 spawnPosition = Vector3.zero;
+        if (col != null)
+        {
+            // Position at top-left with a small offset/margin so it's not cut off by borders.
+            // Using a default of 0.6f units margin.
+            float marginX = 0.6f;
+            float marginY = 0.6f;
+            spawnPosition = new Vector3(col.offset.x - col.size.x / 2f + marginX, col.offset.y + col.size.y / 2f - marginY, 0f);
+        }
+
+        // 1. Try loading as a Prefab first (for animated/complex small effects)
+        GameObject effectPrefab = Resources.Load<GameObject>(effectPath);
+        if (effectPrefab != null)
+        {
+            GameObject effectGo = Instantiate(effectPrefab, this.transform);
+            effectGo.transform.localPosition = spawnPosition;
+            // Keeps the prefab's default local scale instead of scaling to the room
+            return;
+        }
+
+        // 2. Fallback: Load as a Sprite (for simple/un-animated small PNG effects)
+        Sprite effectSprite = Resources.Load<Sprite>(effectPath);
+        if (effectSprite == null)
+        {
+            Debug.LogWarning($"[{RoomName}] Could not load small effect prefab or sprite at path: {effectPath}");
+            return;
+        }
+
+        GameObject genericEffectGo = new GameObject("RoomSmallEffect_" + effectSprite.name);
+        genericEffectGo.transform.SetParent(this.transform);
+        genericEffectGo.transform.localPosition = spawnPosition;
+        genericEffectGo.transform.localScale = Vector3.one; // Keep original sprite scale
+
+        int sortingOrder = 15; // Render on top of standard room effects
+        if (spriteRenderer != null)
+        {
+            sortingOrder = spriteRenderer.sortingOrder + 15;
+        }
+
+        // Attach generic RoomEffect script to handle the Sprite rendering and 3-second lifetime
+        var fallbackEffect = genericEffectGo.AddComponent<AeternaBloom.Effects.Room.RoomEffect>();
+        fallbackEffect.Init(effectSprite, sortingOrder);
+    }
+
+
+    private void ScaleEffectToRoom(GameObject effectGo, Sprite effectSprite, BoxCollider2D col)
+    {
+        Vector2 targetSize = Vector2.one;
+        if (spriteRenderer != null && spriteRenderer.sprite != null)
+        {
+            targetSize = spriteRenderer.sprite.bounds.size;
+        }
+        else if (col != null)
+        {
+            targetSize = col.size;
+        }
+
+        Vector2 spriteSize = effectSprite.bounds.size;
+        float scaleX = spriteSize.x > 0 ? (targetSize.x / spriteSize.x) : 1f;
+        float scaleY = spriteSize.y > 0 ? (targetSize.y / spriteSize.y) : 1f;
+        effectGo.transform.localScale = new Vector3(scaleX, scaleY, 1f);
+    }
+
     public virtual void InitFromFacility(float defaultTemperature)
     {
         Temperature = defaultTemperature;
