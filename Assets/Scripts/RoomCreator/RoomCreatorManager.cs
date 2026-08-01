@@ -27,6 +27,7 @@ public class RoomCreatorManager : MonoBehaviour
     [SerializeField] private GameObject hallRoomPrefab;
     [SerializeField] private GameObject mainHallPrefab;
     [SerializeField] private GameObject botanistRoomPrefab;
+    [SerializeField] private GameObject liftPrefab;
 
     [Header("UI References")]
     [SerializeField] private Transform cardContainer;
@@ -96,7 +97,8 @@ public class RoomCreatorManager : MonoBehaviour
             {
                 new RoomInventoryItemData("Hall Room", 4, hallRoomPrefab),
                 new RoomInventoryItemData("Main Hall", 2, mainHallPrefab),
-                new RoomInventoryItemData("Botanist Room", 1, botanistRoomPrefab)
+                new RoomInventoryItemData("Botanist Room", 1, botanistRoomPrefab),
+                new RoomInventoryItemData("Lift", 2, liftPrefab)
             };
         }
     }
@@ -215,7 +217,18 @@ public class RoomCreatorManager : MonoBehaviour
         bool isValid = activePreview.CheckValidity(placedRooms);
         if (!isValid)
         {
-            SetStatusMessage("Tidak dapat meletakkan room di sini (bertumpukan dengan room lain)!");
+            if (activePreview.IsLift)
+            {
+                SetStatusMessage("Lift hanya dapat diletakkan di atas atau di bawah Main Hall / Lift!");
+            }
+            else if (!activePreview.IsMainHall && !activePreview.IsCurrentlySnapped)
+            {
+                SetStatusMessage("Room ini harus diletakkan menempel pada room lain!");
+            }
+            else
+            {
+                SetStatusMessage("Tidak dapat meletakkan room di sini (bertumpukan dengan room lain)!");
+            }
             return;
         }
 
