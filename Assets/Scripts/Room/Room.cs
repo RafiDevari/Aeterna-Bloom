@@ -285,11 +285,24 @@ public abstract class Room : MonoBehaviour
             sortingOrder = spriteRenderer.sortingOrder + 10;
         }
 
-        // Attach generic RoomEffect script to handle the Sprite rendering and 3-second lifetime.
-        // For custom animations or behaviors (like LightningRoomEffect), set them up on a Prefab instead of a raw Sprite.
-        var fallbackEffect = genericEffectGo.AddComponent<AeternaBloom.Effects.Room.RoomEffect>();
-        fallbackEffect.Init(effectSprite, sortingOrder);
+        string lowerPath = effectPath.ToLower();
+        if (lowerPath.Contains("heat"))
+        {
+            var heat = genericEffectGo.AddComponent<AeternaBloom.Effects.Common.HeatEffect>();
+            heat.Init(effectSprite, sortingOrder);
+        }
+        else if (lowerPath.Contains("electric") || lowerPath.Contains("shock") || lowerPath.Contains("lightning"))
+        {
+            var shock = genericEffectGo.AddComponent<AeternaBloom.Effects.Common.LightningEffect>();
+            shock.Init(effectSprite, sortingOrder);
+        }
+        else
+        {
+            var fallbackEffect = genericEffectGo.AddComponent<AeternaBloom.Effects.Room.RoomEffect>();
+            fallbackEffect.Init(effectSprite, sortingOrder);
+        }
     }
+
 
     private void ScaleEffectToRoom(GameObject effectGo, Sprite effectSprite, BoxCollider2D col)
     {

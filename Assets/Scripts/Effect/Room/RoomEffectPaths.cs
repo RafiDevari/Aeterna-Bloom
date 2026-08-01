@@ -10,5 +10,11 @@ namespace AeternaBloom.Effects.Room
         /// Path to the electric shock visual effect sprite (Dandelectric).
         /// </summary>
         public const string ElectricShock = "Effects/Dandelectric_effect";
+
+        /// <summary>
+        /// Path to the heat / overheat visual effect sprite (Sunnyflower).
+        /// </summary>
+        public const string HeatEffect = "Effects/Heat_effect";
     }
 }
+

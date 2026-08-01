@@ -209,4 +209,88 @@ public class ContainmentUnit : MonoBehaviour
         OnAnyUnitClicked?.Invoke(this);   // <-- baris baru
     }
 
+    /// <summary>
+    /// Triggers a temporary visual effect (e.g. Heat, Electric Shock) on this ContainmentUnit.
+    /// Supports loading either an animated Prefab or a static Sprite/PNG.
+    /// </summary>
+    public void TriggerEffect(string effectPath)
+    {
+        if (string.IsNullOrEmpty(effectPath))
+            return;
+
+        BoxCollider2D col = GetComponent<BoxCollider2D>();
+        Vector3 spawnPosition = col != null ? (Vector3)col.offset : Vector3.zero;
+
+        // 1. Try loading as a Prefab first (for animated/complex effects)
+        GameObject effectPrefab = Resources.Load<GameObject>(effectPath);
+        if (effectPrefab != null)
+        {
+            GameObject effectGo = Instantiate(effectPrefab, this.transform);
+            effectGo.transform.localPosition = spawnPosition;
+
+            SpriteRenderer prefabSr = effectGo.GetComponentInChildren<SpriteRenderer>();
+            if (prefabSr != null && prefabSr.sprite != null)
+            {
+                ScaleEffectToUnit(effectGo, prefabSr.sprite, col);
+            }
+            return;
+        }
+
+        // 2. Fallback: Load as a Sprite (for simple/un-animated PNG effects)
+        Sprite effectSprite = Resources.Load<Sprite>(effectPath);
+        if (effectSprite == null)
+        {
+            Debug.LogWarning($"[ContainmentUnit:{unitName}] Could not load effect prefab or sprite at path: {effectPath}");
+            return;
+        }
+
+        GameObject genericEffectGo = new GameObject("ContainmentEffect_" + effectSprite.name);
+        genericEffectGo.transform.SetParent(this.transform);
+        genericEffectGo.transform.localPosition = spawnPosition;
+
+        ScaleEffectToUnit(genericEffectGo, effectSprite, col);
+
+        int sortingOrder = 10;
+        if (unitRenderer != null)
+        {
+            sortingOrder = unitRenderer.sortingOrder + 10;
+        }
+
+        // Attach specialized effect script based on path or fallback to ContainmentUnitEffect
+        string lowerPath = effectPath.ToLower();
+        if (lowerPath.Contains("heat"))
+        {
+            var heat = genericEffectGo.AddComponent<AeternaBloom.Effects.Common.HeatEffect>();
+            heat.Init(effectSprite, sortingOrder);
+        }
+        else if (lowerPath.Contains("electric") || lowerPath.Contains("shock") || lowerPath.Contains("lightning"))
+        {
+            var shock = genericEffectGo.AddComponent<AeternaBloom.Effects.Common.LightningEffect>();
+            shock.Init(effectSprite, sortingOrder);
+        }
+        else
+        {
+            var fallbackEffect = genericEffectGo.AddComponent<AeternaBloom.Effects.Containment.ContainmentUnitEffect>();
+            fallbackEffect.Init(effectSprite, sortingOrder);
+        }
+    }
+
+    private void ScaleEffectToUnit(GameObject effectGo, Sprite effectSprite, BoxCollider2D col)
+    {
+        Vector2 targetSize = Vector2.one;
+        if (unitRenderer != null && unitRenderer.sprite != null)
+        {
+            targetSize = unitRenderer.sprite.bounds.size;
+        }
+        else if (col != null)
+        {
+            targetSize = col.size;
+        }
+
+        Vector2 spriteSize = effectSprite.bounds.size;
+        float scaleX = spriteSize.x > 0 ? (targetSize.x / spriteSize.x) : 1f;
+        float scaleY = spriteSize.y > 0 ? (targetSize.y / spriteSize.y) : 1f;
+        effectGo.transform.localScale = new Vector3(scaleX, scaleY, 1f);
+    }
 }
+
