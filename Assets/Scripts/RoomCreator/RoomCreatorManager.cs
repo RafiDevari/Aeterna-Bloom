@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -6,8 +7,8 @@ using TMPro;
 
 /// <summary>
 /// Manager utama untuk merakit/membuat layout room pada scene roomCreator.
-/// Menangani daftar inventaris room user, drag & drop preview, overlap checking, 
-/// serta konfirmasi Checklist dan Cancel.
+/// Menangani daftar inventaris room user, drag & drop preview, overlap checking,
+/// konfirmasi Checklist/Cancel, serta fitur Save Layout ke room_layout_1.json.
 /// </summary>
 public class RoomCreatorManager : MonoBehaviour
 {
@@ -35,6 +36,8 @@ public class RoomCreatorManager : MonoBehaviour
     [SerializeField] private GameObject confirmationPanel;
     [SerializeField] private Button checklistButton;
     [SerializeField] private Button cancelButton;
+    [SerializeField] private Button saveButton;
+    [SerializeField] private Button testPlayButton;
     [SerializeField] private TextMeshProUGUI statusMessageText;
     [SerializeField] private Text legacyStatusMessageText;
 
@@ -83,11 +86,22 @@ public class RoomCreatorManager : MonoBehaviour
             cancelButton.onClick.RemoveAllListeners();
             cancelButton.onClick.AddListener(OnCancelClicked);
         }
+
+        if (saveButton != null)
+        {
+            saveButton.onClick.RemoveAllListeners();
+            saveButton.onClick.AddListener(() => SaveLayoutToJson("room_layout_1.json"));
+        }
+
+        if (testPlayButton != null)
+        {
+            testPlayButton.onClick.RemoveAllListeners();
+            testPlayButton.onClick.AddListener(SaveAndPlayGameplayTest);
+        }
     }
 
     /// <summary>
-    /// Memastikan inventory terisi sesuai contoh user jika masih kosong:
-    /// 4 Hall Room, 2 Main Hall, 1 Botanist Room.
+    /// Memastikan inventory terisi sesuai contoh user jika masih kosong.
     /// </summary>
     public void EnsureDefaultInventory()
     {
@@ -110,7 +124,6 @@ public class RoomCreatorManager : MonoBehaviour
     {
         if (cardContainer == null) return;
 
-        // Jika cardUIList sudah sesuai dengan inventoryItems, tinggal updateUI
         if (cardUIList.Count == inventoryItems.Count)
         {
             for (int i = 0; i < inventoryItems.Count; i++)
@@ -120,7 +133,6 @@ public class RoomCreatorManager : MonoBehaviour
             return;
         }
 
-        // Hapus child lama jika ada
         foreach (Transform child in cardContainer)
         {
             Destroy(child.gameObject);
@@ -152,7 +164,6 @@ public class RoomCreatorManager : MonoBehaviour
     {
         if (itemData == null || itemData.count <= 0) return;
 
-        // Batal placement sebelumnya jika belum dikonfirmasi
         if (activePreview != null)
         {
             OnCancelClicked();
@@ -237,10 +248,8 @@ public class RoomCreatorManager : MonoBehaviour
         activePreview.ConfirmPlacement();
         placedRooms.Add(confirmedObj);
 
-        // Kurangi jumlah stok room (misal: Hall Room 4 -> 3)
         activeItemData.count--;
 
-        // Reset state & update UI
         activePreview = null;
         activeItemData = null;
 
@@ -263,6 +272,139 @@ public class RoomCreatorManager : MonoBehaviour
         HideConfirmationUI();
     }
 
+    /// <summary>
+    /// Menyimpan semua room yang sudah diletakkan ke file JSON (misal room_layout_1.json).
+    /// </summary>
+    public void SaveLayoutToJson(string fileName = "room_layout_1.json")
+    {
+        FacilityLayoutData layoutData = new FacilityLayoutData
+        {
+            defaultRoomTemperature = 20f,
+            maxElectricity = 100f,
+            maxEnergy = 100f,
+            rooms = new List<RoomSaveData>()
+        };
+
+        foreach (GameObject roomObj in placedRooms)
+        {
+            if (roomObj == null) continue;
+
+            Room roomComp = roomObj.GetComponent<Room>();
+
+            string typeName = "Room";
+            string displayName = roomObj.name.Replace("Preview_", "").Replace("(Clone)", "").Trim();
+
+            if (roomComp != null)
+            {
+                typeName = roomComp.GetType().Name;
+                if (!string.IsNullOrEmpty(roomComp.RoomName))
+                {
+                    displayName = roomComp.RoomName;
+                }
+            }
+            else
+            {
+                if (displayName.ToLower().Contains("main")) typeName = "MainRoom";
+                else if (displayName.ToLower().Contains("lift")) typeName = "Lift";
+                else if (displayName.ToLower().Contains("botanist")) typeName = "DivisionBotanist";
+                else if (displayName.ToLower().Contains("hall")) typeName = "HallRoom";
+            }
+
+            RoomSaveData roomData = new RoomSaveData
+            {
+                roomType = typeName,
+                roomName = displayName,
+                position = roomObj.transform.position,
+                scale = roomObj.transform.localScale,
+                temperature = roomComp != null ? roomComp.Temperature : 20f,
+                isLocked = roomComp != null ? roomComp.IsLocked : false,
+                isPoisoned = roomComp != null ? roomComp.IsPoisoned : false,
+                isSterilizing = roomComp != null ? roomComp.IsSterilizing : false,
+                containmentUnits = new List<ContainmentUnitSaveData>(),
+                employeesToSpawn = new List<EmployeeSaveData>()
+            };
+
+            layoutData.rooms.Add(roomData);
+        }
+
+        string jsonString = JsonUtility.ToJson(layoutData, true);
+
+        // Save to persistentDataPath
+        string persistentPath = Path.Combine(Application.persistentDataPath, fileName);
+        File.WriteAllText(persistentPath, jsonString);
+        Debug.Log($"[RoomCreatorManager] Successfully saved layout to persistent path: {persistentPath}");
+
+        // Also save to Assets/Resources/ for Unity Editor so it's ready to load
+#if UNITY_EDITOR
+        string resourcesDir = Path.Combine(Application.dataPath, "Resources");
+        if (!Directory.Exists(resourcesDir))
+        {
+            Directory.CreateDirectory(resourcesDir);
+        }
+        string resourcesPath = Path.Combine(resourcesDir, fileName);
+        File.WriteAllText(resourcesPath, jsonString);
+        UnityEditor.AssetDatabase.Refresh();
+        Debug.Log($"[RoomCreatorManager] Successfully saved layout to Resources: {resourcesPath}");
+#endif
+
+        SetStatusMessage($"Layout berhasil disimpan ke {fileName} ({layoutData.rooms.Count} room)!");
+    }
+
+    /// <summary>
+    /// Menyimpan layout ke JSON dan langsung berpindah ke scene Gameplay (GameplaySaveLoad) untuk menguji layout.
+    /// </summary>
+    public void SaveAndPlayGameplayTest()
+    {
+        SaveLayoutToJson("room_layout_1.json");
+        SaveLayoutToJson("room_layout.json");
+
+        Debug.Log("[RoomCreatorManager] Loading GameplaySaveLoad scene for testing...");
+
+#if UNITY_EDITOR
+        EnsureBuildSettingsInEditor();
+        string scenePath = "Assets/Scenes/GameplaySaveLoad.unity";
+        if (File.Exists(scenePath))
+        {
+            UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(
+                scenePath,
+                new UnityEngine.SceneManagement.LoadSceneParameters(UnityEngine.SceneManagement.LoadSceneMode.Single)
+            );
+            return;
+        }
+#endif
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("GameplaySaveLoad");
+    }
+
+#if UNITY_EDITOR
+    private static void EnsureBuildSettingsInEditor()
+    {
+        var scenes = new List<UnityEditor.EditorBuildSettingsScene>(UnityEditor.EditorBuildSettings.scenes);
+        bool modified = false;
+
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/RoomCreator.unity");
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/GameplaySaveLoad.unity");
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/Gameplay1.unity");
+
+        if (modified)
+        {
+            UnityEditor.EditorBuildSettings.scenes = scenes.ToArray();
+            Debug.Log("[RoomCreatorManager] Updated Build Settings with required scenes.");
+        }
+    }
+
+    private static bool AddBuildSceneIfMissing(List<UnityEditor.EditorBuildSettingsScene> list, string path)
+    {
+        if (!File.Exists(path)) return false;
+        foreach (var s in list)
+        {
+            if (s.path == path) return false;
+        }
+        list.Add(new UnityEditor.EditorBuildSettingsScene(path, true));
+        return true;
+    }
+#endif
+
     private void ShowConfirmationUI()
     {
         if (confirmationPanel != null)
@@ -278,7 +420,6 @@ public class RoomCreatorManager : MonoBehaviour
         {
             confirmationPanel.SetActive(false);
         }
-        SetStatusMessage("");
     }
 
     private void SetStatusMessage(string msg)
@@ -336,7 +477,6 @@ public class RoomCreatorManager : MonoBehaviour
     {
         GameObject room = new GameObject(name);
         SpriteRenderer sr = room.AddComponent<SpriteRenderer>();
-        // Create simple white square texture for fallback
         Texture2D tex = new Texture2D(32, 32);
         Color[] pixels = new Color[32 * 32];
         for (int i = 0; i < pixels.Length; i++) pixels[i] = Color.white;

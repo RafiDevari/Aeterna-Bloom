@@ -22,6 +22,9 @@ public class RoomCreatorSetup : MonoBehaviour
 
     public static void SetupRoomCreatorScene()
     {
+#if UNITY_EDITOR
+        EnsureBuildSettingsInEditor();
+#endif
         // 1. Ensure Camera
         Camera mainCam = Camera.main;
         if (mainCam == null)
@@ -38,6 +41,11 @@ public class RoomCreatorSetup : MonoBehaviour
         {
             mainCam.orthographic = true;
             mainCam.backgroundColor = new Color(0.12f, 0.14f, 0.18f);
+        }
+
+        if (mainCam.GetComponent<RoomCreatorCameraController>() == null)
+        {
+            mainCam.gameObject.AddComponent<RoomCreatorCameraController>();
         }
 
         // 2. Ensure EventSystem
@@ -170,18 +178,43 @@ public class RoomCreatorSetup : MonoBehaviour
         warnTmp.alignment = TextAlignmentOptions.Center;
         warnTmp.color = new Color(1f, 0.4f, 0.4f);
 
-        // 8. Find Prefabs from Assets/Prefabs/Rooms/
+        // 8. Build Top Right Action Buttons (Save Layout & Play Test)
+        Transform existingSave = canvas.transform.Find("SaveLayoutBtn");
+        if (existingSave != null) DestroyImmediate(existingSave.gameObject);
+
+        Transform existingTest = canvas.transform.Find("TestPlayBtn");
+        if (existingTest != null) DestroyImmediate(existingTest.gameObject);
+
+        GameObject saveBtnObj = CreateButton("SaveLayoutBtn", canvas.transform, "💾 Save Layout", new Color(0.18f, 0.45f, 0.85f), new Vector2(170, 50));
+        RectTransform saveRt = saveBtnObj.GetComponent<RectTransform>();
+        saveRt.anchorMin = new Vector2(1f, 1f);
+        saveRt.anchorMax = new Vector2(1f, 1f);
+        saveRt.pivot = new Vector2(1f, 1f);
+        saveRt.anchoredPosition = new Vector2(-200, -20);
+        Button saveBtn = saveBtnObj.GetComponent<Button>();
+
+        GameObject testBtnObj = CreateButton("TestPlayBtn", canvas.transform, "▶ Play Test", new Color(0.15f, 0.65f, 0.25f), new Vector2(160, 50));
+        RectTransform testRt = testBtnObj.GetComponent<RectTransform>();
+        testRt.anchorMin = new Vector2(1f, 1f);
+        testRt.anchorMax = new Vector2(1f, 1f);
+        testRt.pivot = new Vector2(1f, 1f);
+        testRt.anchoredPosition = new Vector2(-20, -20);
+        Button testBtn = testBtnObj.GetComponent<Button>();
+
+        // 9. Find Prefabs from Assets/Prefabs/Rooms/
         GameObject hallPrefab = LoadRoomPrefab("Prefab_HallRoom");
         GameObject mainPrefab = LoadRoomPrefab("Prefab_MainRoom");
         GameObject botanistPrefab = LoadRoomPrefab("Prefab_DivisionBotanist");
         GameObject liftPrefab = LoadRoomPrefab("Prefab_Lift");
 
-        // 9. Assign references to RoomCreatorManager
+        // 10. Assign references to RoomCreatorManager
         SetFieldValue(manager, "cardContainer", containerObj.transform);
         SetFieldValue(manager, "cardPrefab", cardPrefab);
         SetFieldValue(manager, "confirmationPanel", confirmPanelObj);
         SetFieldValue(manager, "checklistButton", checklistBtn);
         SetFieldValue(manager, "cancelButton", cancelBtn);
+        SetFieldValue(manager, "saveButton", saveBtn);
+        SetFieldValue(manager, "testPlayButton", testBtn);
         SetFieldValue(manager, "statusMessageText", warnTmp);
         SetFieldValue(manager, "hallRoomPrefab", hallPrefab);
         SetFieldValue(manager, "mainHallPrefab", mainPrefab);
@@ -284,4 +317,33 @@ public class RoomCreatorSetup : MonoBehaviour
             field.SetValue(target, value);
         }
     }
+
+#if UNITY_EDITOR
+    private static void EnsureBuildSettingsInEditor()
+    {
+        var scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+        bool modified = false;
+
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/RoomCreator.unity");
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/GameplaySaveLoad.unity");
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/Gameplay1.unity");
+
+        if (modified)
+        {
+            EditorBuildSettings.scenes = scenes.ToArray();
+            Debug.Log("[RoomCreatorSetup] Automatically registered required scenes to Build Settings.");
+        }
+    }
+
+    private static bool AddBuildSceneIfMissing(System.Collections.Generic.List<EditorBuildSettingsScene> list, string path)
+    {
+        if (!System.IO.File.Exists(path)) return false;
+        foreach (var s in list)
+        {
+            if (s.path == path) return false;
+        }
+        list.Add(new EditorBuildSettingsScene(path, true));
+        return true;
+    }
+#endif
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// Component sementara untuk menangani visual preview (hijau/merah opacity),
-/// validasi posisi (overlap detection), aturan penempatan room (Lift & Room non-Main Hall wajib nempel).
+/// validasi posisi (overlap detection), aturan penempatan room (Lift & Room non-Main Hall).
 /// </summary>
 public class RoomPlacementPreview : MonoBehaviour
 {
@@ -110,14 +110,14 @@ public class RoomPlacementPreview : MonoBehaviour
                 bool targetIsLift = placedRoom.GetComponent<Lift>() != null || placedRoom.name.ToLower().Contains("lift");
 
                 // =========================================================================
-                // ATURAN KHUSUS LIFT: Hanya dapat diletakkan di ATAS atau BAWAH Main Hall / Lift!
-                // (TIDAK BISA di samping kiri/kanan atau di room biasa)
+                // CASE 1: Preview room adalah LIFT
+                // Lift HANYA bisa diletakkan secara vertikal (ATAS atau BAWAH) dari Main Hall / Lift lain!
                 // =========================================================================
                 if (IsLift)
                 {
                     if (!targetIsMainRoom && !targetIsLift)
                     {
-                        continue; // Lift tidak boleh menempel ke room biasa (misal HallRoom / Botanist)
+                        continue; // Lift tidak boleh menempel ke room biasa
                     }
 
                     // Candidate Vertikal (BAWAH & ATAS) untuk Lift
@@ -147,8 +147,44 @@ public class RoomPlacementPreview : MonoBehaviour
                 }
 
                 // =========================================================================
-                // ATURAN ROOM BIASA (NON-LIFT): HANYA BISA DI SAMPING (Samping Kanan & Kiri, Rata Bawah)
-                // (Hanya Lift yang bisa diletakkan secara vertikal)
+                // CASE 2: Target diletakkan adalah LIFT (dan Preview BUKAN Lift)
+                // - TIDAK ADA room yang boleh menempel di sisi Kiri atau Kanan Lift!
+                // - HANYA Main Hall yang dapat auto lengket ke ATAS atau BAWAH Lift!
+                // =========================================================================
+                if (targetIsLift)
+                {
+                    if (IsMainHall)
+                    {
+                        float yOffset_BelowMH = placedBounds.min.y - previewBounds.max.y;
+                        float yOffset_AboveMH = placedBounds.max.y - previewBounds.min.y;
+                        float xOffset_AlignLeftMH = placedBounds.min.x - previewBounds.min.x;
+                        float xOffset_AlignRightMH = placedBounds.max.x - previewBounds.max.x;
+                        float xOffset_AlignCenterMH = placedBounds.center.x - previewBounds.center.x;
+
+                        Vector3 cBelowLeftMH = targetPos + new Vector3(xOffset_AlignLeftMH, yOffset_BelowMH, 0f);
+                        Vector3 cBelowRightMH = targetPos + new Vector3(xOffset_AlignRightMH, yOffset_BelowMH, 0f);
+                        Vector3 cBelowCenterMH = targetPos + new Vector3(xOffset_AlignCenterMH, yOffset_BelowMH, 0f);
+
+                        Vector3 cAboveLeftMH = targetPos + new Vector3(xOffset_AlignLeftMH, yOffset_AboveMH, 0f);
+                        Vector3 cAboveRightMH = targetPos + new Vector3(xOffset_AlignRightMH, yOffset_AboveMH, 0f);
+                        Vector3 cAboveCenterMH = targetPos + new Vector3(xOffset_AlignCenterMH, yOffset_AboveMH, 0f);
+
+                        CheckSnapCandidateWithTarget(targetPos, cBelowLeftMH, placedRoom, ref closestDist, ref bestSnapPos, ref bestTarget, ref foundSnap);
+                        CheckSnapCandidateWithTarget(targetPos, cBelowRightMH, placedRoom, ref closestDist, ref bestSnapPos, ref bestTarget, ref foundSnap);
+                        CheckSnapCandidateWithTarget(targetPos, cBelowCenterMH, placedRoom, ref closestDist, ref bestSnapPos, ref bestTarget, ref foundSnap);
+
+                        CheckSnapCandidateWithTarget(targetPos, cAboveLeftMH, placedRoom, ref closestDist, ref bestSnapPos, ref bestTarget, ref foundSnap);
+                        CheckSnapCandidateWithTarget(targetPos, cAboveRightMH, placedRoom, ref closestDist, ref bestSnapPos, ref bestTarget, ref foundSnap);
+                        CheckSnapCandidateWithTarget(targetPos, cAboveCenterMH, placedRoom, ref closestDist, ref bestSnapPos, ref bestTarget, ref foundSnap);
+                    }
+
+                    // Room biasa selain MainHall tidak boleh nempel ke Lift sama sekali
+                    continue;
+                }
+
+                // =========================================================================
+                // CASE 3: Preview & Target adalah ROOM BIASA (Non-Lift)
+                // Samping Kanan & Kiri (Murni Rata Ujung Bawah)
                 // =========================================================================
                 float yOffset_Bottom = placedBounds.min.y - previewBounds.min.y;
                 float xOffset_Right = placedBounds.max.x - previewBounds.min.x;
@@ -213,6 +249,17 @@ public class RoomPlacementPreview : MonoBehaviour
             bool targetIsMainRoom = snappedTargetRoom.GetComponent<MainRoom>() != null || snappedTargetRoom.name.ToLower().Contains("main");
             bool targetIsLift = snappedTargetRoom.GetComponent<Lift>() != null || snappedTargetRoom.name.ToLower().Contains("lift");
             if (!targetIsMainRoom && !targetIsLift)
+            {
+                currentValidity = false;
+                return false;
+            }
+        }
+
+        // ATURAN 3: Room biasa selain Main Hall & Lift TIDAK BOLEH menempel pada Lift!
+        if (isCurrentlySnapped && snappedTargetRoom != null)
+        {
+            bool targetIsLift = snappedTargetRoom.GetComponent<Lift>() != null || snappedTargetRoom.name.ToLower().Contains("lift");
+            if (targetIsLift && !IsLift && !IsMainHall)
             {
                 currentValidity = false;
                 return false;
