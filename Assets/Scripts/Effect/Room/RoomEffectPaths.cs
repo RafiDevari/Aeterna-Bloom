@@ -15,6 +15,11 @@ namespace AeternaBloom.Effects.Room
         /// Path to the heat / overheat visual effect sprite (Sunnyflower).
         /// </summary>
         public const string HeatEffect = "Effects/Heat_effect";
+
+        /// <summary>
+        /// Path to the small indicator effect (e.g., broken heart / mood drop).
+        /// </summary>
+        public const string MoodDown = "Effects/Mood_Turun_effect";
     }
 }
 

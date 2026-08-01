@@ -303,6 +303,61 @@ public abstract class Room : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Triggers a temporary small visual effect (e.g., broken heart / mood indicator) 
+    /// placed in the top-left corner of the room for 3 seconds.
+    /// </summary>
+    /// <param name="effectPath">The resource path to the Prefab or JPG/PNG sprite.</param>
+    public void TriggerSmallEffect(string effectPath)
+    {
+        if (string.IsNullOrEmpty(effectPath))
+            return;
+
+        BoxCollider2D col = GetComponent<BoxCollider2D>();
+        Vector3 spawnPosition = Vector3.zero;
+        if (col != null)
+        {
+            // Position at top-left with a small offset/margin so it's not cut off by borders.
+            // Using a default of 0.6f units margin.
+            float marginX = 0.6f;
+            float marginY = 0.6f;
+            spawnPosition = new Vector3(col.offset.x - col.size.x / 2f + marginX, col.offset.y + col.size.y / 2f - marginY, 0f);
+        }
+
+        // 1. Try loading as a Prefab first (for animated/complex small effects)
+        GameObject effectPrefab = Resources.Load<GameObject>(effectPath);
+        if (effectPrefab != null)
+        {
+            GameObject effectGo = Instantiate(effectPrefab, this.transform);
+            effectGo.transform.localPosition = spawnPosition;
+            // Keeps the prefab's default local scale instead of scaling to the room
+            return;
+        }
+
+        // 2. Fallback: Load as a Sprite (for simple/un-animated small PNG effects)
+        Sprite effectSprite = Resources.Load<Sprite>(effectPath);
+        if (effectSprite == null)
+        {
+            Debug.LogWarning($"[{RoomName}] Could not load small effect prefab or sprite at path: {effectPath}");
+            return;
+        }
+
+        GameObject genericEffectGo = new GameObject("RoomSmallEffect_" + effectSprite.name);
+        genericEffectGo.transform.SetParent(this.transform);
+        genericEffectGo.transform.localPosition = spawnPosition;
+        genericEffectGo.transform.localScale = Vector3.one; // Keep original sprite scale
+
+        int sortingOrder = 15; // Render on top of standard room effects
+        if (spriteRenderer != null)
+        {
+            sortingOrder = spriteRenderer.sortingOrder + 15;
+        }
+
+        // Attach generic RoomEffect script to handle the Sprite rendering and 3-second lifetime
+        var fallbackEffect = genericEffectGo.AddComponent<AeternaBloom.Effects.Room.RoomEffect>();
+        fallbackEffect.Init(effectSprite, sortingOrder);
+    }
+
 
     private void ScaleEffectToRoom(GameObject effectGo, Sprite effectSprite, BoxCollider2D col)
     {

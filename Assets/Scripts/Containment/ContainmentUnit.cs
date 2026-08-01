@@ -275,6 +275,68 @@ public class ContainmentUnit : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Triggers a temporary small visual effect (e.g., broken heart / mood indicator) 
+    /// placed in the top-left corner of the ContainmentUnit for 3 seconds.
+    /// </summary>
+    /// <param name="effectPath">The resource path to the Prefab or JPG/PNG sprite.</param>
+    public void TriggerSmallEffect(string effectPath)
+    {
+        if (string.IsNullOrEmpty(effectPath))
+            return;
+
+        BoxCollider2D col = GetComponent<BoxCollider2D>();
+        Vector3 spawnPosition = Vector3.zero;
+        if (col != null)
+        {
+            // Position at top-left with a small offset/margin so it's not cut off by borders.
+            // Using a default of 0.3f units margin (smaller than room because containment units are smaller).
+            float marginX = 0.3f;
+            float marginY = 0.3f;
+            spawnPosition = new Vector3(col.offset.x - col.size.x / 2f + marginX, col.offset.y + col.size.y / 2f - marginY, 0f);
+        }
+
+        // 1. Try loading as a Prefab first (for animated/complex small effects)
+        GameObject effectPrefab = Resources.Load<GameObject>(effectPath);
+        if (effectPrefab != null)
+        {
+            GameObject effectGo = Instantiate(effectPrefab, this.transform);
+            effectGo.transform.localPosition = spawnPosition;
+            // Keeps the prefab's default local scale instead of scaling it
+            return;
+        }
+
+        // 2. Fallback: Load as a Sprite (for simple/un-animated small PNG effects)
+        Sprite effectSprite = Resources.Load<Sprite>(effectPath);
+        if (effectSprite == null)
+        {
+            Debug.LogWarning($"[ContainmentUnit:{unitName}] Could not load small effect prefab or sprite at path: {effectPath}");
+            return;
+        }
+
+        GameObject genericEffectGo = new GameObject("ContainmentSmallEffect_" + effectSprite.name);
+        genericEffectGo.transform.SetParent(this.transform);
+        genericEffectGo.transform.localPosition = spawnPosition;
+
+        // Auto-resize the sprite to a suitable icon size (e.g., 0.4 world units max for unit scale)
+        float targetIconSize = 2f;
+        Vector2 spriteSize = effectSprite.bounds.size;
+        float scaleX = spriteSize.x > 0 ? (targetIconSize / spriteSize.x) : 1f;
+        float scaleY = spriteSize.y > 0 ? (targetIconSize / spriteSize.y) : 1f;
+        float finalScale = Mathf.Min(scaleX, scaleY);
+        genericEffectGo.transform.localScale = new Vector3(finalScale, finalScale, 1f);
+
+        int sortingOrder = 15; // Render on top of standard containment effects
+        if (unitRenderer != null)
+        {
+            sortingOrder = unitRenderer.sortingOrder + 15;
+        }
+
+        // Attach generic ContainmentUnitEffect script to handle rendering and lifetime
+        var fallbackEffect = genericEffectGo.AddComponent<AeternaBloom.Effects.Containment.ContainmentUnitEffect>();
+        fallbackEffect.Init(effectSprite, sortingOrder);
+    }
+
     private void ScaleEffectToUnit(GameObject effectGo, Sprite effectSprite, BoxCollider2D col)
     {
         Vector2 targetSize = Vector2.one;
