@@ -41,7 +41,12 @@
             "isPoisoned": false,
             "isSterilizing": false,
             "containmentUnits": [],
-            "employeesToSpawn": []
+            "employeesToSpawn": [
+                {
+                    "employeeName": "Daniel",
+                    "employeePrefabName": "EmployeeMedic"
+                }
+            ]
         },
         {
             "roomType": "Lift",

@@ -43,6 +43,9 @@ public class EmployeeAssignmentManager : MonoBehaviour
 
     private EmployeeInventoryCardUI selectedCard;
 
+    private EmployeeInventoryCardUI draggedCard;
+    private GameObject dragPreview;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -667,6 +670,124 @@ public class EmployeeAssignmentManager : MonoBehaviour
             statusMessageText.text = msg;
         }
         Debug.Log($"[EmployeeAssignment] {msg}");
+    }
+
+    // =========================================================================
+    // DRAG AND DROP EMPLOYEE ASSIGNMENT
+    // =========================================================================
+
+    public void StartDraggingEmployee(EmployeeInventoryCardUI card, PointerEventData eventData)
+    {
+        draggedCard = card;
+        SelectEmployeeCard(card); // auto select on drag start
+        CreateDragPreview(card.ItemData);
+        UpdateDraggingEmployee(eventData);
+    }
+
+    public void UpdateDraggingEmployee(PointerEventData eventData)
+    {
+        if (dragPreview != null)
+        {
+            dragPreview.transform.position = eventData.position;
+        }
+
+        // Raycast to check if hovering over a room
+        Vector3 worldMousePos = Camera.main.ScreenToWorldPoint(eventData.position);
+        Collider2D hitCol = Physics2D.OverlapPoint(worldMousePos);
+
+        if (hitCol != null)
+        {
+            DivisionRoom clickedRoom = hitCol.GetComponentInParent<DivisionRoom>();
+            if (clickedRoom != null)
+            {
+                SetStatusMessage($"Hovering over {clickedRoom.RoomName}. Release to assign!");
+                return;
+            }
+        }
+        
+        if (draggedCard != null)
+        {
+            SetStatusMessage($"Dragging {draggedCard.ItemData.employeeName}. Drop on a Division Room to assign.");
+        }
+    }
+
+    public void EndDraggingEmployee(PointerEventData eventData)
+    {
+        if (dragPreview != null)
+        {
+            Destroy(dragPreview);
+            dragPreview = null;
+        }
+
+        if (draggedCard == null) return;
+
+        // Raycast to see where we dropped the employee
+        Vector3 worldMousePos = Camera.main.ScreenToWorldPoint(eventData.position);
+        Collider2D hitCol = Physics2D.OverlapPoint(worldMousePos);
+
+        if (hitCol != null)
+        {
+            DivisionRoom clickedRoom = hitCol.GetComponentInParent<DivisionRoom>();
+            if (clickedRoom != null)
+            {
+                AssignEmployeeToRoom(draggedCard.ItemData, clickedRoom);
+                draggedCard = null;
+                return;
+            }
+        }
+
+        SetStatusMessage($"Dropped {draggedCard.ItemData.employeeName} outside a Division Room. Assignment canceled.");
+        SelectEmployeeCard(null);
+        draggedCard = null;
+    }
+
+    private void CreateDragPreview(EmployeeInventoryItemSaveData empData)
+    {
+        if (dragPreview != null) Destroy(dragPreview);
+
+        Canvas canvas = FindFirstObjectByType<Canvas>();
+        if (canvas == null) return;
+
+        dragPreview = new GameObject("DragPreview", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+        dragPreview.transform.SetParent(canvas.transform, false);
+
+        RectTransform rt = dragPreview.GetComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(180, 55);
+
+        Image img = dragPreview.GetComponent<Image>();
+        string cleanRole = empData.employeePrefabName.Replace("Employee", "");
+        img.color = GetRoleColor(cleanRole) * new Color(1, 1, 1, 0.75f); // 75% opacity
+
+        CanvasGroup cg = dragPreview.GetComponent<CanvasGroup>();
+        cg.blocksRaycasts = false; // ensure raycast goes through the preview!
+
+        GameObject txtObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        txtObj.transform.SetParent(dragPreview.transform, false);
+        RectTransform txtRt = txtObj.GetComponent<RectTransform>();
+        txtRt.anchorMin = Vector2.zero;
+        txtRt.anchorMax = Vector2.one;
+        txtRt.sizeDelta = Vector2.zero;
+
+        TextMeshProUGUI tmp = txtObj.GetComponent<TextMeshProUGUI>();
+        tmp.text = empData.employeeName;
+        tmp.fontSize = 15;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.color = Color.white;
+        tmp.fontStyle = FontStyles.Bold;
+        tmp.raycastTarget = false;
+    }
+
+    private Color GetRoleColor(string role)
+    {
+        switch (role)
+        {
+            case "Botanist": return new Color(0.12f, 0.35f, 0.2f, 0.9f);
+            case "Researcher": return new Color(0.12f, 0.25f, 0.45f, 0.9f);
+            case "Security": return new Color(0.45f, 0.15f, 0.15f, 0.9f);
+            case "Medic": return new Color(0.35f, 0.15f, 0.4f, 0.9f);
+            case "Engineer": return new Color(0.4f, 0.3f, 0.1f, 0.9f);
+            default: return new Color(0.2f, 0.22f, 0.28f, 0.9f);
+        }
     }
 
 #if UNITY_EDITOR

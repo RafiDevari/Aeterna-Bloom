@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 
-public class EmployeeInventoryCardUI : MonoBehaviour
+public class EmployeeInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI nameText;
@@ -133,6 +134,30 @@ public class EmployeeInventoryCardUI : MonoBehaviour
         if (manager != null && itemData != null)
         {
             manager.UnassignEmployee(itemData.employeeName);
+        }
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (manager != null && itemData != null)
+        {
+            manager.StartDraggingEmployee(this, eventData);
+        }
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (manager != null && itemData != null)
+        {
+            manager.UpdateDraggingEmployee(eventData);
+        }
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (manager != null && itemData != null)
+        {
+            manager.EndDraggingEmployee(eventData);
         }
     }
 }
