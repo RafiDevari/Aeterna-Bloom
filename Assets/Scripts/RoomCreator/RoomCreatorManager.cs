@@ -78,6 +78,7 @@ public class RoomCreatorManager : MonoBehaviour
         EnsureDefaultInventory();
         RefreshInventoryUI();
         HideConfirmationUI();
+        LoadSavedLayout("room_layout_1.json");
     }
 
     private void Update()
@@ -529,6 +530,100 @@ public class RoomCreatorManager : MonoBehaviour
 #endif
 
         SetStatusMessage($"Layout berhasil disimpan ke {fileName} ({layoutData.rooms.Count} room)!");
+    }
+
+    /// <summary>
+    /// Memuat layout room yang sudah di-save sebelumnya ke scene editor agar dapat diedit kembali.
+    /// </summary>
+    public void LoadSavedLayout(string fileName = "room_layout_1.json")
+    {
+        foreach (GameObject roomObj in placedRooms)
+        {
+            if (roomObj != null)
+            {
+                Destroy(roomObj);
+            }
+        }
+        placedRooms.Clear();
+
+        string jsonText = "";
+
+#if UNITY_EDITOR
+        string editorPath = Path.Combine(Application.dataPath, "Resources", fileName);
+        if (File.Exists(editorPath))
+        {
+            jsonText = File.ReadAllText(editorPath);
+            Debug.Log($"[RoomCreatorManager] Loading editor layout from project resources: {editorPath}");
+        }
+#endif
+
+        if (string.IsNullOrEmpty(jsonText))
+        {
+            string savePath = Path.Combine(Application.persistentDataPath, fileName);
+            if (File.Exists(savePath))
+            {
+                jsonText = File.ReadAllText(savePath);
+                Debug.Log($"[RoomCreatorManager] Loading editor layout from persistent path: {savePath}");
+            }
+            else
+            {
+                TextAsset targetAsset = Resources.Load<TextAsset>(fileName.Replace(".json", ""));
+                if (targetAsset != null)
+                {
+                    jsonText = targetAsset.text;
+                    Debug.Log($"[RoomCreatorManager] Loading editor layout from Resources/{fileName}");
+                }
+            }
+        }
+
+        if (string.IsNullOrEmpty(jsonText))
+        {
+            Debug.Log("[RoomCreatorManager] No saved layout found to load.");
+            return;
+        }
+
+        FacilityLayoutData layoutData = JsonUtility.FromJson<FacilityLayoutData>(jsonText);
+        if (layoutData == null || layoutData.rooms == null)
+        {
+            Debug.LogError("[RoomCreatorManager] Failed to parse loaded layout JSON.");
+            return;
+        }
+
+        foreach (var roomData in layoutData.rooms)
+        {
+            GameObject prefab = FindPrefabForRoom(roomData.roomType, roomData.roomName);
+            if (prefab != null)
+            {
+                GameObject roomObj = Instantiate(prefab, roomData.position, Quaternion.identity);
+                roomObj.transform.localScale = roomData.scale;
+                roomObj.name = roomData.roomName;
+
+                // Pastikan preview component tidak aktif/ter-destroy pada room yang di-load
+                RoomPlacementPreview previewComp = roomObj.GetComponent<RoomPlacementPreview>();
+                if (previewComp != null)
+                {
+                    Destroy(previewComp);
+                }
+
+                Room roomComp = roomObj.GetComponent<Room>();
+                if (roomComp != null)
+                {
+                    roomComp.RoomName = roomData.roomName;
+                    roomComp.Temperature = roomData.temperature;
+                    roomComp.SetLocked(roomData.isLocked);
+                    roomComp.IsPoisoned = roomData.isPoisoned;
+                    roomComp.IsSterilizing = roomData.isSterilizing;
+                }
+
+                placedRooms.Add(roomObj);
+            }
+            else
+            {
+                Debug.LogWarning($"[RoomCreatorManager] Prefab for room type '{roomData.roomType}' name '{roomData.roomName}' not found during load.");
+            }
+        }
+
+        Debug.Log($"[RoomCreatorManager] Loaded {placedRooms.Count} rooms into editor scene.");
     }
 
     /// <summary>

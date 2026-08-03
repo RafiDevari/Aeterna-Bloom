@@ -146,26 +146,46 @@ public class RoomSaveSystem : MonoBehaviour
         }
 
         // 2. Load JSON content
-        string savePath = Path.Combine(Application.persistentDataPath, "room_layout.json");
         string jsonText = "";
 
-        if (File.Exists(savePath))
+#if UNITY_EDITOR
+        string editorLayout1 = Path.Combine(Application.dataPath, "Resources", "room_layout_1.json");
+        string editorLayout = Path.Combine(Application.dataPath, "Resources", "room_layout.json");
+
+        if (File.Exists(editorLayout1))
         {
-            jsonText = File.ReadAllText(savePath);
-            Debug.Log($"[RoomSaveSystem] Loading layout from persistent path: {savePath}");
+            jsonText = File.ReadAllText(editorLayout1);
+            Debug.Log($"[RoomSaveSystem] Loading layout directly from Assets/Resources/room_layout_1.json");
         }
-        else
+        else if (File.Exists(editorLayout))
         {
-            TextAsset targetAsset = Resources.Load<TextAsset>(layoutResourcePath);
-            if (targetAsset != null)
+            jsonText = File.ReadAllText(editorLayout);
+            Debug.Log($"[RoomSaveSystem] Loading layout directly from Assets/Resources/room_layout.json");
+        }
+#endif
+
+        if (string.IsNullOrEmpty(jsonText))
+        {
+            string savePath = Path.Combine(Application.persistentDataPath, "room_layout.json");
+
+            if (File.Exists(savePath))
             {
-                jsonText = targetAsset.text;
-                Debug.Log($"[RoomSaveSystem] Loading default layout from Resources/{layoutResourcePath}");
+                jsonText = File.ReadAllText(savePath);
+                Debug.Log($"[RoomSaveSystem] Loading layout from persistent path: {savePath}");
             }
             else
             {
-                Debug.LogError($"[RoomSaveSystem] No layout file found in persistent path or Resources.");
-                return;
+                TextAsset targetAsset = Resources.Load<TextAsset>(layoutResourcePath);
+                if (targetAsset != null)
+                {
+                    jsonText = targetAsset.text;
+                    Debug.Log($"[RoomSaveSystem] Loading default layout from Resources/{layoutResourcePath}");
+                }
+                else
+                {
+                    Debug.LogError($"[RoomSaveSystem] No layout file found in persistent path or Resources.");
+                    return;
+                }
             }
         }
 
@@ -185,7 +205,45 @@ public class RoomSaveSystem : MonoBehaviour
         // 3. Spawn rooms
         foreach (var roomData in layoutData.rooms)
         {
-            if (roomPrefabMap.TryGetValue(roomData.roomType, out GameObject prefab))
+            GameObject prefab = null;
+            if (!roomPrefabMap.TryGetValue(roomData.roomType, out prefab) || prefab == null)
+            {
+                // Fallback 1: Search directly in roomPrefabs list
+                foreach (var p in roomPrefabs)
+                {
+                    if (p == null) continue;
+                    if (p.name == roomData.roomType || p.name == $"Prefab_{roomData.roomType}")
+                    {
+                        prefab = p;
+                        break;
+                    }
+                    Room rComp = p.GetComponent<Room>();
+                    if (rComp != null && rComp.GetType().Name == roomData.roomType)
+                    {
+                        prefab = p;
+                        break;
+                    }
+                }
+
+#if UNITY_EDITOR
+                // Fallback 2: In Unity Editor, search via AssetDatabase if still not found in scene component list
+                if (prefab == null)
+                {
+                    string[] guids = UnityEditor.AssetDatabase.FindAssets($"{roomData.roomType} t:Prefab");
+                    if (guids.Length == 0)
+                    {
+                        guids = UnityEditor.AssetDatabase.FindAssets($"Prefab_{roomData.roomType} t:Prefab");
+                    }
+                    if (guids.Length > 0)
+                    {
+                        string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]);
+                        prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                    }
+                }
+#endif
+            }
+
+            if (prefab != null)
             {
                 GameObject roomObj = Instantiate(prefab, roomData.position, Quaternion.identity);
                 roomObj.transform.localScale = roomData.scale;
@@ -263,6 +321,9 @@ public class RoomSaveSystem : MonoBehaviour
                                 }
 
                                 field.SetValue(divisionRoom, newSpawnList);
+
+                                // Directly trigger SpawnEmployees to instantiate the assigned employees immediately
+                                divisionRoom.SpawnEmployees();
                             }
                         }
                     }

@@ -5,10 +5,10 @@
     "rooms": [
         {
             "roomType": "MainRoom",
-            "roomName": "Room",
+            "roomName": "MainRoom",
             "position": {
-                "x": -2.508342981338501,
-                "y": -2.315868377685547,
+                "x": -1.2594757080078126,
+                "y": -3.195335626602173,
                 "z": 0.0
             },
             "scale": {
@@ -27,28 +27,8 @@
             "roomType": "DivisionBotanist",
             "roomName": "Botanist Room",
             "position": {
-                "x": 6.074174404144287,
-                "y": -2.221097469329834,
-                "z": 0.0
-            },
-            "scale": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "temperature": 20.0,
-            "isLocked": false,
-            "isPoisoned": false,
-            "isSterilizing": false,
-            "containmentUnits": [],
-            "employeesToSpawn": []
-        },
-        {
-            "roomType": "DivisionBotanist",
-            "roomName": "Botanist Room",
-            "position": {
-                "x": -11.091492652893067,
-                "y": -2.221097469329834,
+                "x": 7.323041915893555,
+                "y": -3.10056471824646,
                 "z": 0.0
             },
             "scale": {

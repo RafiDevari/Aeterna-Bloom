@@ -55,6 +55,8 @@ public abstract class DivisionRoom : Room
         SpawnEmployees();
     }
 
+    private bool hasSpawnedEmployees = false;
+
     /// <summary>
     /// Instantiate semua entry di employeesToSpawn, taruh di posisi room ini, assign ke divisi
     /// ini, dan paksa EmployeeDivision-nya ikut EmployeeDivisionType. Dipanggil otomatis di
@@ -62,6 +64,9 @@ public abstract class DivisionRoom : Room
     /// </summary>
     public void SpawnEmployees()
     {
+        if (hasSpawnedEmployees) return;
+        hasSpawnedEmployees = true;
+
         foreach (var data in employeesToSpawn)
         {
             if (data.employeePrefab == null)
