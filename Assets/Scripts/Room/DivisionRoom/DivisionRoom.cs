@@ -52,6 +52,13 @@ public abstract class DivisionRoom : Room
     {
         base.Start();
 
+        // Don't auto-spawn employees in RoomCreator or EmployeeAssignment scenes
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        if (sceneName == "RoomCreator" || sceneName == "EmployeeAssignment")
+        {
+            return;
+        }
+
         SpawnEmployees();
     }
 

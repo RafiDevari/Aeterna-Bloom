@@ -1,0 +1,24 @@
+{
+    "employees": [
+        {
+            "employeeName": "Bob",
+            "employeePrefabName": "EmployeeBotanist"
+        },
+        {
+            "employeeName": "Alice",
+            "employeePrefabName": "EmployeeResearcher"
+        },
+        {
+            "employeeName": "Charlie",
+            "employeePrefabName": "EmployeeSecurity"
+        },
+        {
+            "employeeName": "Daniel",
+            "employeePrefabName": "EmployeeMedic"
+        },
+        {
+            "employeeName": "Edward",
+            "employeePrefabName": "EmployeeEngineer"
+        }
+    ]
+}

@@ -113,10 +113,12 @@ public class RoomSaveSystem : MonoBehaviour
 
     private void Start()
     {
-        // Don't auto-load/spawn if we are in the Room Creator scene to prevent conflict with RoomCreatorManager
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "RoomCreator" || FindFirstObjectByType<RoomCreatorManager>() != null)
+        // Don't auto-load/spawn if we are in Room Creator or Employee Assignment scenes
+        string activeScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        if (activeScene == "RoomCreator" || activeScene == "EmployeeAssignment" ||
+            FindFirstObjectByType<RoomCreatorManager>() != null || FindFirstObjectByType<EmployeeAssignmentManager>() != null)
         {
-            Debug.Log("[RoomSaveSystem] Skipping auto-spawn in Room Creator scene.");
+            Debug.Log("[RoomSaveSystem] Skipping auto-spawn in Room Creator / Employee Assignment scene.");
             return;
         }
 

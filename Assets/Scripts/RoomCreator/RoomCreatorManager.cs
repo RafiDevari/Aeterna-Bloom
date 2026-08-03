@@ -31,6 +31,10 @@ public class RoomCreatorManager : MonoBehaviour
     [SerializeField] private GameObject botanistRoomPrefab;
     [SerializeField] private GameObject liftPrefab;
 
+    [Header("Employee Prefabs")]
+    [SerializeField] private List<GameObject> employeePrefabs = new List<GameObject>();
+    private Dictionary<string, GameObject> employeePrefabMap = new Dictionary<string, GameObject>();
+
     [Header("UI References")]
     [SerializeField] private Transform cardContainer;
     [SerializeField] private GameObject cardPrefab;
@@ -69,6 +73,16 @@ public class RoomCreatorManager : MonoBehaviour
         if (mainCamera == null)
         {
             mainCamera = Camera.main;
+        }
+
+        // Populate employee prefab map
+        foreach (var prefab in employeePrefabs)
+        {
+            if (prefab == null) continue;
+            if (!employeePrefabMap.ContainsKey(prefab.name))
+            {
+                employeePrefabMap.Add(prefab.name, prefab);
+            }
         }
     }
 
@@ -492,6 +506,38 @@ public class RoomCreatorManager : MonoBehaviour
                 else if (displayName.ToLower().Contains("hall")) typeName = "HallRoom";
             }
 
+            // Serialize division room employees to spawn
+            List<EmployeeSaveData> emps = new List<EmployeeSaveData>();
+            if (roomComp is DivisionRoom divisionRoom)
+            {
+                var field = typeof(DivisionRoom).GetField("employeesToSpawn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null)
+                {
+                    var list = field.GetValue(divisionRoom) as System.Collections.IList;
+                    if (list != null)
+                    {
+                        foreach (var item in list)
+                        {
+                            if (item == null) continue;
+
+                            var nameField = item.GetType().GetField("employeeName");
+                            var prefabField = item.GetType().GetField("employeePrefab");
+
+                            string empName = nameField != null ? (string)nameField.GetValue(item) : "";
+                            Employee empPrefab = prefabField != null ? (Employee)prefabField.GetValue(item) : null;
+
+                            string prefabName = empPrefab != null ? empPrefab.gameObject.name : "";
+
+                            emps.Add(new EmployeeSaveData
+                            {
+                                employeeName = empName,
+                                employeePrefabName = prefabName
+                            });
+                        }
+                    }
+                }
+            }
+
             RoomSaveData roomData = new RoomSaveData
             {
                 roomType = typeName,
@@ -503,7 +549,7 @@ public class RoomCreatorManager : MonoBehaviour
                 isPoisoned = roomComp != null ? roomComp.IsPoisoned : false,
                 isSterilizing = roomComp != null ? roomComp.IsSterilizing : false,
                 containmentUnits = new List<ContainmentUnitSaveData>(),
-                employeesToSpawn = new List<EmployeeSaveData>()
+                employeesToSpawn = emps
             };
 
             layoutData.rooms.Add(roomData);
@@ -613,6 +659,43 @@ public class RoomCreatorManager : MonoBehaviour
                     roomComp.SetLocked(roomData.isLocked);
                     roomComp.IsPoisoned = roomData.isPoisoned;
                     roomComp.IsSterilizing = roomData.isSterilizing;
+
+                    // Handle division room specific employee mapping
+                    if (roomComp is DivisionRoom divisionRoom)
+                    {
+                        var field = typeof(DivisionRoom).GetField("employeesToSpawn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (field != null)
+                        {
+                            var nestedType = typeof(DivisionRoom).GetNestedType("EmployeeSpawnData", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+                            if (nestedType != null)
+                            {
+                                var spawnListType = typeof(List<>).MakeGenericType(nestedType);
+                                var newSpawnList = System.Activator.CreateInstance(spawnListType) as System.Collections.IList;
+
+                                foreach (var empData in roomData.employeesToSpawn)
+                                {
+                                    if (employeePrefabMap.TryGetValue(empData.employeePrefabName, out GameObject empPrefabGo))
+                                    {
+                                        Employee empPrefab = empPrefabGo.GetComponent<Employee>();
+                                        if (empPrefab != null)
+                                        {
+                                            object spawnData = System.Activator.CreateInstance(nestedType);
+                                            
+                                            var nameField = nestedType.GetField("employeeName");
+                                            var prefabField = nestedType.GetField("employeePrefab");
+
+                                            if (nameField != null) nameField.SetValue(spawnData, empData.employeeName);
+                                            if (prefabField != null) prefabField.SetValue(spawnData, empPrefab);
+
+                                            newSpawnList.Add(spawnData);
+                                        }
+                                    }
+                                }
+
+                                field.SetValue(divisionRoom, newSpawnList);
+                            }
+                        }
+                    }
                 }
 
                 placedRooms.Add(roomObj);
