@@ -113,6 +113,13 @@ public class RoomSaveSystem : MonoBehaviour
 
     private void Start()
     {
+        // Don't auto-load/spawn if we are in the Room Creator scene to prevent conflict with RoomCreatorManager
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "RoomCreator" || FindFirstObjectByType<RoomCreatorManager>() != null)
+        {
+            Debug.Log("[RoomSaveSystem] Skipping auto-spawn in Room Creator scene.");
+            return;
+        }
+
         LoadAndSpawnLayout();
     }
 

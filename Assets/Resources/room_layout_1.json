@@ -42,6 +42,66 @@
             "isSterilizing": false,
             "containmentUnits": [],
             "employeesToSpawn": []
+        },
+        {
+            "roomType": "Lift",
+            "roomName": "Lift",
+            "position": {
+                "x": -1.2594757080078126,
+                "y": 0.8778289556503296,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.9770980477333069,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "MainRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -1.2594754695892335,
+                "y": 11.841547012329102,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.325924813747406,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "DivisionBotanist",
+            "roomName": "Botanist Room",
+            "position": {
+                "x": 7.323041915893555,
+                "y": 11.936317443847657,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
         }
     ]
 }
