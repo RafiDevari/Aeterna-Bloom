@@ -1,0 +1,24 @@
+{
+    "items": [
+        {
+            "roomTypeId": "HallRoom",
+            "displayName": "Hall Room",
+            "count": 4
+        },
+        {
+            "roomTypeId": "MainRoom",
+            "displayName": "Main Hall",
+            "count": 0
+        },
+        {
+            "roomTypeId": "DivisionBotanist",
+            "displayName": "Botanist Room",
+            "count": 5
+        },
+        {
+            "roomTypeId": "Lift",
+            "displayName": "Lift",
+            "count": 2
+        }
+    ]
+}

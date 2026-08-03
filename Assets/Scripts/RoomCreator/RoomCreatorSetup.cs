@@ -233,16 +233,6 @@ public class RoomCreatorSetup : MonoBehaviour
         SetFieldValue(manager, "botanistRoomPrefab", botanistPrefab);
         SetFieldValue(manager, "liftPrefab", liftPrefab);
 
-        // 10. Configure inventory items (4 Hall Room, 2 Main Hall, 1 Botanist Room, 2 Lift)
-        var items = new System.Collections.Generic.List<RoomInventoryItemData>
-        {
-            new RoomInventoryItemData("Hall Room", 4, hallPrefab),
-            new RoomInventoryItemData("Main Hall", 2, mainPrefab),
-            new RoomInventoryItemData("Botanist Room", 1, botanistPrefab),
-            new RoomInventoryItemData("Lift", 2, liftPrefab)
-        };
-        SetFieldValue(manager, "inventoryItems", items);
-
         manager.EnsureDefaultInventory();
         manager.RefreshInventoryUI();
 

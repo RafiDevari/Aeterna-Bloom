@@ -138,11 +138,38 @@ public class RoomCreatorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Memastikan inventory terisi sesuai contoh user jika masih kosong.
+    /// Memuat daftar inventaris room milik user dari room_inventory.json.
     /// </summary>
     public void EnsureDefaultInventory()
     {
-        if (inventoryItems == null || inventoryItems.Count == 0)
+        RoomInventoryData savedData = null;
+
+        if (RoomInventorySaveSystem.Instance != null)
+        {
+            savedData = RoomInventorySaveSystem.Instance.LoadInventory();
+        }
+        else
+        {
+            RoomInventorySaveSystem sys = FindFirstObjectByType<RoomInventorySaveSystem>();
+            if (sys == null)
+            {
+                GameObject saveSysObj = new GameObject("RoomInventorySaveSystem");
+                sys = saveSysObj.AddComponent<RoomInventorySaveSystem>();
+            }
+            savedData = sys.LoadInventory();
+        }
+
+        if (savedData != null && savedData.items != null && savedData.items.Count > 0)
+        {
+            inventoryItems.Clear();
+
+            foreach (var item in savedData.items)
+            {
+                GameObject prefab = FindPrefabForRoom(item.roomTypeId, item.displayName);
+                inventoryItems.Add(new RoomInventoryItemData(item.displayName, item.count, prefab));
+            }
+        }
+        else
         {
             inventoryItems = new List<RoomInventoryItemData>
             {
@@ -152,6 +179,17 @@ public class RoomCreatorManager : MonoBehaviour
                 new RoomInventoryItemData("Lift", 2, liftPrefab)
             };
         }
+    }
+
+    private GameObject FindPrefabForRoom(string roomTypeId, string displayName)
+    {
+        string nameLower = displayName.ToLower();
+        if (nameLower.Contains("hall room") || roomTypeId == "HallRoom") return hallRoomPrefab;
+        if (nameLower.Contains("main") || roomTypeId == "MainRoom") return mainHallPrefab;
+        if (nameLower.Contains("botanist") || roomTypeId == "DivisionBotanist") return botanistRoomPrefab;
+        if (nameLower.Contains("lift") || roomTypeId == "Lift") return liftPrefab;
+
+        return null;
     }
 
     /// <summary>
@@ -366,6 +404,12 @@ public class RoomCreatorManager : MonoBehaviour
         if (!isRepositioningExisting && activeItemData != null)
         {
             activeItemData.count--;
+
+            // Simpan pembaruan stok ke room_inventory.json
+            if (RoomInventorySaveSystem.Instance != null)
+            {
+                RoomInventorySaveSystem.Instance.SaveFromItemDataList(inventoryItems);
+            }
         }
 
         activePreview = null;
@@ -514,8 +558,8 @@ public class RoomCreatorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Me-reset seluruh layout room yang sudah diletakkan, mengembalikan stok inventaris room ke jumlah awal,
-    /// dan membersihkan scene dari room yang sudah diletakkan.
+    /// Me-reset seluruh layout room yang sudah diletakkan.
+    /// Semua room yang terpasang akan dihapus dan stoknya dikembalikan ke inventaris user.
     /// </summary>
     public void ResetLayout()
     {
@@ -524,22 +568,61 @@ public class RoomCreatorManager : MonoBehaviour
             OnCancelClicked();
         }
 
+        // Kembalikan setiap room yang ada di scene ke stok inventaris user
         foreach (GameObject roomObj in placedRooms)
         {
-            if (roomObj != null)
+            if (roomObj == null) continue;
+
+            string roomName = roomObj.name.Replace("Preview_", "").Replace("(Clone)", "").Trim();
+
+            // Cari item inventaris yang cocok dan tambahkan kembali stoknya (+1)
+            RoomInventoryItemData matchedItem = FindMatchingInventoryItem(roomName);
+            if (matchedItem != null)
             {
-                Destroy(roomObj);
+                matchedItem.count++;
             }
+            else
+            {
+                // Jika jenis room belum ada di list inventaris, buatkan entry baru
+                GameObject prefab = FindPrefabForRoom(roomName, roomName);
+                inventoryItems.Add(new RoomInventoryItemData(roomName, 1, prefab));
+            }
+
+            Destroy(roomObj);
         }
         placedRooms.Clear();
 
-        inventoryItems.Clear();
-        EnsureDefaultInventory();
-        RefreshInventoryUI();
+        // Simpan stok inventaris yang sudah dikembalikan ke room_inventory.json
+        if (RoomInventorySaveSystem.Instance != null)
+        {
+            RoomInventorySaveSystem.Instance.SaveFromItemDataList(inventoryItems);
+        }
 
+        RefreshInventoryUI();
         HideConfirmationUI();
-        SetStatusMessage("Layout berhasil di-reset!");
-        Debug.Log("[RoomCreatorManager] Layout reset complete.");
+        SetStatusMessage("Layout di-reset! Semua room yang terpasang telah dikembalikan ke inventaris.");
+        Debug.Log("[RoomCreatorManager] Layout reset complete. Placed rooms returned to inventory.");
+    }
+
+    private RoomInventoryItemData FindMatchingInventoryItem(string roomName)
+    {
+        string nameLower = roomName.ToLower();
+        foreach (var item in inventoryItems)
+        {
+            if (item == null) continue;
+            string itemLower = item.displayName.ToLower();
+
+            if (nameLower.Contains(itemLower) || itemLower.Contains(nameLower))
+            {
+                return item;
+            }
+
+            if (nameLower.Contains("main") && itemLower.Contains("main")) return item;
+            if (nameLower.Contains("lift") && itemLower.Contains("lift")) return item;
+            if (nameLower.Contains("botanist") && itemLower.Contains("botanist")) return item;
+            if (nameLower.Contains("hall") && !nameLower.Contains("main") && itemLower.Contains("hall") && !itemLower.Contains("main")) return item;
+        }
+        return null;
     }
 
 #if UNITY_EDITOR
