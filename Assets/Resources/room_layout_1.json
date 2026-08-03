@@ -7,8 +7,8 @@
             "roomType": "MainRoom",
             "roomName": "Room",
             "position": {
-                "x": -1.0,
-                "y": -3.0,
+                "x": -1.2804973125457764,
+                "y": -2.225329875946045,
                 "z": 0.0
             },
             "scale": {
@@ -27,8 +27,8 @@
             "roomType": "DivisionBotanist",
             "roomName": "Botanist Room",
             "position": {
-                "x": -9.583148956298829,
-                "y": -2.905229091644287,
+                "x": 7.302020072937012,
+                "y": -2.130558967590332,
                 "z": 0.0
             },
             "scale": {
@@ -44,11 +44,11 @@
             "employeesToSpawn": []
         },
         {
-            "roomType": "MainRoom",
+            "roomType": "HallRoom",
             "roomName": "Room",
             "position": {
-                "x": -18.165664672851564,
-                "y": -3.0,
+                "x": -7.6461639404296879,
+                "y": -2.225329875946045,
                 "z": 0.0
             },
             "scale": {
@@ -67,8 +67,8 @@
             "roomType": "Lift",
             "roomName": "Lift",
             "position": {
-                "x": -18.165664672851564,
-                "y": 1.073164701461792,
+                "x": -1.2804975509643555,
+                "y": 1.847834825515747,
                 "z": 0.0
             },
             "scale": {
