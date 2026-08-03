@@ -178,12 +178,23 @@ public class RoomCreatorSetup : MonoBehaviour
         warnTmp.alignment = TextAlignmentOptions.Center;
         warnTmp.color = new Color(1f, 0.4f, 0.4f);
 
-        // 8. Build Top Right Action Buttons (Save Layout & Play Test)
+        // 8. Build Top Right Action Buttons (Reset, Save Layout & Play Test)
+        Transform existingReset = canvas.transform.Find("ResetBtn");
+        if (existingReset != null) DestroyImmediate(existingReset.gameObject);
+
         Transform existingSave = canvas.transform.Find("SaveLayoutBtn");
         if (existingSave != null) DestroyImmediate(existingSave.gameObject);
 
         Transform existingTest = canvas.transform.Find("TestPlayBtn");
         if (existingTest != null) DestroyImmediate(existingTest.gameObject);
+
+        GameObject resetBtnObj = CreateButton("ResetBtn", canvas.transform, "🔄 Reset", new Color(0.85f, 0.35f, 0.15f), new Vector2(130, 50));
+        RectTransform resetRt = resetBtnObj.GetComponent<RectTransform>();
+        resetRt.anchorMin = new Vector2(1f, 1f);
+        resetRt.anchorMax = new Vector2(1f, 1f);
+        resetRt.pivot = new Vector2(1f, 1f);
+        resetRt.anchoredPosition = new Vector2(-380, -20);
+        Button resetBtn = resetBtnObj.GetComponent<Button>();
 
         GameObject saveBtnObj = CreateButton("SaveLayoutBtn", canvas.transform, "💾 Save Layout", new Color(0.18f, 0.45f, 0.85f), new Vector2(170, 50));
         RectTransform saveRt = saveBtnObj.GetComponent<RectTransform>();
@@ -215,6 +226,7 @@ public class RoomCreatorSetup : MonoBehaviour
         SetFieldValue(manager, "cancelButton", cancelBtn);
         SetFieldValue(manager, "saveButton", saveBtn);
         SetFieldValue(manager, "testPlayButton", testBtn);
+        SetFieldValue(manager, "resetButton", resetBtn);
         SetFieldValue(manager, "statusMessageText", warnTmp);
         SetFieldValue(manager, "hallRoomPrefab", hallPrefab);
         SetFieldValue(manager, "mainHallPrefab", mainPrefab);

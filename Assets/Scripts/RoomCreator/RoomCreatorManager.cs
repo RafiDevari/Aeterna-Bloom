@@ -8,7 +8,8 @@ using TMPro;
 /// <summary>
 /// Manager utama untuk merakit/membuat layout room pada scene roomCreator.
 /// Menangani daftar inventaris room user, drag & drop preview, overlap checking,
-/// konfirmasi Checklist/Cancel, serta fitur Save Layout ke room_layout_1.json.
+/// konfirmasi Checklist/Cancel, pemindahan ulang room yang sudah diletakkan,
+/// serta fitur Save Layout ke room_layout_1.json.
 /// </summary>
 public class RoomCreatorManager : MonoBehaviour
 {
@@ -38,6 +39,7 @@ public class RoomCreatorManager : MonoBehaviour
     [SerializeField] private Button cancelButton;
     [SerializeField] private Button saveButton;
     [SerializeField] private Button testPlayButton;
+    [SerializeField] private Button resetButton;
     [SerializeField] private TextMeshProUGUI statusMessageText;
     [SerializeField] private Text legacyStatusMessageText;
 
@@ -47,6 +49,11 @@ public class RoomCreatorManager : MonoBehaviour
     private RoomPlacementPreview activePreview;
     private RoomInventoryItemData activeItemData;
     private RoomInventoryCardUI activeCardUI;
+
+    // State pemindahan & dragging preview
+    private bool isDraggingPreview = false;
+    private bool isRepositioningExisting = false;
+    private Vector3 roomOriginalPos;
 
     public List<RoomInventoryItemData> InventoryItems => inventoryItems;
 
@@ -73,6 +80,30 @@ public class RoomCreatorManager : MonoBehaviour
         HideConfirmationUI();
     }
 
+    private void Update()
+    {
+        // 1. Selama activePreview sedang di-drag mengikuti kursor mouse
+        if (activePreview != null && isDraggingPreview)
+        {
+            UpdatePositionForActivePreview();
+
+            // Saat tombol mouse dilepas (Mouse Up), kunci posisi sementara dan munculkan konfirmasi UI
+            if (Input.GetMouseButtonUp(0))
+            {
+                isDraggingPreview = false; // Berhenti mengikutkan posisi ke kursor!
+                ShowConfirmationUI();
+            }
+        }
+        // 2. Jika tidak ada room preview yang aktif/pending konfirmasi, bisa me-pick up room yang diklik
+        else if (activePreview == null)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                TryPickUpPlacedRoom();
+            }
+        }
+    }
+
     private void InitializeButtons()
     {
         if (checklistButton != null)
@@ -97,6 +128,12 @@ public class RoomCreatorManager : MonoBehaviour
         {
             testPlayButton.onClick.RemoveAllListeners();
             testPlayButton.onClick.AddListener(SaveAndPlayGameplayTest);
+        }
+
+        if (resetButton != null)
+        {
+            resetButton.onClick.RemoveAllListeners();
+            resetButton.onClick.AddListener(ResetLayout);
         }
     }
 
@@ -158,7 +195,7 @@ public class RoomCreatorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Mulai drag room dari UI card item.
+    /// Mulai drag room baru dari UI card item.
     /// </summary>
     public void StartDraggingRoom(RoomInventoryItemData itemData, PointerEventData eventData)
     {
@@ -170,6 +207,8 @@ public class RoomCreatorManager : MonoBehaviour
         }
 
         activeItemData = itemData;
+        isRepositioningExisting = false;
+        isDraggingPreview = true;
         HideConfirmationUI();
 
         GameObject prefabToSpawn = itemData.roomPrefab;
@@ -190,40 +229,115 @@ public class RoomCreatorManager : MonoBehaviour
         }
 
         activePreview.CacheRenderersAndColliders();
-        UpdateDraggingRoom(eventData);
+        UpdatePositionForActivePreview();
     }
 
     /// <summary>
-    /// Update posisi & warna visual room preview selama di-drag.
+    /// Update posisi & warna visual room preview selama di-drag dari UI card.
     /// </summary>
     public void UpdateDraggingRoom(PointerEventData eventData)
     {
+        if (activePreview == null || !isDraggingPreview) return;
+        UpdatePositionForActivePreview();
+    }
+
+    /// <summary>
+    /// Dipanggil ketika mouse/drag dilepas dari UI card.
+    /// </summary>
+    public void DropDraggingRoom(PointerEventData eventData)
+    {
         if (activePreview == null) return;
 
-        Vector3 mouseWorldPos = GetWorldMousePosition(eventData.position);
+        isDraggingPreview = false;
+        UpdatePositionForActivePreview();
+        ShowConfirmationUI();
+    }
+
+    // =========================================================================
+    // FITUR PEMINDAHAN ULANG ROOM YANG SUDAH DILETAKKAN (CLICK TO REPOSITION)
+    // =========================================================================
+
+    private void TryPickUpPlacedRoom()
+    {
+        // Abaikan jika pointer sedang berada di atas elemen UI (misal tombol/card)
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+
+        // Abaikan jika sedang memunculkan konfirmasi / men-drag preview room lain
+        if (activePreview != null) return;
+
+        Vector3 worldMousePos = GetWorldMousePosition(Input.mousePosition);
+        Collider2D hitCol = Physics2D.OverlapPoint(worldMousePos);
+
+        if (hitCol != null)
+        {
+            GameObject hitRoomObj = GetParentPlacedRoom(hitCol.gameObject);
+            if (hitRoomObj != null && placedRooms.Contains(hitRoomObj))
+            {
+                StartRepositioningRoom(hitRoomObj);
+            }
+        }
+    }
+
+    private GameObject GetParentPlacedRoom(GameObject hitObj)
+    {
+        Transform current = hitObj.transform;
+        while (current != null)
+        {
+            if (placedRooms.Contains(current.gameObject))
+            {
+                return current.gameObject;
+            }
+            current = current.parent;
+        }
+        return null;
+    }
+
+    private void StartRepositioningRoom(GameObject roomObj)
+    {
+        if (activePreview != null)
+        {
+            OnCancelClicked();
+        }
+
+        isRepositioningExisting = true;
+        isDraggingPreview = true;
+        roomOriginalPos = roomObj.transform.position;
+
+        // Keluarkan sementara dari placedRooms agar tidak bertumpukan dengan dirinya sendiri
+        placedRooms.Remove(roomObj);
+
+        activePreview = roomObj.GetComponent<RoomPlacementPreview>();
+        if (activePreview == null)
+        {
+            activePreview = roomObj.AddComponent<RoomPlacementPreview>();
+        }
+
+        activePreview.CacheRenderersAndColliders();
+        HideConfirmationUI();
+        UpdatePositionForActivePreview();
+    }
+
+    private void UpdatePositionForActivePreview()
+    {
+        if (activePreview == null) return;
+
+        Vector3 mouseWorldPos = GetWorldMousePosition(Input.mousePosition);
         activePreview.UpdatePositionWithSnapping(mouseWorldPos, placedRooms, enableRoomSnapping, roomSnapDistance, enableGridSnap, gridSnapSize);
 
         bool isValid = activePreview.CheckValidity(placedRooms);
         activePreview.SetPreviewState(isValid);
     }
 
-    /// <summary>
-    /// Dipanggil ketika mouse/drag dilepas. Membekukan posisi room & menampilkan tombol Checklist & Cancel.
-    /// </summary>
-    public void DropDraggingRoom(PointerEventData eventData)
-    {
-        if (activePreview == null) return;
-
-        UpdateDraggingRoom(eventData);
-        ShowConfirmationUI();
-    }
+    // =========================================================================
+    // KONFIRMASI (CHECKLIST & CANCEL)
+    // =========================================================================
 
     /// <summary>
     /// Callback saat tombol Checklist (✔) ditekan oleh user.
     /// </summary>
     public void OnChecklistClicked()
     {
-        if (activePreview == null || activeItemData == null) return;
+        if (activePreview == null) return;
 
         bool isValid = activePreview.CheckValidity(placedRooms);
         if (!isValid)
@@ -243,15 +357,21 @@ public class RoomCreatorManager : MonoBehaviour
             return;
         }
 
-        // Konfirmasi penempatan room
+        // Konfirmasi penempatan room di posisi baru
         GameObject confirmedObj = activePreview.gameObject;
         activePreview.ConfirmPlacement();
         placedRooms.Add(confirmedObj);
 
-        activeItemData.count--;
+        // Hanya kurangi stok jika room baru dari UI card (bukan room lama yang dipindahkan)
+        if (!isRepositioningExisting && activeItemData != null)
+        {
+            activeItemData.count--;
+        }
 
         activePreview = null;
         activeItemData = null;
+        isDraggingPreview = false;
+        isRepositioningExisting = false;
 
         HideConfirmationUI();
         RefreshInventoryUI();
@@ -264,11 +384,28 @@ public class RoomCreatorManager : MonoBehaviour
     {
         if (activePreview != null)
         {
-            activePreview.CancelPlacement();
+            if (isRepositioningExisting)
+            {
+                // Kembalikan room ke posisi semula sebelum dipindahkan
+                activePreview.transform.position = roomOriginalPos;
+                Physics2D.SyncTransforms();
+
+                GameObject roomObj = activePreview.gameObject;
+                activePreview.ConfirmPlacement();
+                placedRooms.Add(roomObj);
+            }
+            else
+            {
+                // Hapus preview untuk room baru yang batal diletakkan
+                activePreview.CancelPlacement();
+            }
+
             activePreview = null;
         }
 
         activeItemData = null;
+        isDraggingPreview = false;
+        isRepositioningExisting = false;
         HideConfirmationUI();
     }
 
@@ -374,6 +511,35 @@ public class RoomCreatorManager : MonoBehaviour
 #endif
 
         UnityEngine.SceneManagement.SceneManager.LoadScene("GameplaySaveLoad");
+    }
+
+    /// <summary>
+    /// Me-reset seluruh layout room yang sudah diletakkan, mengembalikan stok inventaris room ke jumlah awal,
+    /// dan membersihkan scene dari room yang sudah diletakkan.
+    /// </summary>
+    public void ResetLayout()
+    {
+        if (activePreview != null)
+        {
+            OnCancelClicked();
+        }
+
+        foreach (GameObject roomObj in placedRooms)
+        {
+            if (roomObj != null)
+            {
+                Destroy(roomObj);
+            }
+        }
+        placedRooms.Clear();
+
+        inventoryItems.Clear();
+        EnsureDefaultInventory();
+        RefreshInventoryUI();
+
+        HideConfirmationUI();
+        SetStatusMessage("Layout berhasil di-reset!");
+        Debug.Log("[RoomCreatorManager] Layout reset complete.");
     }
 
 #if UNITY_EDITOR
