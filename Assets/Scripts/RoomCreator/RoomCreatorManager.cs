@@ -142,7 +142,7 @@ public class RoomCreatorManager : MonoBehaviour
         if (testPlayButton != null)
         {
             testPlayButton.onClick.RemoveAllListeners();
-            testPlayButton.onClick.AddListener(SaveAndPlayGameplayTest);
+            testPlayButton.onClick.AddListener(SaveAndProceedToEmployeeAssign);
         }
 
         if (resetButton != null)
@@ -710,18 +710,18 @@ public class RoomCreatorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Menyimpan layout ke JSON dan langsung berpindah ke scene Gameplay (GameplaySaveLoad) untuk menguji layout.
+    /// Menyimpan layout ke JSON dan langsung berpindah ke scene EmployeeAssignment untuk menugaskan employee.
     /// </summary>
-    public void SaveAndPlayGameplayTest()
+    public void SaveAndProceedToEmployeeAssign()
     {
         SaveLayoutToJson("room_layout_1.json");
         SaveLayoutToJson("room_layout.json");
 
-        Debug.Log("[RoomCreatorManager] Loading GameplaySaveLoad scene for testing...");
+        Debug.Log("[RoomCreatorManager] Loading EmployeeAssignment scene...");
 
 #if UNITY_EDITOR
         EnsureBuildSettingsInEditor();
-        string scenePath = "Assets/Scenes/GameplaySaveLoad.unity";
+        string scenePath = "Assets/Scenes/EmployeeAssignment.unity";
         if (File.Exists(scenePath))
         {
             UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(
@@ -732,7 +732,7 @@ public class RoomCreatorManager : MonoBehaviour
         }
 #endif
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameplaySaveLoad");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("EmployeeAssignment");
     }
 
     /// <summary>
@@ -810,6 +810,7 @@ public class RoomCreatorManager : MonoBehaviour
         bool modified = false;
 
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/RoomCreator.unity");
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/EmployeeAssignment.unity");
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/GameplaySaveLoad.unity");
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/Gameplay1.unity");
 

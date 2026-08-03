@@ -17,6 +17,8 @@ public class EmployeeInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHa
     private EmployeeInventoryItemSaveData itemData;
     private EmployeeAssignmentManager manager;
     private bool isSelected = false;
+    private ScrollRect parentScrollRect;
+    private bool isDraggingSelf = false;
 
     public EmployeeInventoryItemSaveData ItemData => itemData;
 
@@ -24,6 +26,7 @@ public class EmployeeInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHa
     {
         itemData = data;
         manager = managerRef;
+        parentScrollRect = GetComponentInParent<ScrollRect>();
 
         if (mainButton != null)
         {
@@ -139,25 +142,50 @@ public class EmployeeInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHa
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (manager != null && itemData != null)
+        // If movement is mostly horizontal, scroll the parent list.
+        // Otherwise, drag the employee to a room.
+        if (Mathf.Abs(eventData.delta.x) > Mathf.Abs(eventData.delta.y))
         {
-            manager.StartDraggingEmployee(this, eventData);
+            isDraggingSelf = false;
+            if (parentScrollRect != null) parentScrollRect.OnBeginDrag(eventData);
+        }
+        else
+        {
+            isDraggingSelf = true;
+            if (manager != null && itemData != null)
+            {
+                manager.StartDraggingEmployee(this, eventData);
+            }
         }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (manager != null && itemData != null)
+        if (!isDraggingSelf)
         {
-            manager.UpdateDraggingEmployee(eventData);
+            if (parentScrollRect != null) parentScrollRect.OnDrag(eventData);
+        }
+        else
+        {
+            if (manager != null && itemData != null)
+            {
+                manager.UpdateDraggingEmployee(eventData);
+            }
         }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (manager != null && itemData != null)
+        if (!isDraggingSelf)
         {
-            manager.EndDraggingEmployee(eventData);
+            if (parentScrollRect != null) parentScrollRect.OnEndDrag(eventData);
+        }
+        else
+        {
+            if (manager != null && itemData != null)
+            {
+                manager.EndDraggingEmployee(eventData);
+            }
         }
     }
 }

@@ -178,7 +178,7 @@ public class RoomCreatorSetup : MonoBehaviour
         warnTmp.alignment = TextAlignmentOptions.Center;
         warnTmp.color = new Color(1f, 0.4f, 0.4f);
 
-        // 8. Build Top Right Action Buttons (Reset, Save Layout & Play Test)
+        // 8. Build Top Right Action Buttons (Reset & Start/Mulai)
         Transform existingReset = canvas.transform.Find("ResetBtn");
         if (existingReset != null) DestroyImmediate(existingReset.gameObject);
 
@@ -193,18 +193,10 @@ public class RoomCreatorSetup : MonoBehaviour
         resetRt.anchorMin = new Vector2(1f, 1f);
         resetRt.anchorMax = new Vector2(1f, 1f);
         resetRt.pivot = new Vector2(1f, 1f);
-        resetRt.anchoredPosition = new Vector2(-380, -20);
+        resetRt.anchoredPosition = new Vector2(-200, -20);
         Button resetBtn = resetBtnObj.GetComponent<Button>();
 
-        GameObject saveBtnObj = CreateButton("SaveLayoutBtn", canvas.transform, "💾 Save Layout", new Color(0.18f, 0.45f, 0.85f), new Vector2(170, 50));
-        RectTransform saveRt = saveBtnObj.GetComponent<RectTransform>();
-        saveRt.anchorMin = new Vector2(1f, 1f);
-        saveRt.anchorMax = new Vector2(1f, 1f);
-        saveRt.pivot = new Vector2(1f, 1f);
-        saveRt.anchoredPosition = new Vector2(-200, -20);
-        Button saveBtn = saveBtnObj.GetComponent<Button>();
-
-        GameObject testBtnObj = CreateButton("TestPlayBtn", canvas.transform, "▶ Play Test", new Color(0.15f, 0.65f, 0.25f), new Vector2(160, 50));
+        GameObject testBtnObj = CreateButton("TestPlayBtn", canvas.transform, "▶ Mulai", new Color(0.15f, 0.65f, 0.25f), new Vector2(160, 50));
         RectTransform testRt = testBtnObj.GetComponent<RectTransform>();
         testRt.anchorMin = new Vector2(1f, 1f);
         testRt.anchorMax = new Vector2(1f, 1f);
@@ -224,7 +216,7 @@ public class RoomCreatorSetup : MonoBehaviour
         SetFieldValue(manager, "confirmationPanel", confirmPanelObj);
         SetFieldValue(manager, "checklistButton", checklistBtn);
         SetFieldValue(manager, "cancelButton", cancelBtn);
-        SetFieldValue(manager, "saveButton", saveBtn);
+        SetFieldValue(manager, "saveButton", null);
         SetFieldValue(manager, "testPlayButton", testBtn);
         SetFieldValue(manager, "resetButton", resetBtn);
         SetFieldValue(manager, "statusMessageText", warnTmp);
@@ -327,6 +319,7 @@ public class RoomCreatorSetup : MonoBehaviour
         bool modified = false;
 
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/RoomCreator.unity");
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/EmployeeAssignment.unity");
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/GameplaySaveLoad.unity");
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/Gameplay1.unity");
 

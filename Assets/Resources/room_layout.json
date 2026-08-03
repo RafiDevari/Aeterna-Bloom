@@ -5,10 +5,30 @@
     "rooms": [
         {
             "roomType": "MainRoom",
-            "roomName": "MainRoom",
+            "roomName": "Room",
             "position": {
-                "x": -1.2594757080078126,
-                "y": -3.195335626602173,
+                "x": -1.0893497467041016,
+                "y": -3.62886381149292,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.325924813747406,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 5.276317119598389,
+                "y": -3.62886381149292,
                 "z": 0.0
             },
             "scale": {
@@ -27,8 +47,8 @@
             "roomType": "DivisionBotanist",
             "roomName": "Botanist Room",
             "position": {
-                "x": 7.323041915893555,
-                "y": -3.10056471824646,
+                "x": 13.858834266662598,
+                "y": -3.534092903137207,
                 "z": 0.0
             },
             "scale": {
@@ -43,8 +63,12 @@
             "containmentUnits": [],
             "employeesToSpawn": [
                 {
-                    "employeeName": "Daniel",
-                    "employeePrefabName": "EmployeeMedic"
+                    "employeeName": "Edward",
+                    "employeePrefabName": "EmployeeEngineer"
+                },
+                {
+                    "employeeName": "Faelantern",
+                    "employeePrefabName": "EmployeeEngineer"
                 }
             ]
         },
@@ -52,8 +76,28 @@
             "roomType": "Lift",
             "roomName": "Lift",
             "position": {
-                "x": -1.2594757080078126,
-                "y": 0.8778289556503296,
+                "x": -1.0893495082855225,
+                "y": 0.4443007707595825,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.9770980477333069,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "Lift",
+            "roomName": "Lift",
+            "position": {
+                "x": -1.0893495082855225,
+                "y": 11.720011711120606,
                 "z": 0.0
             },
             "scale": {
@@ -72,8 +116,48 @@
             "roomType": "MainRoom",
             "roomName": "Room",
             "position": {
-                "x": -1.2594754695892335,
-                "y": 11.841547012329102,
+                "x": -1.0893495082855225,
+                "y": 22.68372917175293,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.325924813747406,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 5.276317596435547,
+                "y": 22.68372917175293,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.325924813747406,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 11.641983985900879,
+                "y": 22.68372917175293,
                 "z": 0.0
             },
             "scale": {
@@ -92,13 +176,151 @@
             "roomType": "DivisionBotanist",
             "roomName": "Botanist Room",
             "position": {
-                "x": 7.323041915893555,
-                "y": 11.936317443847657,
+                "x": 20.224502563476564,
+                "y": 22.778499603271486,
                 "z": 0.0
             },
             "scale": {
                 "x": 1.0,
                 "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": [
+                {
+                    "employeeName": "Alice",
+                    "employeePrefabName": "EmployeeBotanist"
+                },
+                {
+                    "employeeName": "Daniel",
+                    "employeePrefabName": "EmployeeMedic"
+                }
+            ]
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -7.455016136169434,
+                "y": 22.68372917175293,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.325924813747406,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -13.820683479309082,
+                "y": 22.68372917175293,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.325924813747406,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "DivisionBotanist",
+            "roomName": "Botanist Room",
+            "position": {
+                "x": -22.403831481933595,
+                "y": 22.778501510620118,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": [
+                {
+                    "employeeName": "Bob",
+                    "employeePrefabName": "EmployeeBotanist"
+                },
+                {
+                    "employeeName": "Charlie",
+                    "employeePrefabName": "EmployeeSecurity"
+                }
+            ]
+        },
+        {
+            "roomType": "Lift",
+            "roomName": "Lift",
+            "position": {
+                "x": -1.0893497467041016,
+                "y": 26.756895065307618,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.9770980477333069,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "Lift",
+            "roomName": "Lift",
+            "position": {
+                "x": -1.0893497467041016,
+                "y": 38.0326042175293,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.9770980477333069,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "MainRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -1.0893495082855225,
+                "y": 48.99632263183594,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.325924813747406,
                 "z": 1.0
             },
             "temperature": 20.0,

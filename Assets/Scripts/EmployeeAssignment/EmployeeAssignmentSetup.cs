@@ -142,7 +142,7 @@ public class EmployeeAssignmentSetup : MonoBehaviour
         hlg.childForceExpandHeight = false;
 
         ContentSizeFitter csf = containerObj.GetComponent<ContentSizeFitter>();
-        csf.horizontalFit = ContentSizeFitter.FitMode.MinSize;
+        csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         scrollRect.content = containerRt;
 

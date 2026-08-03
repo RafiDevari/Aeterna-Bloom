@@ -419,6 +419,23 @@ public class EmployeeAssignmentManager : MonoBehaviour
             }
         }
 
+        // Count how many employees are currently assigned to the room
+        int currentCount = 0;
+        foreach (var pair in employeeRoomMap)
+        {
+            if (pair.Value == room)
+            {
+                currentCount++;
+            }
+        }
+
+        if (currentCount >= 5)
+        {
+            SetStatusMessage($"Cannot assign {empData.employeeName}. {room.RoomName} is full (max 5 employees)!");
+            SelectEmployeeCard(null);
+            return;
+        }
+
         // Assign to new room
         employeeRoomMap[empData.employeeName] = room;
 
