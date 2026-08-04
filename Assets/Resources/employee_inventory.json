@@ -1,0 +1,40 @@
+{
+    "employees": [
+        {
+            "employeeName": "Bob",
+            "employeePrefabName": "EmployeeBotanist"
+        },
+        {
+            "employeeName": "Alice",
+            "employeePrefabName": "EmployeeBotanist"
+        },
+        {
+            "employeeName": "Charlie",
+            "employeePrefabName": "EmployeeSecurity"
+        },
+        {
+            "employeeName": "Daniel",
+            "employeePrefabName": "EmployeeMedic"
+        },
+        {
+            "employeeName": "Edward",
+            "employeePrefabName": "EmployeeEngineer"
+        },
+        {
+            "employeeName": "Faelantern",
+            "employeePrefabName": "EmployeeResearcher"
+        },
+        {
+            "employeeName": "Garion",
+            "employeePrefabName": "EmployeeEngineer"
+        },
+        {
+            "employeeName": "Harrold",
+            "employeePrefabName": "EmployeeEngineer"
+        },
+        {
+            "employeeName": "Ina",
+            "employeePrefabName": "EmployeeEngineer"
+        }
+    ]
+}

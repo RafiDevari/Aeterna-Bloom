@@ -31,6 +31,10 @@ public class RoomCreatorManager : MonoBehaviour
     [SerializeField] private GameObject botanistRoomPrefab;
     [SerializeField] private GameObject liftPrefab;
 
+    [Header("Employee Prefabs")]
+    [SerializeField] private List<GameObject> employeePrefabs = new List<GameObject>();
+    private Dictionary<string, GameObject> employeePrefabMap = new Dictionary<string, GameObject>();
+
     [Header("UI References")]
     [SerializeField] private Transform cardContainer;
     [SerializeField] private GameObject cardPrefab;
@@ -70,6 +74,16 @@ public class RoomCreatorManager : MonoBehaviour
         {
             mainCamera = Camera.main;
         }
+
+        // Populate employee prefab map
+        foreach (var prefab in employeePrefabs)
+        {
+            if (prefab == null) continue;
+            if (!employeePrefabMap.ContainsKey(prefab.name))
+            {
+                employeePrefabMap.Add(prefab.name, prefab);
+            }
+        }
     }
 
     private void Start()
@@ -78,6 +92,7 @@ public class RoomCreatorManager : MonoBehaviour
         EnsureDefaultInventory();
         RefreshInventoryUI();
         HideConfirmationUI();
+        LoadSavedLayout("room_layout_1.json");
     }
 
     private void Update()
@@ -127,7 +142,7 @@ public class RoomCreatorManager : MonoBehaviour
         if (testPlayButton != null)
         {
             testPlayButton.onClick.RemoveAllListeners();
-            testPlayButton.onClick.AddListener(SaveAndPlayGameplayTest);
+            testPlayButton.onClick.AddListener(SaveAndProceedToEmployeeAssign);
         }
 
         if (resetButton != null)
@@ -491,6 +506,38 @@ public class RoomCreatorManager : MonoBehaviour
                 else if (displayName.ToLower().Contains("hall")) typeName = "HallRoom";
             }
 
+            // Serialize division room employees to spawn
+            List<EmployeeSaveData> emps = new List<EmployeeSaveData>();
+            if (roomComp is DivisionRoom divisionRoom)
+            {
+                var field = typeof(DivisionRoom).GetField("employeesToSpawn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null)
+                {
+                    var list = field.GetValue(divisionRoom) as System.Collections.IList;
+                    if (list != null)
+                    {
+                        foreach (var item in list)
+                        {
+                            if (item == null) continue;
+
+                            var nameField = item.GetType().GetField("employeeName");
+                            var prefabField = item.GetType().GetField("employeePrefab");
+
+                            string empName = nameField != null ? (string)nameField.GetValue(item) : "";
+                            Employee empPrefab = prefabField != null ? (Employee)prefabField.GetValue(item) : null;
+
+                            string prefabName = empPrefab != null ? empPrefab.gameObject.name : "";
+
+                            emps.Add(new EmployeeSaveData
+                            {
+                                employeeName = empName,
+                                employeePrefabName = prefabName
+                            });
+                        }
+                    }
+                }
+            }
+
             RoomSaveData roomData = new RoomSaveData
             {
                 roomType = typeName,
@@ -502,7 +549,7 @@ public class RoomCreatorManager : MonoBehaviour
                 isPoisoned = roomComp != null ? roomComp.IsPoisoned : false,
                 isSterilizing = roomComp != null ? roomComp.IsSterilizing : false,
                 containmentUnits = new List<ContainmentUnitSaveData>(),
-                employeesToSpawn = new List<EmployeeSaveData>()
+                employeesToSpawn = emps
             };
 
             layoutData.rooms.Add(roomData);
@@ -532,18 +579,149 @@ public class RoomCreatorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Menyimpan layout ke JSON dan langsung berpindah ke scene Gameplay (GameplaySaveLoad) untuk menguji layout.
+    /// Memuat layout room yang sudah di-save sebelumnya ke scene editor agar dapat diedit kembali.
     /// </summary>
-    public void SaveAndPlayGameplayTest()
+    public void LoadSavedLayout(string fileName = "room_layout_1.json")
+    {
+        foreach (GameObject roomObj in placedRooms)
+        {
+            if (roomObj != null)
+            {
+                Destroy(roomObj);
+            }
+        }
+        placedRooms.Clear();
+
+        string jsonText = "";
+
+#if UNITY_EDITOR
+        string editorPath = Path.Combine(Application.dataPath, "Resources", fileName);
+        if (File.Exists(editorPath))
+        {
+            jsonText = File.ReadAllText(editorPath);
+            Debug.Log($"[RoomCreatorManager] Loading editor layout from project resources: {editorPath}");
+        }
+#endif
+
+        if (string.IsNullOrEmpty(jsonText))
+        {
+            string savePath = Path.Combine(Application.persistentDataPath, fileName);
+            if (File.Exists(savePath))
+            {
+                jsonText = File.ReadAllText(savePath);
+                Debug.Log($"[RoomCreatorManager] Loading editor layout from persistent path: {savePath}");
+            }
+            else
+            {
+                TextAsset targetAsset = Resources.Load<TextAsset>(fileName.Replace(".json", ""));
+                if (targetAsset != null)
+                {
+                    jsonText = targetAsset.text;
+                    Debug.Log($"[RoomCreatorManager] Loading editor layout from Resources/{fileName}");
+                }
+            }
+        }
+
+        if (string.IsNullOrEmpty(jsonText))
+        {
+            Debug.Log("[RoomCreatorManager] No saved layout found to load.");
+            return;
+        }
+
+        FacilityLayoutData layoutData = JsonUtility.FromJson<FacilityLayoutData>(jsonText);
+        if (layoutData == null || layoutData.rooms == null)
+        {
+            Debug.LogError("[RoomCreatorManager] Failed to parse loaded layout JSON.");
+            return;
+        }
+
+        foreach (var roomData in layoutData.rooms)
+        {
+            GameObject prefab = FindPrefabForRoom(roomData.roomType, roomData.roomName);
+            if (prefab != null)
+            {
+                GameObject roomObj = Instantiate(prefab, roomData.position, Quaternion.identity);
+                roomObj.transform.localScale = roomData.scale;
+                roomObj.name = roomData.roomName;
+
+                // Pastikan preview component tidak aktif/ter-destroy pada room yang di-load
+                RoomPlacementPreview previewComp = roomObj.GetComponent<RoomPlacementPreview>();
+                if (previewComp != null)
+                {
+                    Destroy(previewComp);
+                }
+
+                Room roomComp = roomObj.GetComponent<Room>();
+                if (roomComp != null)
+                {
+                    roomComp.RoomName = roomData.roomName;
+                    roomComp.Temperature = roomData.temperature;
+                    roomComp.SetLocked(roomData.isLocked);
+                    roomComp.IsPoisoned = roomData.isPoisoned;
+                    roomComp.IsSterilizing = roomData.isSterilizing;
+
+                    // Handle division room specific employee mapping
+                    if (roomComp is DivisionRoom divisionRoom)
+                    {
+                        var field = typeof(DivisionRoom).GetField("employeesToSpawn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (field != null)
+                        {
+                            var nestedType = typeof(DivisionRoom).GetNestedType("EmployeeSpawnData", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+                            if (nestedType != null)
+                            {
+                                var spawnListType = typeof(List<>).MakeGenericType(nestedType);
+                                var newSpawnList = System.Activator.CreateInstance(spawnListType) as System.Collections.IList;
+
+                                foreach (var empData in roomData.employeesToSpawn)
+                                {
+                                    if (employeePrefabMap.TryGetValue(empData.employeePrefabName, out GameObject empPrefabGo))
+                                    {
+                                        Employee empPrefab = empPrefabGo.GetComponent<Employee>();
+                                        if (empPrefab != null)
+                                        {
+                                            object spawnData = System.Activator.CreateInstance(nestedType);
+                                            
+                                            var nameField = nestedType.GetField("employeeName");
+                                            var prefabField = nestedType.GetField("employeePrefab");
+
+                                            if (nameField != null) nameField.SetValue(spawnData, empData.employeeName);
+                                            if (prefabField != null) prefabField.SetValue(spawnData, empPrefab);
+
+                                            newSpawnList.Add(spawnData);
+                                        }
+                                    }
+                                }
+
+                                field.SetValue(divisionRoom, newSpawnList);
+                            }
+                        }
+                    }
+                }
+
+                placedRooms.Add(roomObj);
+            }
+            else
+            {
+                Debug.LogWarning($"[RoomCreatorManager] Prefab for room type '{roomData.roomType}' name '{roomData.roomName}' not found during load.");
+            }
+        }
+
+        Debug.Log($"[RoomCreatorManager] Loaded {placedRooms.Count} rooms into editor scene.");
+    }
+
+    /// <summary>
+    /// Menyimpan layout ke JSON dan langsung berpindah ke scene EmployeeAssignment untuk menugaskan employee.
+    /// </summary>
+    public void SaveAndProceedToEmployeeAssign()
     {
         SaveLayoutToJson("room_layout_1.json");
         SaveLayoutToJson("room_layout.json");
 
-        Debug.Log("[RoomCreatorManager] Loading GameplaySaveLoad scene for testing...");
+        Debug.Log("[RoomCreatorManager] Loading EmployeeAssignment scene...");
 
 #if UNITY_EDITOR
         EnsureBuildSettingsInEditor();
-        string scenePath = "Assets/Scenes/GameplaySaveLoad.unity";
+        string scenePath = "Assets/Scenes/EmployeeAssignment.unity";
         if (File.Exists(scenePath))
         {
             UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(
@@ -554,7 +732,7 @@ public class RoomCreatorManager : MonoBehaviour
         }
 #endif
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameplaySaveLoad");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("EmployeeAssignment");
     }
 
     /// <summary>
@@ -632,6 +810,7 @@ public class RoomCreatorManager : MonoBehaviour
         bool modified = false;
 
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/RoomCreator.unity");
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/EmployeeAssignment.unity");
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/GameplaySaveLoad.unity");
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/Gameplay1.unity");
 

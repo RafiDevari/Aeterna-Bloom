@@ -52,8 +52,17 @@ public abstract class DivisionRoom : Room
     {
         base.Start();
 
+        // Don't auto-spawn employees in RoomCreator or EmployeeAssignment scenes
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        if (sceneName == "RoomCreator" || sceneName == "EmployeeAssignment")
+        {
+            return;
+        }
+
         SpawnEmployees();
     }
+
+    private bool hasSpawnedEmployees = false;
 
     /// <summary>
     /// Instantiate semua entry di employeesToSpawn, taruh di posisi room ini, assign ke divisi
@@ -62,6 +71,9 @@ public abstract class DivisionRoom : Room
     /// </summary>
     public void SpawnEmployees()
     {
+        if (hasSpawnedEmployees) return;
+        hasSpawnedEmployees = true;
+
         foreach (var data in employeesToSpawn)
         {
             if (data.employeePrefab == null)
