@@ -93,6 +93,46 @@ public partial class Employee
             return;
         }
 
+        Room myRoom = GetCurrentRoom();
+        if (myRoom == null)
+        {
+            EndConversation();
+            return;
+        }
+
+        // Dapatkan batas horizontal (X) room tempat employee mengobrol
+        float roomMinX = float.MaxValue;
+        float roomMaxX = float.MinValue;
+        Bounds[] boundsList = myRoom.CollisionBounds;
+        if (boundsList != null && boundsList.Length > 0)
+        {
+            foreach (var b in boundsList)
+            {
+                if (b.min.x < roomMinX) roomMinX = b.min.x;
+                if (b.max.x > roomMaxX) roomMaxX = b.max.x;
+            }
+        }
+        else
+        {
+            Bounds b = myRoom.RoomBounds;
+            roomMinX = b.min.x;
+            roomMaxX = b.max.x;
+        }
+
+        // Margin agar sprite employee tidak berada di luar/mepet dinding room
+        float margin = 0.4f;
+        if (roomMaxX - roomMinX < margin * 2f)
+        {
+            margin = Mathf.Max(0f, (roomMaxX - roomMinX) * 0.1f);
+        }
+
+        float minAllowedX = roomMinX + margin;
+        float maxAllowedX = roomMaxX - margin;
+        if (minAllowedX > maxAllowedX)
+        {
+            minAllowedX = maxAllowedX = (roomMinX + roomMaxX) * 0.5f;
+        }
+
         // Pembentukan Grup Sosial (Urutkan posisi X seluruh anggota idle di room)
         List<Employee> allGroup = new List<Employee>(eligibleRoomEmployees) { this };
         allGroup = allGroup.OrderBy(e => e.transform.position.x).ToList();
@@ -100,11 +140,30 @@ public partial class Employee
         int myIndex = allGroup.IndexOf(this);
         int totalGroup = allGroup.Count;
 
-        // Hitung target posisi X ideal dalam barisan grup (berjarak X satu sama lain)
-        float groupCenterX = allGroup.Average(e => e.transform.position.x);
-        float startX = groupCenterX - ((totalGroup - 1) * conversationDistance * 0.5f);
-        float targetX = startX + (myIndex * conversationDistance);
+        // Hitung jarak antar-anggota efektif agar seluruh grup muat di area room
+        float effectiveDistance = conversationDistance;
+        if (totalGroup > 1)
+        {
+            float maxAvailableWidth = maxAllowedX - minAllowedX;
+            float maxPossibleDistance = maxAvailableWidth / (totalGroup - 1);
+            if (effectiveDistance > maxPossibleDistance)
+            {
+                effectiveDistance = maxPossibleDistance;
+            }
+        }
+
+        float groupSpan = (totalGroup - 1) * effectiveDistance;
+
+        // Hitung groupCenterX dan startX, lalu apit (clamp) startX agar seluruh barisan grup muat dalam [minAllowedX, maxAllowedX]
+        float rawGroupCenterX = allGroup.Average(e => e.transform.position.x);
+        float startX = rawGroupCenterX - (groupSpan * 0.5f);
+        startX = Mathf.Clamp(startX, minAllowedX, maxAllowedX - groupSpan);
+
+        float targetX = startX + (myIndex * effectiveDistance);
+        targetX = Mathf.Clamp(targetX, minAllowedX, maxAllowedX);
         Vector3 targetPos = new Vector3(targetX, transform.position.y, transform.position.z);
+
+        float groupCenterX = startX + (groupSpan * 0.5f);
 
         float distToTargetX = Mathf.Abs(transform.position.x - targetX);
 
