@@ -8,6 +8,8 @@ public class ContainmentUnitSaveData
 {
     public string unitName;
     public string monsterPrefabName;
+    public Vector3 localPosition;
+    public string plantInstanceId;
 }
 
 [System.Serializable]
@@ -270,28 +272,53 @@ public class RoomSaveSystem : MonoBehaviour
                     // Handle containment room specific monster mapping
                     if (roomComp is ContainmentRoom containmentRoom)
                     {
-                        var units = containmentRoom.ContainmentUnits;
-                        for (int i = 0; i < units.Count && i < roomData.containmentUnits.Count; i++)
+                        // Clean up existing containment units first if there are saved units to load
+                        if (roomData.containmentUnits.Count > 0)
                         {
-                            var unit = units[i];
-                            var unitData = roomData.containmentUnits[i];
-
-                            if (monsterPrefabMap.TryGetValue(unitData.monsterPrefabName, out GameObject monsterPrefab))
+                            var oldUnits = new List<ContainmentUnit>(containmentRoom.ContainmentUnits);
+                            foreach (var oldUnit in oldUnits)
                             {
-                                // Set the unit name
-                                unit.UnitName = unitData.unitName;
-                                unit.gameObject.name = unitData.unitName;
+                                if (oldUnit != null) Destroy(oldUnit.gameObject);
+                            }
+                            
+                            // Clear containment room units list
+                            var fieldClear = typeof(ContainmentRoom).GetField("containmentUnits", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            if (fieldClear != null)
+                            {
+                                var list = fieldClear.GetValue(containmentRoom) as System.Collections.IList;
+                                if (list != null) list.Clear();
+                            }
+                        }
 
-                                // Set private monsterPrefab via reflection so it gets spawned correctly during Start()
-                                var field = typeof(ContainmentUnit).GetField("monsterPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                                if (field != null)
+                        // Load saved units dynamically at their saved localPosition
+                        foreach (var unitData in roomData.containmentUnits)
+                        {
+                            GameObject cuPrefab = LoadPrefab("Prefab_ContainmentUnit");
+                            if (cuPrefab != null)
+                            {
+                                GameObject cuObj = Instantiate(cuPrefab, containmentRoom.transform);
+                                cuObj.transform.localPosition = unitData.localPosition;
+                                cuObj.transform.localScale = new Vector3(0.35f, 0.35f, 1f);
+                                cuObj.name = unitData.unitName;
+
+                                ContainmentUnit unit = cuObj.GetComponent<ContainmentUnit>();
+                                if (unit != null)
                                 {
-                                    field.SetValue(unit, monsterPrefab);
-                                }
-                                else
-                                {
-                                    // Fallback if reflection fails
-                                    unit.SpawnMonsterFromPrefab(monsterPrefab);
+                                    unit.UnitName = unitData.unitName;
+                                    containmentRoom.AddContainmentUnit(unit);
+
+                                    if (monsterPrefabMap.TryGetValue(unitData.monsterPrefabName, out GameObject monsterPrefab))
+                                    {
+                                        var field = typeof(ContainmentUnit).GetField("monsterPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                                        if (field != null)
+                                        {
+                                            field.SetValue(unit, monsterPrefab);
+                                        }
+                                        else
+                                        {
+                                            unit.SpawnMonsterFromPrefab(monsterPrefab);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -380,10 +407,19 @@ public class RoomSaveSystem : MonoBehaviour
                 {
                     if (unit != null)
                     {
+                        string instanceId = "";
+                        if (unit.gameObject.name.Contains(":"))
+                        {
+                            string[] nameParts = unit.gameObject.name.Split(':');
+                            if (nameParts.Length > 1) instanceId = nameParts[1];
+                        }
+
                         var unitData = new ContainmentUnitSaveData
                         {
                             unitName = unit.UnitName,
-                            monsterPrefabName = ""
+                            monsterPrefabName = "",
+                            localPosition = unit.transform.localPosition,
+                            plantInstanceId = instanceId
                         };
 
                         // Use reflection to get the private monsterPrefab field
@@ -458,5 +494,34 @@ public class RoomSaveSystem : MonoBehaviour
         string savePath = Path.Combine(Application.persistentDataPath, "room_layout.json");
         File.WriteAllText(savePath, json);
         Debug.Log($"[RoomSaveSystem] Successfully saved runtime layout to {savePath}");
+    }
+
+    private GameObject LoadPrefab(string prefabName)
+    {
+        foreach (var p in roomPrefabs)
+        {
+            if (p != null && (p.name == prefabName || p.name == $"Prefab_{prefabName}")) return p;
+        }
+
+        foreach (var p in monsterPrefabs)
+        {
+            if (p != null && p.name == prefabName) return p;
+        }
+
+        GameObject prefab = Resources.Load<GameObject>($"Rooms/{prefabName}");
+        if (prefab != null) return prefab;
+
+        prefab = Resources.Load<GameObject>(prefabName);
+        if (prefab != null) return prefab;
+
+#if UNITY_EDITOR
+        string[] guids = UnityEditor.AssetDatabase.FindAssets($"{prefabName} t:Prefab");
+        if (guids.Length > 0)
+        {
+            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]);
+            return UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        }
+#endif
+        return null;
     }
 }

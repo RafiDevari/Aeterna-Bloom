@@ -1,0 +1,24 @@
+{
+  "plants": [
+    {
+      "plantId": "Sunny Flower",
+      "isUnlocked": true,
+      "isMutated": false
+    },
+    {
+      "plantId": "Dandelectric",
+      "isUnlocked": false,
+      "isMutated": false
+    },
+    {
+      "plantId": "Monster AB",
+      "isUnlocked": false,
+      "isMutated": false
+    },
+    {
+      "plantId": "Monster",
+      "isUnlocked": false,
+      "isMutated": false
+    }
+  ]
+}

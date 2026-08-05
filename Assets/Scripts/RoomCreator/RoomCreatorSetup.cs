@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
+using System.IO;
+using System.Collections.Generic;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -222,6 +224,9 @@ public class RoomCreatorSetup : MonoBehaviour
         manager.EnsureDefaultInventory();
         manager.RefreshInventoryUI();
 
+        // Initialize/Refresh plant inventory panel on the left
+        RefreshLeftContainmentPanel(null);
+
         Debug.Log("[RoomCreatorSetup] Scene roomCreator berhasil dikonfigurasi dengan Kotak Room dan Panel Konfirmasi!");
     }
 
@@ -353,4 +358,221 @@ public class RoomCreatorSetup : MonoBehaviour
         return true;
     }
 #endif
+
+    public static void RefreshLeftContainmentPanel(HashSet<string> placedPlantInstanceIds)
+    {
+        Canvas canvas = FindFirstObjectByType<Canvas>();
+        if (canvas == null) return;
+
+        // Find or create LeftContainmentPanel
+        Transform existingPanel = canvas.transform.Find("LeftContainmentPanel");
+        if (existingPanel != null) DestroyImmediate(existingPanel.gameObject);
+
+        // Load Plant Inventory JSON
+        string jsonText = "";
+#if UNITY_EDITOR
+        string editorPath = Path.Combine(Application.dataPath, "Resources", "plant_inventory.json");
+        if (File.Exists(editorPath))
+        {
+            jsonText = File.ReadAllText(editorPath);
+        }
+#endif
+        if (string.IsNullOrEmpty(jsonText))
+        {
+            string savePath = Path.Combine(Application.persistentDataPath, "plant_inventory.json");
+            if (File.Exists(savePath))
+            {
+                jsonText = File.ReadAllText(savePath);
+            }
+            else
+            {
+                TextAsset asset = Resources.Load<TextAsset>("plant_inventory");
+                if (asset != null)
+                {
+                    jsonText = asset.text;
+                }
+            }
+        }
+
+        if (string.IsNullOrEmpty(jsonText)) return;
+
+        PlantInventoryData inventoryData = null;
+        try
+        {
+            inventoryData = JsonUtility.FromJson<PlantInventoryData>(jsonText);
+        }
+        catch (System.Exception) {}
+
+        if (inventoryData == null || inventoryData.plants == null || inventoryData.plants.Count == 0) return;
+
+        // Build Left Panel UI (Glassmorphic dark design)
+        GameObject leftPanel = new GameObject("LeftContainmentPanel", typeof(RectTransform), typeof(Image));
+        leftPanel.transform.SetParent(canvas.transform, false);
+        RectTransform panelRt = leftPanel.GetComponent<RectTransform>();
+        panelRt.anchorMin = new Vector2(0f, 0.5f);
+        panelRt.anchorMax = new Vector2(0f, 0.5f);
+        panelRt.pivot = new Vector2(0f, 0.5f);
+        panelRt.anchoredPosition = new Vector2(20, 0);
+        panelRt.sizeDelta = new Vector2(260, 600);
+
+        Image panelImg = leftPanel.GetComponent<Image>();
+        panelImg.color = new Color(0.08f, 0.1f, 0.14f, 0.9f);
+
+        // Panel Title
+        GameObject titleObj = new GameObject("TitleText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        titleObj.transform.SetParent(leftPanel.transform, false);
+        RectTransform titleRt = titleObj.GetComponent<RectTransform>();
+        titleRt.anchorMin = new Vector2(0, 1);
+        titleRt.anchorMax = new Vector2(1, 1);
+        titleRt.pivot = new Vector2(0.5f, 1);
+        titleRt.anchoredPosition = new Vector2(0, -15);
+        titleRt.sizeDelta = new Vector2(0, 30);
+
+        TextMeshProUGUI titleTmp = titleObj.GetComponent<TextMeshProUGUI>();
+        titleTmp.text = "PLANT INVENTORY";
+        titleTmp.fontSize = 18;
+        titleTmp.alignment = TextAlignmentOptions.Center;
+        titleTmp.color = new Color(0.7f, 0.85f, 1f);
+        titleTmp.fontStyle = FontStyles.Bold;
+
+        // Vertical List Container
+        GameObject listContainer = new GameObject("ListContainer", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        listContainer.transform.SetParent(leftPanel.transform, false);
+        RectTransform listRt = listContainer.GetComponent<RectTransform>();
+        listRt.anchorMin = new Vector2(0, 0);
+        listRt.anchorMax = new Vector2(1, 1);
+        listRt.offsetMin = new Vector2(15, 15);
+        listRt.offsetMax = new Vector2(-15, -55);
+
+        VerticalLayoutGroup vlg = listContainer.GetComponent<VerticalLayoutGroup>();
+        vlg.childAlignment = TextAnchor.UpperCenter;
+        vlg.spacing = 15;
+        vlg.childControlWidth = true;
+        vlg.childControlHeight = false;
+        vlg.childForceExpandWidth = true;
+        vlg.childForceExpandHeight = false;
+
+        ContentSizeFitter csf = listContainer.GetComponent<ContentSizeFitter>();
+        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        // Spawn Card UI for each plant
+        RoomCreatorManager manager = FindFirstObjectByType<RoomCreatorManager>();
+
+        foreach (var plant in inventoryData.plants)
+        {
+            if (plant == null || string.IsNullOrEmpty(plant.plantId)) continue;
+
+            bool isPlaced = placedPlantInstanceIds != null && placedPlantInstanceIds.Contains(plant.plantInstanceId);
+
+            GameObject cardObj = new GameObject($"PlantCard_{plant.plantInstanceId}", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+            cardObj.transform.SetParent(listContainer.transform, false);
+            RectTransform cardRt = cardObj.GetComponent<RectTransform>();
+            cardRt.sizeDelta = new Vector2(230, 80);
+
+            Image cardImg = cardObj.GetComponent<Image>();
+            cardImg.color = isPlaced ? new Color(0.12f, 0.14f, 0.18f, 0.5f) : new Color(0.18f, 0.22f, 0.32f, 0.95f);
+
+            // Plant Name text
+            GameObject nameObj = new GameObject("NameText", typeof(RectTransform), typeof(TextMeshProUGUI));
+            nameObj.transform.SetParent(cardObj.transform, false);
+            RectTransform nameRt = nameObj.GetComponent<RectTransform>();
+            nameRt.anchorMin = new Vector2(0, 0.5f);
+            nameRt.anchorMax = new Vector2(1, 1);
+            nameRt.offsetMin = new Vector2(10, 0);
+            nameRt.offsetMax = new Vector2(-10, -5);
+
+            TextMeshProUGUI nameTmp = nameObj.GetComponent<TextMeshProUGUI>();
+            nameTmp.text = plant.plantId;
+            nameTmp.fontSize = 18;
+            nameTmp.alignment = TextAlignmentOptions.Left;
+            nameTmp.color = isPlaced ? Color.gray : Color.white;
+            nameTmp.fontStyle = FontStyles.Bold;
+
+            // Plant Instance ID / Status text
+            GameObject subObj = new GameObject("StatusText", typeof(RectTransform), typeof(TextMeshProUGUI));
+            subObj.transform.SetParent(cardObj.transform, false);
+            RectTransform subRt = subObj.GetComponent<RectTransform>();
+            subRt.anchorMin = new Vector2(0, 0);
+            subRt.anchorMax = new Vector2(1, 0.5f);
+            subRt.offsetMin = new Vector2(10, 5);
+            subRt.offsetMax = new Vector2(-10, 0);
+
+            TextMeshProUGUI subTmp = subObj.GetComponent<TextMeshProUGUI>();
+            subTmp.text = isPlaced ? "Status: PLACED" : $"ID: {plant.plantInstanceId}";
+            subTmp.fontSize = 14;
+            subTmp.alignment = TextAlignmentOptions.Left;
+            subTmp.color = isPlaced ? new Color(0.5f, 0.8f, 0.5f) : new Color(0.7f, 0.8f, 0.9f);
+
+            // Add Drag Script
+            if (!isPlaced)
+            {
+                PlantInventoryCardUI cardUI = cardObj.AddComponent<PlantInventoryCardUI>();
+                cardUI.Setup(plant.plantInstanceId, plant.plantId, manager);
+            }
+            else
+            {
+                CanvasGroup cg = cardObj.GetComponent<CanvasGroup>();
+                if (cg != null)
+                {
+                    cg.alpha = 0.5f;
+                    cg.blocksRaycasts = false;
+                }
+            }
+        }
+    }
+}
+
+[System.Serializable]
+public class PlantInventoryItemData
+{
+    public string plantInstanceId;
+    public string plantId;
+    public float growth;
+    public List<string> completedResearchIds;
+}
+
+[System.Serializable]
+public class PlantInventoryData
+{
+    public List<PlantInventoryItemData> plants;
+}
+
+public class PlantInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerDownHandler
+{
+    private string plantInstanceId;
+    private string plantId;
+    private RoomCreatorManager manager;
+
+    public void Setup(string instanceId, string id, RoomCreatorManager managerRef)
+    {
+        plantInstanceId = instanceId;
+        plantId = id;
+        manager = managerRef;
+    }
+
+    public void OnPointerDown(PointerEventData eventData) {}
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (manager != null)
+        {
+            manager.StartDraggingContainmentUnit(plantInstanceId, plantId, eventData);
+        }
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (manager != null)
+        {
+            manager.UpdateDraggingRoom(eventData);
+        }
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (manager != null)
+        {
+            manager.DropDraggingRoom(eventData);
+        }
+    }
 }

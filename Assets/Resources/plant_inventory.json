@@ -1,0 +1,22 @@
+{
+  "plants": [
+    {
+      "plantInstanceId": "Room_Unit-A1",
+      "plantId": "Sunny Flower",
+      "growth": 0.0,
+      "completedResearchIds": []
+    },
+    {
+      "plantInstanceId": "Room_Unit-A2",
+      "plantId": "Sunny Flower",
+      "growth": 0.0,
+      "completedResearchIds": []
+    },
+    {
+      "plantInstanceId": "Room_Unit-A3",
+      "plantId": "Dandelectric",
+      "growth": 0.0,
+      "completedResearchIds": []
+    }
+  ]
+}

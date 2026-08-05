@@ -47,10 +47,14 @@ public class RoomCreatorManager : MonoBehaviour
 
     private List<RoomInventoryCardUI> cardUIList = new List<RoomInventoryCardUI>();
     private List<GameObject> placedRooms = new List<GameObject>();
+    private List<GameObject> placedContainmentUnits = new List<GameObject>();
+    private HashSet<string> placedPlantInstanceIds = new HashSet<string>();
 
     private RoomPlacementPreview activePreview;
     private RoomInventoryItemData activeItemData;
     private RoomInventoryCardUI activeCardUI;
+    private string activePlantInstanceId;
+    private string activePlantId;
 
     // State pemindahan & dragging preview
     private bool isDraggingPreview = false;
@@ -398,9 +402,16 @@ public class RoomCreatorManager : MonoBehaviour
         if (hitCol != null)
         {
             GameObject hitRoomObj = GetParentPlacedRoom(hitCol.gameObject);
-            if (hitRoomObj != null && placedRooms.Contains(hitRoomObj))
+            if (hitRoomObj != null)
             {
-                StartRepositioningRoom(hitRoomObj);
+                if (placedContainmentUnits.Contains(hitRoomObj))
+                {
+                    StartRepositioningContainmentUnit(hitRoomObj);
+                }
+                else if (placedRooms.Contains(hitRoomObj))
+                {
+                    StartRepositioningRoom(hitRoomObj);
+                }
             }
         }
     }
@@ -410,7 +421,7 @@ public class RoomCreatorManager : MonoBehaviour
         Transform current = hitObj.transform;
         while (current != null)
         {
-            if (placedRooms.Contains(current.gameObject))
+            if (placedRooms.Contains(current.gameObject) || placedContainmentUnits.Contains(current.gameObject))
             {
                 return current.gameObject;
             }
@@ -444,6 +455,107 @@ public class RoomCreatorManager : MonoBehaviour
         UpdatePositionForActivePreview();
     }
 
+    public void StartDraggingContainmentUnit(string plantInstanceId, string plantId, PointerEventData eventData)
+    {
+        if (activePreview != null)
+        {
+            OnCancelClicked();
+        }
+
+        activePlantInstanceId = plantInstanceId;
+        activePlantId = plantId;
+        isRepositioningExisting = false;
+        isDraggingPreview = true;
+        HideConfirmationUI();
+
+        GameObject prefabToSpawn = FindPrefabForRoom("Prefab_ContainmentUnit", "Containment Unit");
+        if (prefabToSpawn == null)
+        {
+            prefabToSpawn = Resources.Load<GameObject>("Rooms/Prefab_ContainmentUnit");
+        }
+
+        Vector3 mouseWorldPos = GetWorldMousePosition(eventData.position);
+        
+        bool originalActive = prefabToSpawn.activeSelf;
+        prefabToSpawn.SetActive(false);
+        GameObject previewObj = Instantiate(prefabToSpawn, mouseWorldPos, Quaternion.identity);
+        prefabToSpawn.SetActive(originalActive);
+
+        previewObj.name = $"ContainmentUnit:{plantInstanceId}:{plantId}";
+        
+        GameObject monsterPrefab = LoadPrefabDynamic(plantId);
+        GameObject monsterInstance = null;
+        if (monsterPrefab != null)
+        {
+            bool monsterOriginalActive = monsterPrefab.activeSelf;
+            monsterPrefab.SetActive(false);
+            monsterInstance = Instantiate(monsterPrefab, previewObj.transform);
+            monsterPrefab.SetActive(monsterOriginalActive);
+            monsterInstance.name = $"Monster_{plantId}";
+            monsterInstance.transform.localPosition = Vector3.zero;
+            monsterInstance.transform.localScale = Vector3.one;
+        }
+
+        DisableGameplayScripts(previewObj);
+
+        activePreview = previewObj.GetComponent<RoomPlacementPreview>();
+        if (activePreview == null)
+        {
+            activePreview = previewObj.AddComponent<RoomPlacementPreview>();
+        }
+
+        activePreview.CacheRenderersAndColliders();
+
+        SpriteRenderer cuRenderer = previewObj.GetComponent<SpriteRenderer>();
+        if (cuRenderer != null)
+        {
+            cuRenderer.sortingOrder = 5;
+            if (monsterInstance != null)
+            {
+                SpriteRenderer[] monsterRenderers = monsterInstance.GetComponentsInChildren<SpriteRenderer>(true);
+                foreach (var mr in monsterRenderers)
+                {
+                    if (mr != null) mr.sortingOrder = cuRenderer.sortingOrder + 1;
+                }
+            }
+        }
+
+        previewObj.SetActive(true);
+        UpdatePositionForActivePreview();
+    }
+
+    private void StartRepositioningContainmentUnit(GameObject cuObj)
+    {
+        if (activePreview != null)
+        {
+            OnCancelClicked();
+        }
+
+        isRepositioningExisting = true;
+        isDraggingPreview = true;
+        roomOriginalPos = cuObj.transform.position;
+
+        string[] parts = cuObj.name.Split(':');
+        if (parts.Length > 2)
+        {
+            activePlantInstanceId = parts[1];
+            activePlantId = parts[2];
+        }
+
+        placedContainmentUnits.Remove(cuObj);
+        cuObj.transform.SetParent(null);
+
+        activePreview = cuObj.GetComponent<RoomPlacementPreview>();
+        if (activePreview == null)
+        {
+            activePreview = cuObj.AddComponent<RoomPlacementPreview>();
+        }
+
+        activePreview.CacheRenderersAndColliders();
+        HideConfirmationUI();
+        UpdatePositionForActivePreview();
+    }
+
     private void UpdatePositionForActivePreview()
     {
         if (activePreview == null) return;
@@ -451,7 +563,7 @@ public class RoomCreatorManager : MonoBehaviour
         Vector3 mouseWorldPos = GetWorldMousePosition(Input.mousePosition);
         activePreview.UpdatePositionWithSnapping(mouseWorldPos, placedRooms, enableRoomSnapping, roomSnapDistance, enableGridSnap, gridSnapSize);
 
-        bool isValid = activePreview.CheckValidity(placedRooms);
+        bool isValid = activePreview.CheckValidity(placedRooms, placedContainmentUnits);
         activePreview.SetPreviewState(isValid);
     }
 
@@ -466,10 +578,14 @@ public class RoomCreatorManager : MonoBehaviour
     {
         if (activePreview == null) return;
 
-        bool isValid = activePreview.CheckValidity(placedRooms);
+        bool isValid = activePreview.CheckValidity(placedRooms, placedContainmentUnits);
         if (!isValid)
         {
-            if (activePreview.IsLift)
+            if (activePreview.gameObject.name.Contains("ContainmentUnit"))
+            {
+                SetStatusMessage("Containment Unit harus diletakkan di dalam Containment Room!");
+            }
+            else if (activePreview.IsLift)
             {
                 SetStatusMessage("Lift hanya dapat diletakkan di atas atau di bawah Main Hall / Lift!");
             }
@@ -484,30 +600,82 @@ public class RoomCreatorManager : MonoBehaviour
             return;
         }
 
-        // Konfirmasi penempatan room di posisi baru
         GameObject confirmedObj = activePreview.gameObject;
         activePreview.ConfirmPlacement();
-        placedRooms.Add(confirmedObj);
 
-        // Hanya kurangi stok jika room baru dari UI card (bukan room lama yang dipindahkan)
-        if (!isRepositioningExisting && activeItemData != null)
+        if (confirmedObj.name.Contains("ContainmentUnit"))
         {
-            activeItemData.count--;
-
-            // Simpan pembaruan stok ke room_inventory.json
-            if (RoomInventorySaveSystem.Instance != null)
+            // It is a containment unit!
+            // Find the containment room it is inside of
+            Bounds cuBounds = RoomPlacementPreview.GetAccurateBounds(confirmedObj);
+            GameObject parentRoomObj = null;
+            foreach (GameObject roomObj in placedRooms)
             {
-                RoomInventorySaveSystem.Instance.SaveFromItemDataList(inventoryItems);
+                if (roomObj == null) continue;
+                bool isContainmentRoom = roomObj.GetComponent<ContainmentRoom>() != null || roomObj.name.ToLower().Contains("containmentroom") || roomObj.name.ToLower().Contains("containment room");
+                if (isContainmentRoom)
+                {
+                    Bounds roomBounds = RoomPlacementPreview.GetAccurateBounds(roomObj);
+                    if (cuBounds.min.x >= roomBounds.min.x &&
+                        cuBounds.max.x <= roomBounds.max.x &&
+                        cuBounds.min.y >= roomBounds.min.y &&
+                        cuBounds.max.y <= roomBounds.max.y)
+                    {
+                        parentRoomObj = roomObj;
+                        break;
+                    }
+                }
+            }
+
+            if (parentRoomObj != null)
+            {
+                confirmedObj.transform.SetParent(parentRoomObj.transform, true);
+            }
+
+            placedContainmentUnits.Add(confirmedObj);
+
+            if (!isRepositioningExisting && !string.IsNullOrEmpty(activePlantInstanceId))
+            {
+                placedPlantInstanceIds.Add(activePlantInstanceId);
+            }
+
+            // Strip any remaining scripts
+            MonoBehaviour[] scripts = confirmedObj.GetComponentsInChildren<MonoBehaviour>(true);
+            foreach (var script in scripts)
+            {
+                if (script != null) DestroyImmediate(script);
+            }
+        }
+        else
+        {
+            // It is a room!
+            placedRooms.Add(confirmedObj);
+
+            // Hanya kurangi stok jika room baru dari UI card (bukan room lama yang dipindahkan)
+            if (!isRepositioningExisting && activeItemData != null)
+            {
+                activeItemData.count--;
+
+                // Simpan pembaruan stok ke room_inventory.json
+                if (RoomInventorySaveSystem.Instance != null)
+                {
+                    RoomInventorySaveSystem.Instance.SaveFromItemDataList(inventoryItems);
+                }
             }
         }
 
         activePreview = null;
         activeItemData = null;
+        activePlantInstanceId = null;
+        activePlantId = null;
         isDraggingPreview = false;
         isRepositioningExisting = false;
 
         HideConfirmationUI();
         RefreshInventoryUI();
+
+        // Refresh left UI panel
+        RoomCreatorSetup.RefreshLeftContainmentPanel(placedPlantInstanceIds);
     }
 
     /// <summary>
@@ -525,7 +693,39 @@ public class RoomCreatorManager : MonoBehaviour
 
                 GameObject roomObj = activePreview.gameObject;
                 activePreview.ConfirmPlacement();
-                placedRooms.Add(roomObj);
+
+                if (roomObj.name.Contains("ContainmentUnit"))
+                {
+                    // Find target room and parent it back
+                    Bounds cuBounds = RoomPlacementPreview.GetAccurateBounds(roomObj);
+                    GameObject parentRoomObj = null;
+                    foreach (GameObject rObj in placedRooms)
+                    {
+                        if (rObj == null) continue;
+                        bool isContainmentRoom = rObj.GetComponent<ContainmentRoom>() != null || rObj.name.ToLower().Contains("containmentroom") || rObj.name.ToLower().Contains("containment room");
+                        if (isContainmentRoom)
+                        {
+                            Bounds roomBounds = RoomPlacementPreview.GetAccurateBounds(rObj);
+                            if (cuBounds.min.x >= roomBounds.min.x &&
+                                cuBounds.max.x <= roomBounds.max.x &&
+                                cuBounds.min.y >= roomBounds.min.y &&
+                                cuBounds.max.y <= roomBounds.max.y)
+                            {
+                                parentRoomObj = rObj;
+                                break;
+                            }
+                        }
+                    }
+                    if (parentRoomObj != null)
+                    {
+                        roomObj.transform.SetParent(parentRoomObj.transform, true);
+                    }
+                    placedContainmentUnits.Add(roomObj);
+                }
+                else
+                {
+                    placedRooms.Add(roomObj);
+                }
             }
             else
             {
@@ -537,9 +737,12 @@ public class RoomCreatorManager : MonoBehaviour
         }
 
         activeItemData = null;
+        activePlantInstanceId = null;
+        activePlantId = null;
         isDraggingPreview = false;
         isRepositioningExisting = false;
         HideConfirmationUI();
+        RoomCreatorSetup.RefreshLeftContainmentPanel(placedPlantInstanceIds);
     }
 
     /// <summary>
@@ -612,6 +815,32 @@ public class RoomCreatorManager : MonoBehaviour
                 }
             }
 
+            List<ContainmentUnitSaveData> roomCus = new List<ContainmentUnitSaveData>();
+            if (typeName == "ContainmentRoom" || typeName.Contains("Containment"))
+            {
+                foreach (GameObject cuObj in placedContainmentUnits)
+                {
+                    if (cuObj == null) continue;
+                    if (cuObj.transform.parent == roomObj.transform)
+                    {
+                        string cuName = cuObj.name; // name is "ContainmentUnit:plantInstanceId:plantId"
+                        string[] parts = cuName.Split(':');
+                        string instanceId = parts.Length > 1 ? parts[1] : "";
+                        string plantId = parts.Length > 2 ? parts[2] : "";
+
+                        Vector3 localPos = roomObj.transform.InverseTransformPoint(cuObj.transform.position);
+
+                        roomCus.Add(new ContainmentUnitSaveData
+                        {
+                            unitName = "Containment Unit",
+                            monsterPrefabName = plantId,
+                            localPosition = localPos,
+                            plantInstanceId = instanceId
+                        });
+                    }
+                }
+            }
+
             RoomSaveData roomData = new RoomSaveData
             {
                 roomType = typeName,
@@ -622,7 +851,7 @@ public class RoomCreatorManager : MonoBehaviour
                 isLocked = roomComp != null ? roomComp.IsLocked : false,
                 isPoisoned = roomComp != null ? roomComp.IsPoisoned : false,
                 isSterilizing = roomComp != null ? roomComp.IsSterilizing : false,
-                containmentUnits = new List<ContainmentUnitSaveData>(),
+                containmentUnits = roomCus,
                 employeesToSpawn = emps
             };
 
@@ -665,6 +894,16 @@ public class RoomCreatorManager : MonoBehaviour
             }
         }
         placedRooms.Clear();
+
+        foreach (GameObject cuObj in placedContainmentUnits)
+        {
+            if (cuObj != null)
+            {
+                Destroy(cuObj);
+            }
+        }
+        placedContainmentUnits.Clear();
+        placedPlantInstanceIds.Clear();
 
         string jsonText = "";
 
@@ -773,6 +1012,76 @@ public class RoomCreatorManager : MonoBehaviour
                     }
                 }
 
+                // Load containment units if it is a ContainmentRoom
+                if (roomData.roomType == "ContainmentRoom" || roomData.roomType.Contains("Containment"))
+                {
+                    foreach (var unitData in roomData.containmentUnits)
+                    {
+                        GameObject cuPrefab = FindPrefabForRoom("Prefab_ContainmentUnit", "Containment Unit");
+                        if (cuPrefab == null)
+                        {
+                            cuPrefab = Resources.Load<GameObject>("Rooms/Prefab_ContainmentUnit");
+                        }
+
+                        if (cuPrefab != null)
+                        {
+                            bool originalActive = cuPrefab.activeSelf;
+                            cuPrefab.SetActive(false);
+                            GameObject cuObj = Instantiate(cuPrefab, roomObj.transform);
+                            cuPrefab.SetActive(originalActive);
+
+                            cuObj.name = $"ContainmentUnit:{unitData.plantInstanceId}:{unitData.monsterPrefabName}";
+                            cuObj.transform.localPosition = unitData.localPosition;
+                            cuObj.transform.localScale = new Vector3(0.35f, 0.35f, 1f);
+
+                            // Load the monster prefab
+                            GameObject monsterPrefab = LoadPrefabDynamic(unitData.monsterPrefabName);
+                            GameObject monsterInstance = null;
+                            if (monsterPrefab != null)
+                            {
+                                bool monsterOriginalActive = monsterPrefab.activeSelf;
+                                monsterPrefab.SetActive(false);
+                                monsterInstance = Instantiate(monsterPrefab, cuObj.transform);
+                                monsterPrefab.SetActive(monsterOriginalActive);
+
+                                monsterInstance.name = $"Monster_{unitData.monsterPrefabName}";
+                                monsterInstance.transform.localPosition = Vector3.zero;
+                                monsterInstance.transform.localScale = Vector3.one;
+                            }
+
+                            // Strip scripts
+                            MonoBehaviour[] scripts = cuObj.GetComponentsInChildren<MonoBehaviour>(true);
+                            foreach (var script in scripts)
+                            {
+                                if (script != null) DestroyImmediate(script);
+                            }
+
+                            // Set sorting orders
+                            SpriteRenderer cuRenderer = cuObj.GetComponent<SpriteRenderer>();
+                            if (cuRenderer != null)
+                            {
+                                cuRenderer.sortingOrder = 5;
+                                if (monsterInstance != null)
+                                {
+                                    SpriteRenderer[] monsterRenderers = monsterInstance.GetComponentsInChildren<SpriteRenderer>(true);
+                                    foreach (var mr in monsterRenderers)
+                                    {
+                                        if (mr != null) mr.sortingOrder = cuRenderer.sortingOrder + 1;
+                                    }
+                                }
+                            }
+
+                            cuObj.SetActive(true);
+                            placedContainmentUnits.Add(cuObj);
+
+                            if (!string.IsNullOrEmpty(unitData.plantInstanceId))
+                            {
+                                placedPlantInstanceIds.Add(unitData.plantInstanceId);
+                            }
+                        }
+                    }
+                }
+
                 placedRooms.Add(roomObj);
             }
             else
@@ -782,6 +1091,7 @@ public class RoomCreatorManager : MonoBehaviour
         }
 
         Debug.Log($"[RoomCreatorManager] Loaded {placedRooms.Count} rooms into editor scene.");
+        RoomCreatorSetup.RefreshLeftContainmentPanel(placedPlantInstanceIds);
     }
 
     /// <summary>
@@ -844,6 +1154,17 @@ public class RoomCreatorManager : MonoBehaviour
         }
         placedRooms.Clear();
 
+        // Kembalikan & hapus containment units
+        foreach (GameObject cuObj in placedContainmentUnits)
+        {
+            if (cuObj != null)
+            {
+                Destroy(cuObj);
+            }
+        }
+        placedContainmentUnits.Clear();
+        placedPlantInstanceIds.Clear();
+
         // Simpan stok inventaris yang sudah dikembalikan ke room_inventory.json
         if (RoomInventorySaveSystem.Instance != null)
         {
@@ -852,8 +1173,9 @@ public class RoomCreatorManager : MonoBehaviour
 
         RefreshInventoryUI();
         HideConfirmationUI();
+        RoomCreatorSetup.RefreshLeftContainmentPanel(placedPlantInstanceIds);
         SetStatusMessage("Layout di-reset! Semua room yang terpasang telah dikembalikan ke inventaris.");
-        Debug.Log("[RoomCreatorManager] Layout reset complete. Placed rooms returned to inventory.");
+        Debug.Log("[RoomCreatorManager] Layout reset complete. Placed rooms and containment units cleared.");
     }
 
     private RoomInventoryItemData FindMatchingInventoryItem(GameObject roomObj)

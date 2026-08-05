@@ -3,7 +3,7 @@
         {
             "roomTypeId": "HallRoom",
             "displayName": "Hall Room",
-            "count": 101
+            "count": 102
         },
         {
             "roomTypeId": "MainRoom",
@@ -13,7 +13,7 @@
         {
             "roomTypeId": "DivisionBotanist",
             "displayName": "Botanist Room",
-            "count": 102
+            "count": 101
         },
         {
             "roomTypeId": "Lift",
@@ -23,7 +23,7 @@
         {
             "roomTypeId": "ContainmentRoom",
             "displayName": "Containment Room",
-            "count": 102
+            "count": 101
         }
     ]
 }
