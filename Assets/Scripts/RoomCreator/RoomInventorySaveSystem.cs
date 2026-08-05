@@ -173,7 +173,8 @@ public class RoomInventorySaveSystem : MonoBehaviour
                 new RoomInventoryItemSaveData("HallRoom", "Hall Room", 4),
                 new RoomInventoryItemSaveData("MainRoom", "Main Hall", 1),
                 new RoomInventoryItemSaveData("DivisionBotanist", "Botanist Room", 4),
-                new RoomInventoryItemSaveData("Lift", "Lift", 2)
+                new RoomInventoryItemSaveData("Lift", "Lift", 2),
+                new RoomInventoryItemSaveData("ContainmentRoom", "Containment Room", 2)
             }
         };
     }

@@ -82,10 +82,19 @@ public class ExportRoomLayoutTool : EditorWindow
                 {
                     if (unit != null)
                     {
+                        string instanceId = "";
+                        if (unit.gameObject.name.Contains(":"))
+                        {
+                            string[] nameParts = unit.gameObject.name.Split(':');
+                            if (nameParts.Length > 1) instanceId = nameParts[1];
+                        }
+
                         var unitData = new ContainmentUnitSaveData
                         {
                             unitName = unit.UnitName,
-                            monsterPrefabName = ""
+                            monsterPrefabName = "",
+                            localPosition = unit.transform.localPosition,
+                            plantInstanceId = instanceId
                         };
 
                         // Use reflection to get the private monsterPrefab field assigned in Inspector

@@ -81,6 +81,12 @@ public class RoomPlacementPreview : MonoBehaviour
         isCurrentlySnapped = false;
         snappedTargetRoom = null;
 
+        // Skip snapping for containment units so they can be placed freely inside a room
+        if (gameObject.name.Contains("ContainmentUnit"))
+        {
+            return;
+        }
+
         // Grid snapping opsional jika diaktifkan
         if (snapGrid && gridStep > 0.001f)
         {
@@ -224,8 +230,83 @@ public class RoomPlacementPreview : MonoBehaviour
     /// Memeriksa apakah room preview valid untuk diletakkan.
     /// Memeriksa aturan keterikatan room non-MainHall, aturan Lift, dan overlap detection.
     /// </summary>
-    public bool CheckValidity(List<GameObject> placedRooms)
+    public bool CheckValidity(List<GameObject> placedRooms, List<GameObject> placedContainmentUnits = null)
     {
+        bool isCu = gameObject.name.Contains("ContainmentUnit");
+        if (isCu)
+        {
+            // Aturan Containment Unit:
+            // 1. Harus berada di dalam salah satu Containment Room yang sudah ditempatkan.
+            bool insideContainmentRoom = false;
+            Bounds previewBounds = GetAccurateBounds(gameObject);
+
+            if (placedRooms != null)
+            {
+                foreach (GameObject roomObj in placedRooms)
+                {
+                    if (roomObj == null) continue;
+                    bool isContainmentRoom = roomObj.GetComponent<ContainmentRoom>() != null || roomObj.name.ToLower().Contains("containmentroom") || roomObj.name.ToLower().Contains("containment room");
+                    if (isContainmentRoom)
+                    {
+                        Bounds roomBounds = GetAccurateBounds(roomObj);
+                        // Check if preview bounds are completely within room bounds
+                        if (previewBounds.min.x >= roomBounds.min.x &&
+                            previewBounds.max.x <= roomBounds.max.x &&
+                            previewBounds.min.y >= roomBounds.min.y &&
+                            previewBounds.max.y <= roomBounds.max.y)
+                        {
+                            insideContainmentRoom = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!insideContainmentRoom)
+            {
+                currentValidity = false;
+                return false;
+            }
+
+            // 2. Tidak boleh bertumpukan dengan containment unit lain yang sudah diletakkan.
+            if (previewColliders == null || previewColliders.Length == 0)
+            {
+                previewColliders = GetComponentsInChildren<Collider2D>(true);
+            }
+
+            if (previewColliders != null && previewColliders.Length > 0 && placedContainmentUnits != null)
+            {
+                foreach (GameObject otherUnit in placedContainmentUnits)
+                {
+                    if (otherUnit == null || otherUnit == gameObject) continue;
+
+                    Collider2D[] otherColliders = otherUnit.GetComponentsInChildren<Collider2D>(true);
+                    foreach (Collider2D pCol in previewColliders)
+                    {
+                        if (pCol == null || !pCol.enabled) continue;
+
+                        Bounds pBounds = pCol.bounds;
+                        // Shrink bounds slightly to allow snug fitting next to each other
+                        pBounds.Expand(new Vector3(-0.05f, -0.05f, 0f));
+
+                        foreach (Collider2D oCol in otherColliders)
+                        {
+                            if (oCol == null || !oCol.enabled) continue;
+
+                            if (pBounds.Intersects(oCol.bounds))
+                            {
+                                currentValidity = false;
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            currentValidity = true;
+            return true;
+        }
+
         // ATURAN 1: Room selain Main Hall TIDAK BOLEH melayang bebas jika sudah ada room di scene!
         // Wajib tersnapped / nempel ke room lain.
         if (placedRooms != null && placedRooms.Count > 0 && !IsMainHall)
@@ -293,6 +374,7 @@ public class RoomPlacementPreview : MonoBehaviour
 
                         if (pBounds.Intersects(oCol.bounds))
                         {
+                            Debug.LogWarning($"[RoomPlacementPreview] Overlap detected! Preview collider '{pCol.gameObject.name}' ({pCol.GetType().Name}) bounds {pBounds} intersects with placed room '{placedRoom.name}' collider '{oCol.gameObject.name}' ({oCol.GetType().Name}) bounds {oCol.bounds}");
                             currentValidity = false;
                             return false;
                         }

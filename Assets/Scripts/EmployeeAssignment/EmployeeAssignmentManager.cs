@@ -13,10 +13,8 @@ public class EmployeeAssignmentManager : MonoBehaviour
     public static EmployeeAssignmentManager Instance { get; private set; }
 
     [Header("Room Prefabs")]
-    [SerializeField] private GameObject hallRoomPrefab;
-    [SerializeField] private GameObject mainHallPrefab;
-    [SerializeField] private GameObject botanistRoomPrefab;
-    [SerializeField] private GameObject liftPrefab;
+    [SerializeField] private List<GameObject> roomPrefabs = new List<GameObject>();
+    private Dictionary<string, GameObject> roomPrefabMap = new Dictionary<string, GameObject>();
 
     [Header("Employee Prefabs")]
     [SerializeField] private List<GameObject> employeePrefabs = new List<GameObject>();
@@ -38,8 +36,8 @@ public class EmployeeAssignmentManager : MonoBehaviour
 
     // Mapping: Employee Name -> DivisionRoom they are currently assigned to
     private Dictionary<string, DivisionRoom> employeeRoomMap = new Dictionary<string, DivisionRoom>();
-    // Mapping: DivisionRoom -> World Text Gameobject/TextMeshPro
-    private Dictionary<DivisionRoom, TextMeshPro> roomOverlayMap = new Dictionary<DivisionRoom, TextMeshPro>();
+    // Mapping: Room -> World Text Gameobject/TextMeshPro
+    private Dictionary<Room, TextMeshPro> roomOverlayMap = new Dictionary<Room, TextMeshPro>();
 
     private EmployeeInventoryCardUI selectedCard;
 
@@ -62,6 +60,40 @@ public class EmployeeAssignmentManager : MonoBehaviour
             if (!employeePrefabMap.ContainsKey(prefab.name))
             {
                 employeePrefabMap.Add(prefab.name, prefab);
+            }
+        }
+
+        InitializePrefabMap();
+    }
+
+    private void InitializePrefabMap()
+    {
+        roomPrefabMap.Clear();
+        foreach (var prefab in roomPrefabs)
+        {
+            if (prefab == null) continue;
+
+            if (!roomPrefabMap.ContainsKey(prefab.name))
+            {
+                roomPrefabMap.Add(prefab.name, prefab);
+            }
+            if (prefab.name.StartsWith("Prefab_"))
+            {
+                string shortName = prefab.name.Substring(7);
+                if (!roomPrefabMap.ContainsKey(shortName))
+                {
+                    roomPrefabMap.Add(shortName, prefab);
+                }
+            }
+
+            Room roomComp = prefab.GetComponent<Room>();
+            if (roomComp != null)
+            {
+                string typeName = roomComp.GetType().Name;
+                if (!roomPrefabMap.ContainsKey(typeName))
+                {
+                    roomPrefabMap.Add(typeName, prefab);
+                }
             }
         }
     }
@@ -112,6 +144,11 @@ public class EmployeeAssignmentManager : MonoBehaviour
     /// </summary>
     private void LoadRoomLayout(string fileName)
     {
+        if (roomPrefabMap == null || roomPrefabMap.Count == 0)
+        {
+            InitializePrefabMap();
+        }
+
         // Clean up any existing rooms
         foreach (var room in placedRooms)
         {
@@ -175,6 +212,7 @@ public class EmployeeAssignmentManager : MonoBehaviour
                 GameObject roomObj = Instantiate(prefab, roomData.position, Quaternion.identity);
                 roomObj.transform.localScale = roomData.scale;
                 roomObj.name = roomData.roomName;
+                DisableGameplayScripts(roomObj);
 
                 // Strip placement helpers/previews so they are NOT clickable/movable for building
                 RoomPlacementPreview previewComp = roomObj.GetComponent<RoomPlacementPreview>();
@@ -197,6 +235,95 @@ public class EmployeeAssignmentManager : MonoBehaviour
                     {
                         LoadDivisionRoomAssignments(divisionRoom, roomData);
                         CreateRoomOverlay(divisionRoom);
+                    }
+                    else if (roomComp is ContainmentRoom containmentRoom)
+                    {
+                        CreateRoomOverlay(roomComp);
+
+                        // Clear any pre-placed containment units first to prevent duplicates
+                        var oldUnits = new List<ContainmentUnit>(containmentRoom.ContainmentUnits);
+                        foreach (var oldUnit in oldUnits)
+                        {
+                            if (oldUnit != null) DestroyImmediate(oldUnit.gameObject);
+                        }
+                        
+                        var fieldClear = typeof(ContainmentRoom).GetField("containmentUnits", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (fieldClear != null)
+                        {
+                            var list = fieldClear.GetValue(containmentRoom) as System.Collections.IList;
+                            if (list != null) list.Clear();
+                        }
+
+                        // Load and instantiate saved containment units
+                        foreach (var unitData in roomData.containmentUnits)
+                        {
+                            GameObject cuPrefab = FindPrefabForRoom("Prefab_ContainmentUnit", "Containment Unit");
+                            if (cuPrefab == null)
+                            {
+                                cuPrefab = LoadPrefabDynamic("Prefab_ContainmentUnit");
+                            }
+
+                            if (cuPrefab != null)
+                            {
+                                bool originalActive = cuPrefab.activeSelf;
+                                cuPrefab.SetActive(false);
+                                GameObject cuObj = Instantiate(cuPrefab, roomObj.transform);
+                                cuPrefab.SetActive(originalActive);
+
+                                cuObj.name = $"ContainmentUnit:{unitData.plantInstanceId}:{unitData.monsterPrefabName}";
+                                cuObj.transform.localPosition = unitData.localPosition;
+                                cuObj.transform.localScale = new Vector3(0.35f, 0.35f, 1f);
+
+                                ContainmentUnit unit = cuObj.GetComponent<ContainmentUnit>();
+                                if (unit != null)
+                                {
+                                    unit.UnitName = unitData.unitName;
+                                    containmentRoom.AddContainmentUnit(unit);
+
+                                    // Spawn monster visual inside it
+                                    GameObject monsterPrefab = LoadPrefabDynamic(unitData.monsterPrefabName);
+                                    GameObject monsterInstance = null;
+                                    if (monsterPrefab != null)
+                                    {
+                                        bool monsterOriginalActive = monsterPrefab.activeSelf;
+                                        monsterPrefab.SetActive(false);
+                                        monsterInstance = Instantiate(monsterPrefab, cuObj.transform);
+                                        monsterPrefab.SetActive(monsterOriginalActive);
+
+                                        monsterInstance.name = $"Monster_{unitData.monsterPrefabName}";
+                                        monsterInstance.transform.localPosition = Vector3.zero;
+                                        monsterInstance.transform.localScale = Vector3.one;
+                                    }
+
+                                    // Strip other MonoBehaviour scripts except ContainmentUnit so we can click it if needed
+                                    MonoBehaviour[] scripts = cuObj.GetComponentsInChildren<MonoBehaviour>(true);
+                                    foreach (var script in scripts)
+                                    {
+                                        if (script != null && !(script is ContainmentUnit))
+                                        {
+                                            DestroyImmediate(script);
+                                        }
+                                    }
+
+                                    // Set sorting orders
+                                    SpriteRenderer cuRenderer = cuObj.GetComponent<SpriteRenderer>();
+                                    if (cuRenderer != null)
+                                    {
+                                        cuRenderer.sortingOrder = 5;
+                                        if (monsterInstance != null)
+                                        {
+                                            SpriteRenderer[] monsterRenderers = monsterInstance.GetComponentsInChildren<SpriteRenderer>(true);
+                                            foreach (var mr in monsterRenderers)
+                                            {
+                                                if (mr != null) mr.sortingOrder = cuRenderer.sortingOrder + 1;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                cuObj.SetActive(true);
+                            }
+                        }
                     }
                 }
 
@@ -247,7 +374,7 @@ public class EmployeeAssignmentManager : MonoBehaviour
         }
     }
 
-    private void CreateRoomOverlay(DivisionRoom room)
+    private void CreateRoomOverlay(Room room)
     {
         // Create world-space TextMeshPro above the room
         GameObject overlayObj = new GameObject($"Overlay_{room.RoomName}", typeof(TextMeshPro));
@@ -268,35 +395,73 @@ public class EmployeeAssignmentManager : MonoBehaviour
     {
         foreach (var pair in roomOverlayMap)
         {
-            DivisionRoom room = pair.Key;
+            Room room = pair.Key;
             TextMeshPro tmp = pair.Value;
 
             if (room == null || tmp == null) continue;
 
-            // Find all employees assigned to this room
-            List<string> assignedEmps = new List<string>();
-            foreach (var mapPair in employeeRoomMap)
+            if (room is DivisionRoom divisionRoom)
             {
-                if (mapPair.Value == room)
+                // Find all employees assigned to this room
+                List<string> assignedEmps = new List<string>();
+                foreach (var mapPair in employeeRoomMap)
                 {
-                    assignedEmps.Add(mapPair.Key);
+                    if (mapPair.Value == divisionRoom)
+                    {
+                        assignedEmps.Add(mapPair.Key);
+                    }
                 }
+
+                string cleanRoomName = room.RoomName;
+                string listString = assignedEmps.Count > 0 ? string.Join("\n- ", assignedEmps) : "[None]";
+
+                tmp.text = $"<color=#7FC2FF><b>{cleanRoomName}</b></color>\nAssigned:\n- {listString}";
             }
-
-            string cleanRoomName = room.RoomName;
-            string listString = assignedEmps.Count > 0 ? string.Join("\n- ", assignedEmps) : "[None]";
-
-            tmp.text = $"<color=#7FC2FF><b>{cleanRoomName}</b></color>\nAssigned:\n- {listString}";
+            else
+            {
+                string cleanRoomName = room.RoomName;
+                tmp.text = $"<color=#CCCCCC><b>{cleanRoomName}</b></color>";
+            }
         }
     }
 
     private GameObject FindPrefabForRoom(string roomType, string roomName)
     {
-        string nameLower = roomName.ToLower();
-        if (nameLower.Contains("hall room") || roomType == "HallRoom") return hallRoomPrefab;
-        if (nameLower.Contains("main") || roomType == "MainRoom") return mainHallPrefab;
-        if (nameLower.Contains("botanist") || roomType == "DivisionBotanist") return botanistRoomPrefab;
-        if (nameLower.Contains("lift") || roomType == "Lift") return liftPrefab;
+        if (string.IsNullOrEmpty(roomType) && string.IsNullOrEmpty(roomName)) return null;
+
+        if (!string.IsNullOrEmpty(roomType) && roomPrefabMap.TryGetValue(roomType, out GameObject p1) && p1 != null) return p1;
+        if (!string.IsNullOrEmpty(roomName) && roomPrefabMap.TryGetValue(roomName, out GameObject p2) && p2 != null) return p2;
+
+        if (!string.IsNullOrEmpty(roomName))
+        {
+            string cleanDisplayName = roomName.Replace(" ", "");
+            if (roomPrefabMap.TryGetValue(cleanDisplayName, out GameObject p3) && p3 != null) return p3;
+        }
+
+        // Dynamic fallback loading
+        GameObject loaded = Resources.Load<GameObject>($"Rooms/Prefab_{roomType}");
+        if (loaded != null) return loaded;
+        loaded = Resources.Load<GameObject>($"Rooms/{roomType}");
+        if (loaded != null) return loaded;
+        loaded = Resources.Load<GameObject>($"Prefab_{roomType}");
+        if (loaded != null) return loaded;
+        loaded = Resources.Load<GameObject>(roomType);
+        if (loaded != null) return loaded;
+
+#if UNITY_EDITOR
+        string[] guids = UnityEditor.AssetDatabase.FindAssets($"Prefab_{roomType} t:Prefab");
+        if (guids.Length == 0)
+        {
+            guids = UnityEditor.AssetDatabase.FindAssets($"{roomType} t:Prefab");
+        }
+        if (guids.Length > 0)
+        {
+            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]);
+            GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab != null) return prefab;
+        }
+#endif
+
         return null;
     }
 
@@ -523,13 +688,49 @@ public class EmployeeAssignmentManager : MonoBehaviour
 
     public void SaveLayout(string fileName = "room_layout_1.json")
     {
-        FacilityLayoutData layoutData = new FacilityLayoutData
+        string jsonText = "";
+
+#if UNITY_EDITOR
+        string editorPath = Path.Combine(Application.dataPath, "Resources", fileName);
+        if (File.Exists(editorPath))
         {
-            defaultRoomTemperature = 20f,
-            maxElectricity = 100f,
-            maxEnergy = 100f,
-            rooms = new List<RoomSaveData>()
-        };
+            jsonText = File.ReadAllText(editorPath);
+        }
+#endif
+
+        if (string.IsNullOrEmpty(jsonText))
+        {
+            string savePath = Path.Combine(Application.persistentDataPath, fileName);
+            if (File.Exists(savePath))
+            {
+                jsonText = File.ReadAllText(savePath);
+            }
+            else
+            {
+                TextAsset targetAsset = Resources.Load<TextAsset>(fileName.Replace(".json", ""));
+                if (targetAsset != null)
+                {
+                    jsonText = targetAsset.text;
+                }
+            }
+        }
+
+        FacilityLayoutData layoutData = null;
+        if (!string.IsNullOrEmpty(jsonText))
+        {
+            layoutData = JsonUtility.FromJson<FacilityLayoutData>(jsonText);
+        }
+
+        if (layoutData == null || layoutData.rooms == null)
+        {
+            layoutData = new FacilityLayoutData
+            {
+                defaultRoomTemperature = 20f,
+                maxElectricity = 100f,
+                maxEnergy = 100f,
+                rooms = new List<RoomSaveData>()
+            };
+        }
 
         foreach (GameObject roomObj in placedRooms)
         {
@@ -538,8 +739,48 @@ public class EmployeeAssignmentManager : MonoBehaviour
             Room roomComp = roomObj.GetComponent<Room>();
             if (roomComp == null) continue;
 
-            string typeName = roomComp.GetType().Name;
-            string displayName = roomComp.RoomName;
+            RoomSaveData roomData = null;
+            
+            // Try position matching first
+            foreach (var rData in layoutData.rooms)
+            {
+                if (rData != null && Vector3.Distance(roomObj.transform.position, rData.position) < 0.05f)
+                {
+                    roomData = rData;
+                    break;
+                }
+            }
+
+            // Try name matching as fallback
+            if (roomData == null)
+            {
+                foreach (var rData in layoutData.rooms)
+                {
+                    if (rData != null && rData.roomName == roomComp.RoomName)
+                    {
+                        roomData = rData;
+                        break;
+                    }
+                }
+            }
+
+            if (roomData == null)
+            {
+                roomData = new RoomSaveData
+                {
+                    roomType = roomComp.GetType().Name,
+                    roomName = roomComp.RoomName,
+                    position = roomObj.transform.position,
+                    scale = roomObj.transform.localScale,
+                    temperature = roomComp.Temperature,
+                    isLocked = roomComp.IsLocked,
+                    isPoisoned = roomComp.IsPoisoned,
+                    isSterilizing = roomComp.IsSterilizing,
+                    containmentUnits = new List<ContainmentUnitSaveData>(),
+                    employeesToSpawn = new List<EmployeeSaveData>()
+                };
+                layoutData.rooms.Add(roomData);
+            }
 
             List<EmployeeSaveData> emps = new List<EmployeeSaveData>();
             if (roomComp is DivisionRoom divisionRoom)
@@ -571,49 +812,7 @@ public class EmployeeAssignmentManager : MonoBehaviour
                 }
             }
 
-            RoomSaveData roomData = new RoomSaveData
-            {
-                roomType = typeName,
-                roomName = displayName,
-                position = roomObj.transform.position,
-                scale = roomObj.transform.localScale,
-                temperature = roomComp.Temperature,
-                isLocked = roomComp.IsLocked,
-                isPoisoned = roomComp.IsPoisoned,
-                isSterilizing = roomComp.IsSterilizing,
-                containmentUnits = new List<ContainmentUnitSaveData>(),
-                employeesToSpawn = emps
-            };
-
-            // Containment room units saving
-            if (roomComp is ContainmentRoom containmentRoom)
-            {
-                foreach (var unit in containmentRoom.ContainmentUnits)
-                {
-                    if (unit != null)
-                    {
-                        var unitData = new ContainmentUnitSaveData
-                        {
-                            unitName = unit.UnitName,
-                            monsterPrefabName = ""
-                        };
-
-                        var field = typeof(ContainmentUnit).GetField("monsterPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                        if (field != null)
-                        {
-                            GameObject monsterPrefabGo = (GameObject)field.GetValue(unit);
-                            if (monsterPrefabGo != null)
-                            {
-                                unitData.monsterPrefabName = monsterPrefabGo.name;
-                            }
-                        }
-
-                        roomData.containmentUnits.Add(unitData);
-                    }
-                }
-            }
-
-            layoutData.rooms.Add(roomData);
+            roomData.employeesToSpawn = emps;
         }
 
         string jsonString = JsonUtility.ToJson(layoutData, true);
@@ -833,4 +1032,69 @@ public class EmployeeAssignmentManager : MonoBehaviour
         return true;
     }
 #endif
+
+    private void DisableGameplayScripts(GameObject roomObj)
+    {
+        if (roomObj == null) return;
+
+        // Manually configure BoxCollider2D for the Room since its Start() won't run when disabled
+        Room roomComp = roomObj.GetComponent<Room>();
+        if (roomComp != null)
+        {
+            BoxCollider2D col = roomObj.GetComponent<BoxCollider2D>();
+            if (col != null)
+            {
+                col.isTrigger = true;
+                SpriteRenderer sr = roomObj.GetComponent<SpriteRenderer>();
+                if (sr != null && sr.sprite != null)
+                {
+                    col.size = sr.sprite.bounds.size;
+                    col.offset = sr.sprite.bounds.center;
+                }
+            }
+        }
+
+        MonoBehaviour[] scripts = roomObj.GetComponentsInChildren<MonoBehaviour>(true);
+        foreach (MonoBehaviour script in scripts)
+        {
+            if (script == null) continue;
+            if (script is RoomPlacementPreview) continue;
+
+            System.Type type = script.GetType();
+            string assemblyName = type.Assembly.GetName().Name;
+            if (assemblyName == "Assembly-CSharp" || assemblyName.StartsWith("Assembly-CSharp-firstpass"))
+            {
+                script.enabled = false;
+            }
+        }
+    }
+
+    private GameObject LoadPrefabDynamic(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return null;
+
+        GameObject loaded = Resources.Load<GameObject>($"Rooms/Prefab_{name}");
+        if (loaded != null) return loaded;
+        loaded = Resources.Load<GameObject>($"Rooms/{name}");
+        if (loaded != null) return loaded;
+        loaded = Resources.Load<GameObject>($"Prefab_{name}");
+        if (loaded != null) return loaded;
+        loaded = Resources.Load<GameObject>(name);
+        if (loaded != null) return loaded;
+
+#if UNITY_EDITOR
+        string[] guids = UnityEditor.AssetDatabase.FindAssets($"Prefab_{name} t:Prefab");
+        if (guids.Length == 0)
+        {
+            guids = UnityEditor.AssetDatabase.FindAssets($"{name} t:Prefab");
+        }
+        if (guids.Length > 0)
+        {
+            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]);
+            GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab != null) return prefab;
+        }
+#endif
+        return null;
+    }
 }

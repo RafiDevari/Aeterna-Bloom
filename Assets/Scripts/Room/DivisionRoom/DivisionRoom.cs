@@ -9,12 +9,9 @@ using UnityEngine;
 /// Employee.cs).
 ///
 /// SPAWN: tiap DivisionRoom punya daftar employee "tersimpan" (employeesToSpawn) yang
-/// dikonfigurasi lewat Inspector. Begitu scene mulai (Start), semua entry di-instantiate dari
-/// prefab-nya, ditaruh di posisi room ini, otomatis di-assign ke divisi ini (AssignDivision),
-/// dan keahliannya (EmployeeDivision) otomatis dipaksa ikut tipe room ini lewat
-/// EmployeeDivisionType (lihat DivisionBotanist/DivisionResearcher) -- jadi employee manapun
-/// yang ditaruh di list DivisionBotanist otomatis jadi EmployeeDivision.Botanist, dst, tanpa
-/// perlu di-set manual satu-satu di tiap prefab.
+/// dikonfigurasi lewat Inspector/EmployeeAssignment. Begitu scene mulai (Start), semua entry di-instantiate dari
+/// prefab-nya, ditaruh di posisi room ini, dan otomatis di-assign tempat kerjanya ke divisi ini (AssignDivision),
+/// sementara keahliannya (EmployeeDivision) tetap sesuai dengan keahlian bawaan prefab-nya.
 ///
 /// Child class spesifik : DivisionBotanist, DivisionResearcher (nanti bisa nambah lagi, mis.
 /// DivisionClerk dsb).
@@ -33,8 +30,8 @@ public abstract class DivisionRoom : Room
 
     [Header("Employee Spawn")]
     [Tooltip("Daftar employee \"tersimpan\" yang akan di-spawn oleh divisi ini begitu scene mulai. " +
-             "Tiap entry di-instantiate dari employeePrefab, posisi awal di room ini, otomatis " +
-             "di-assign ke divisi ini, dan keahliannya dipaksa ikut EmployeeDivisionType room ini.")]
+             "Tiap entry di-instantiate dari employeePrefab, posisi awal di room ini, dan otomatis " +
+             "di-assign stasiun kerjanya ke divisi ini.")]
     [SerializeField] private List<EmployeeSpawnData> employeesToSpawn = new List<EmployeeSpawnData>();
 
     private readonly List<Employee> assignedEmployees = new List<Employee>();
@@ -43,10 +40,12 @@ public abstract class DivisionRoom : Room
     public IReadOnlyList<Employee> AssignedEmployees => assignedEmployees;
 
     /// <summary>
-    /// Tipe keahlian yang dipaksakan ke semua employee yang di-spawn dari divisi ini.
-    /// Diisi oleh child class spesifik (DivisionBotanist -> Botanist, DivisionResearcher -> Researcher).
+    /// Tipe divisi yang dinaungi oleh room ini (Botanist, Researcher, Security, Medic, Engineer, Clerk).
     /// </summary>
     protected abstract EmployeeDivision EmployeeDivisionType { get; }
+
+    /// <summary>Public accessor untuk tipe divisi room ini.</summary>
+    public EmployeeDivision RoomDivisionType => EmployeeDivisionType;
 
     protected override void Start()
     {
@@ -87,10 +86,10 @@ public abstract class DivisionRoom : Room
             if (!string.IsNullOrEmpty(data.employeeName))
                 employee.EmployeeName = data.employeeName;
 
-            employee.SetDivision(EmployeeDivisionType);
+            // Maintain native EmployeeDivision from prefab (do not overwrite with room's division)
             employee.AssignDivision(this);
 
-            Debug.Log($"[{RoomName}] Spawn employee : {employee.EmployeeName} ({EmployeeDivisionType}).");
+            Debug.Log($"[{RoomName}] Spawn employee : {employee.EmployeeName} ({employee.Division}).");
         }
     }
 

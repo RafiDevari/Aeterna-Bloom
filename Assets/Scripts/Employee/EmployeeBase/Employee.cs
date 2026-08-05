@@ -733,16 +733,26 @@ public partial class Employee : MonoBehaviour
         isMoving = true;
     }
 
+    public virtual float GetEffectiveMoveSpeed()
+    {
+        float speed = (currentState == EmployeeState.Hypnotized) ? hypnotizedMoveSpeed : moveSpeed;
+        if (IsAssignedToMatchingDivision())
+        {
+            speed += 1f;
+        }
+        if (isSick)
+        {
+            speed *= 0.5f;
+        }
+        return speed;
+    }
+
     protected virtual void HandleMovement()
     {
         if (!isMoving)
             return;
 
-        float currentSpeed = (currentState == EmployeeState.Hypnotized) ? hypnotizedMoveSpeed : moveSpeed;
-        if (isSick)
-        {
-            currentSpeed *= 0.7f;
-        }
+        float currentSpeed = GetEffectiveMoveSpeed();
 
         transform.position = Vector3.MoveTowards(
             transform.position,

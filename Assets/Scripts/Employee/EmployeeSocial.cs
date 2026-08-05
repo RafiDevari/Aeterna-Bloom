@@ -117,7 +117,7 @@ public partial class Employee
             }
 
             // MoveTowards dengan kecepatan berjalan halus
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * 0.5f * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, targetPos, GetEffectiveMoveSpeed() * 0.5f * Time.deltaTime);
 
             // Set animasi & arah hadap berjalan
             bool walkLeft = targetPos.x < transform.position.x;

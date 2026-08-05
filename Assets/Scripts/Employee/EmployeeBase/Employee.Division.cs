@@ -27,6 +27,15 @@ public partial class Employee
     /// <summary>Keahlian employee ini (Researcher/Botanist) -- lihat offDivisionMultiplier soal penalti di luar keahlian.</summary>
     public EmployeeDivision Division => division;
 
+    /// <summary>
+    /// Memeriksa apakah keahlian employee (Division) cocok dengan divisi tempat ia ditugaskan (AssignedDivision).
+    /// Jika cocok (misal Botanist ditugaskan di DivisionBotanist, Researcher di DivisionResearcher), mendapat bonus movement speed +1.
+    /// </summary>
+    public bool IsAssignedToMatchingDivision()
+    {
+        return assignedDivision != null && assignedDivision.RoomDivisionType == division;
+    }
+
     //────────────────────────────────────────────────────────
     // Public API
     //────────────────────────────────────────────────────────
