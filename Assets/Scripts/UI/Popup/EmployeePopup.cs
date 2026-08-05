@@ -3,10 +3,12 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Popup modern yang muncul saat Employee di-klik (kanan).
-/// Menampilkan foto/portrait kepala employee di sebelah kiri atas,
-/// nama + divisi di samping kanan portrait, status HP & Mood di dalam stat card,
-/// serta tombol aksi (Close, Heal, Take Care, Back to Division, Test Hair).
+/// Popup ID Card modern yang muncul saat Employee di-klik kanan.
+/// Mengikuti format kartu identitas employee:
+/// - Kiri Atas: Foto / Portrait Kepala Employee (Head)
+/// - Kanan Atas: Nama Employee & Divisi
+/// - Kanan Pojok: Tombol Close (✕)
+/// - Bawah: Bagian "INFO LAIN" (HP, Mood, status, dan tombol aksi interaktif).
 /// </summary>
 public class EmployeePopup : PopupBase
 {
@@ -16,7 +18,7 @@ public class EmployeePopup : PopupBase
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text divisionText;
 
-    [Header("Stats (Optional)")]
+    [Header("Stats")]
     [SerializeField] private TMP_Text hpText;
     [SerializeField] private TMP_Text moodText;
 
@@ -29,9 +31,6 @@ public class EmployeePopup : PopupBase
     [Header("Portrait (Muka)")]
     [Tooltip("Component yang menampilkan portrait kepala employee di popup.")]
     [SerializeField] private EmployeePortraitUI portraitUI;
-
-    [Tooltip("Tombol opsional untuk tes ganti warna rambut (kalau null, pakai debug key F8).")]
-    [SerializeField] private Button testHairColorButton;
 
     private Employee targetEmployee;
 
@@ -52,8 +51,6 @@ public class EmployeePopup : PopupBase
             healSickButton.onClick.AddListener(OnHealSickClicked);
         if (backToDivisionButton != null)
             backToDivisionButton.onClick.AddListener(OnBackToDivisionClicked);
-        if (testHairColorButton != null)
-            testHairColorButton.onClick.AddListener(OnTestHairColorClicked);
 
         Employee.OnAnyEmployeeRightClicked += HandleEmployeeRightClicked;
     }
@@ -68,16 +65,6 @@ public class EmployeePopup : PopupBase
         Open(employee);
     }
 
-    private void Update()
-    {
-        // Debug key F8: tes ganti warna rambut employee yang lagi ditampilkan di popup.
-        // Portrait kepala akan langsung ikut berubah warnanya secara real-time.
-        if (IsOpen && targetEmployee != null && Input.GetKeyDown(KeyCode.F8))
-        {
-            OnTestHairColorClicked();
-        }
-    }
-
     public void Open(Employee employee)
     {
         targetEmployee = employee;
@@ -85,6 +72,7 @@ public class EmployeePopup : PopupBase
         EnsurePortraitUI();
         SetupCardLayout();
 
+        // 1. Nama Employee (Kanan Atas)
         if (nameText != null)
         {
             string nameStr = employee != null ? employee.EmployeeName : "-";
@@ -94,6 +82,7 @@ public class EmployeePopup : PopupBase
             nameText.text = nameStr;
         }
 
+        // 2. Divisi Badge (Kanan Atas di bawah Nama)
         if (divisionText != null)
         {
             if (employee != null)
@@ -109,67 +98,55 @@ public class EmployeePopup : PopupBase
             }
         }
 
+        // 3. Info Lain: HP (Bawah)
         if (hpText != null)
         {
             if (employee != null)
             {
                 float hpPercent = employee.MaxHp > 0 ? (float)employee.Hp / employee.MaxHp : 1f;
                 string hpColor = hpPercent > 0.5f ? "#4ade80" : (hpPercent > 0.25f ? "#facc15" : "#ef4444");
-                string hpStr = $"<color=#94a3b8>HP</color>  <b><color={hpColor}>{employee.Hp}/{employee.MaxHp}</color></b>";
+                string hpStr = $"<color=#94a3b8>HP :</color>  <b><color={hpColor}>{employee.Hp}/{employee.MaxHp}</color></b>";
                 if (employee.IsSick) hpStr += " <color=#ef4444>(SICK)</color>";
                 if (employee.CurrentState == EmployeeState.Sleeping) hpStr += " <color=#38bdf8>(Resting)</color>";
                 hpText.text = hpStr;
             }
             else
             {
-                hpText.text = "<color=#94a3b8>HP</color>  -";
+                hpText.text = "<color=#94a3b8>HP :</color> -";
             }
         }
 
+        // 4. Info Lain: Mood (Bawah)
         if (moodText != null)
         {
             if (employee != null)
             {
                 string moodColor = employee.Mood >= 4 ? "#4ade80" : (employee.Mood >= 2 ? "#facc15" : "#ef4444");
-                moodText.text = $"<color=#94a3b8>MOOD</color>  <b><color={moodColor}>{employee.MoodName} ({employee.Mood}/5)</color></b>";
+                moodText.text = $"<color=#94a3b8>MOOD :</color>  <b><color={moodColor}>{employee.MoodName} ({employee.Mood}/5)</color></b>";
             }
             else
             {
-                moodText.text = "<color=#94a3b8>MOOD</color>  -";
+                moodText.text = "<color=#94a3b8>MOOD :</color> -";
             }
         }
 
-        bool showActions = false;
-
+        // 5. Tombol Aksi Kondisional
         if (takeCareButton != null)
         {
-            bool show = employee != null && employee.CurrentState == EmployeeState.Hypnotized;
-            takeCareButton.gameObject.SetActive(show);
-            if (show) showActions = true;
+            takeCareButton.gameObject.SetActive(employee != null && employee.CurrentState == EmployeeState.Hypnotized);
         }
 
         if (healSickButton != null)
         {
-            bool show = employee != null && employee.IsSick;
-            healSickButton.gameObject.SetActive(show);
-            if (show) showActions = true;
+            healSickButton.gameObject.SetActive(employee != null && employee.IsSick);
         }
 
         if (backToDivisionButton != null)
         {
-            bool show = employee != null && IsMonitoring(employee);
-            backToDivisionButton.gameObject.SetActive(show);
-            if (show) showActions = true;
+            backToDivisionButton.gameObject.SetActive(employee != null && IsMonitoring(employee));
         }
 
-        if (testHairColorButton != null)
-        {
-            testHairColorButton.gameObject.SetActive(true);
-            showActions = true;
-        }
-
-        // Tampilkan portrait "muka" employee (Head + Hair + Eyes + Nose + Mouth).
-        // Portrait akan ngikutin kepala employee & warna rambutnya secara real-time.
+        // 6. Render Foto Muka / Portrait Kepala
         if (portraitUI != null)
         {
             portraitUI.SetEmployee(employee);
@@ -182,12 +159,12 @@ public class EmployeePopup : PopupBase
     {
         return division switch
         {
-            EmployeeDivision.Botanist => "#4ade80",   // Green
+            EmployeeDivision.Botanist => "#4ade80",   // Hijau
             EmployeeDivision.Researcher => "#38bdf8", // Cyan
-            EmployeeDivision.Medic => "#c084fc",      // Purple
-            EmployeeDivision.Security => "#fb923c",   // Orange
-            EmployeeDivision.Engineer => "#facc15",   // Yellow
-            EmployeeDivision.Clerk => "#94a3b8",      // Slate gray
+            EmployeeDivision.Medic => "#c084fc",      // Ungu
+            EmployeeDivision.Security => "#fb923c",   // Oranye
+            EmployeeDivision.Engineer => "#facc15",   // Kuning
+            EmployeeDivision.Clerk => "#94a3b8",      // Abu-abu
             _ => "#94a3b8"
         };
     }
@@ -261,26 +238,11 @@ public class EmployeePopup : PopupBase
         }
     }
 
-    /// <summary>
-    /// Tes ganti warna rambut employee target lewat EmployeePortraitUI / EmployeeAppearance.
-    /// </summary>
-    private void OnTestHairColorClicked()
-    {
-        if (portraitUI != null)
-        {
-            portraitUI.CycleTestHairColor();
-        }
-        else if (targetEmployee != null && targetEmployee.Appearance != null)
-        {
-            targetEmployee.Appearance.SetHairColor(Random.ColorHSV(0f, 1f, 0.4f, 1f, 0.7f, 1f));
-        }
-    }
-
     private void OnGUI()
     {
         if (!IsOpen || targetEmployee == null) return;
 
-        // Fallback GUI jika tombol tidak di-assign di Unity Inspector
+        // Fallback GUI jika tombol aksi tidak di-link di Unity Inspector
         float w = 180f;
         float h = 30f;
 
@@ -346,8 +308,10 @@ public class EmployeePopup : PopupBase
     }
 
     /// <summary>
-    /// Menata struktur UI popup agar rapi, mewah, proporsional, dan estetik.
-    /// Membangun layout kartu modern berbasis komponen UI secara dinamis.
+    /// Menata struktur UI popup agar presisi mengikuti sketsa format ID Card:
+    /// - Kiri Atas: PortraitBox (Foto muka employee)
+    /// - Kanan Atas: Nama (Yanuar / EmployeeName) + Divisi Badge + Close Button (✕)
+    /// - Bawah: Bagian "INFO LAIN" (HP, Mood, dan Tombol Aksi)
     /// </summary>
     private void SetupCardLayout()
     {
@@ -372,28 +336,28 @@ public class EmployeePopup : PopupBase
 
         if (panel == null) return;
 
-        // 1. Setup Card Panel (Frame Utama)
+        // 1. Setup Card Panel (Kotak Kartu ID)
         panel.anchorMin = new Vector2(0.5f, 0.5f);
         panel.anchorMax = new Vector2(0.5f, 0.5f);
         panel.pivot = new Vector2(0.5f, 0.5f);
         panel.anchoredPosition = Vector2.zero;
-        panel.sizeDelta = new Vector2(460f, 255f);
+        panel.sizeDelta = new Vector2(440f, 250f);
 
         if (panel.TryGetComponent<Image>(out var bgImg))
         {
-            // Dark sleek futuristic slate background
-            bgImg.color = new Color(0.07f, 0.09f, 0.14f, 0.97f);
+            // Dark elegant sci-fi slate background
+            bgImg.color = new Color(0.08f, 0.10f, 0.15f, 0.98f);
         }
 
-        // Tambah outline halus jika belum ada
+        // Outline border tipis profesional
         if (!panel.TryGetComponent<Outline>(out var cardOutline))
         {
             cardOutline = panel.gameObject.AddComponent<Outline>();
         }
-        cardOutline.effectColor = new Color(0.22f, 0.28f, 0.40f, 0.75f);
+        cardOutline.effectColor = new Color(0.24f, 0.30f, 0.42f, 0.8f);
         cardOutline.effectDistance = new Vector2(1.5f, -1.5f);
 
-        // Layout utama Panel (Vertikal)
+        // Layout vertikal di dalam kartu
         if (!panel.TryGetComponent<VerticalLayoutGroup>(out var vlg))
         {
             vlg = panel.gameObject.AddComponent<VerticalLayoutGroup>();
@@ -406,16 +370,16 @@ public class EmployeePopup : PopupBase
         vlg.childForceExpandHeight = false;
         vlg.childAlignment = TextAnchor.UpperCenter;
 
-        // Nonaktifkan ContentSizeFitter jika ada di panel utama agar ukuran tetap stabil
         if (panel.TryGetComponent<ContentSizeFitter>(out var csf))
         {
             csf.enabled = false;
         }
 
         //=========================================
-        // 2. SECTION: HEADER ROW (Portrait + Info + Close)
+        // 2. ATAS: HEADER (Kiri: Foto Muka, Kanan: Nama + Divisi, Pojok: Close)
         //=========================================
-        RectTransform headerRow = GetOrCreateChildSection(panel, "Section_Header", 96f);
+        RectTransform headerRow = GetOrCreateChildSection(panel, "Section_Header", 92f);
+        headerRow.SetSiblingIndex(0);
         if (!headerRow.TryGetComponent<HorizontalLayoutGroup>(out var headerHlg))
         {
             headerHlg = headerRow.gameObject.AddComponent<HorizontalLayoutGroup>();
@@ -428,7 +392,7 @@ public class EmployeePopup : PopupBase
         headerHlg.childForceExpandHeight = false;
         headerHlg.childAlignment = TextAnchor.MiddleLeft;
 
-        // A. Portrait Box
+        // A. Kiri Atas: Portrait Box (Foto Muka)
         Transform portraitBox = headerRow.Find("PortraitBox");
         if (portraitBox == null)
         {
@@ -437,13 +401,13 @@ public class EmployeePopup : PopupBase
             portraitBox = pBoxGo.transform;
 
             RectTransform pBoxRt = pBoxGo.GetComponent<RectTransform>();
-            pBoxRt.sizeDelta = new Vector2(96f, 96f);
+            pBoxRt.sizeDelta = new Vector2(88f, 88f);
 
             Image pBoxImg = pBoxGo.GetComponent<Image>();
-            pBoxImg.color = new Color(0.04f, 0.05f, 0.08f, 1f); // Dark inner avatar frame
+            pBoxImg.color = new Color(0.04f, 0.05f, 0.08f, 1f); // Dark inner frame
 
             Outline pBoxOut = pBoxGo.GetComponent<Outline>();
-            pBoxOut.effectColor = new Color(0.25f, 0.32f, 0.45f, 0.8f);
+            pBoxOut.effectColor = new Color(0.28f, 0.36f, 0.50f, 0.85f);
             pBoxOut.effectDistance = new Vector2(1f, -1f);
         }
         portraitBox.SetSiblingIndex(0);
@@ -459,7 +423,7 @@ public class EmployeePopup : PopupBase
             pContRt.anchorMin = new Vector2(0.5f, 0.5f);
             pContRt.anchorMax = new Vector2(0.5f, 0.5f);
             pContRt.pivot = new Vector2(0.5f, 0.5f);
-            pContRt.sizeDelta = new Vector2(86f, 86f);
+            pContRt.sizeDelta = new Vector2(80f, 80f);
             pContRt.anchoredPosition = Vector2.zero;
         }
 
@@ -468,15 +432,15 @@ public class EmployeePopup : PopupBase
             portraitUI.PortraitContainer = pContainer as RectTransform;
         }
 
-        // B. Info Column (Name & Division)
-        RectTransform infoCol = GetOrCreateChildSection(headerRow, "InfoColumn", 96f);
-        infoCol.sizeDelta = new Vector2(280f, 96f);
+        // B. Kanan Atas: Nama (Yanuar / EmployeeName) & Divisi Badge
+        RectTransform infoCol = GetOrCreateChildSection(headerRow, "InfoColumn", 88f);
+        infoCol.sizeDelta = new Vector2(268f, 88f);
         if (!infoCol.TryGetComponent<VerticalLayoutGroup>(out var infoVlg))
         {
             infoVlg = infoCol.gameObject.AddComponent<VerticalLayoutGroup>();
         }
         infoVlg.padding = new RectOffset(2, 0, 4, 4);
-        infoVlg.spacing = 6f;
+        infoVlg.spacing = 4f;
         infoVlg.childControlWidth = true;
         infoVlg.childControlHeight = false;
         infoVlg.childForceExpandWidth = true;
@@ -486,7 +450,7 @@ public class EmployeePopup : PopupBase
         if (nameText != null)
         {
             nameText.transform.SetParent(infoCol, false);
-            nameText.rectTransform.sizeDelta = new Vector2(270f, 30f);
+            nameText.rectTransform.sizeDelta = new Vector2(260f, 30f);
             nameText.color = Color.white;
             nameText.fontSize = 22f;
             nameText.fontStyle = FontStyles.Bold;
@@ -496,16 +460,16 @@ public class EmployeePopup : PopupBase
         if (divisionText != null)
         {
             divisionText.transform.SetParent(infoCol, false);
-            divisionText.rectTransform.sizeDelta = new Vector2(270f, 24f);
+            divisionText.rectTransform.sizeDelta = new Vector2(260f, 22f);
             divisionText.color = Color.white;
-            divisionText.fontSize = 14f;
+            divisionText.fontSize = 13.5f;
             divisionText.fontStyle = FontStyles.Bold;
             divisionText.alignment = TextAlignmentOptions.Left;
         }
 
-        // C. Close Button Holder
-        RectTransform closeHolder = GetOrCreateChildSection(headerRow, "CloseHolder", 96f);
-        closeHolder.sizeDelta = new Vector2(30f, 96f);
+        // C. Kanan Pojok: Tombol Close (✕)
+        RectTransform closeHolder = GetOrCreateChildSection(headerRow, "CloseHolder", 88f);
+        closeHolder.sizeDelta = new Vector2(26f, 88f);
         if (!closeHolder.TryGetComponent<VerticalLayoutGroup>(out var closeVlg))
         {
             closeVlg = closeHolder.gameObject.AddComponent<VerticalLayoutGroup>();
@@ -523,7 +487,7 @@ public class EmployeePopup : PopupBase
         }
 
         //=========================================
-        // 3. SECTION: DIVIDER LINE
+        // 3. DIVIDER LINE
         //=========================================
         Transform divider = panel.Find("Section_Divider");
         if (divider == null)
@@ -536,15 +500,50 @@ public class EmployeePopup : PopupBase
             divRt.sizeDelta = new Vector2(0f, 1.5f);
 
             Image divImg = divGo.GetComponent<Image>();
-            divImg.color = new Color(0.18f, 0.24f, 0.35f, 0.8f);
+            divImg.color = new Color(0.20f, 0.26f, 0.38f, 0.75f);
         }
         divider.SetSiblingIndex(1);
 
         //=========================================
-        // 4. SECTION: STATS ROW (HP & Mood Pills)
+        // 4. BAWAH: "INFO LAIN" (Label + Stats HP & Mood + Actions)
         //=========================================
-        RectTransform statsRow = GetOrCreateChildSection(panel, "Section_Stats", 38f);
-        statsRow.SetSiblingIndex(2);
+        RectTransform infoLainSection = GetOrCreateChildSection(panel, "Section_InfoLain", 95f);
+        infoLainSection.SetSiblingIndex(2);
+        if (!infoLainSection.TryGetComponent<VerticalLayoutGroup>(out var infoLainVlg))
+        {
+            infoLainVlg = infoLainSection.gameObject.AddComponent<VerticalLayoutGroup>();
+        }
+        infoLainVlg.padding = new RectOffset(0, 0, 0, 0);
+        infoLainVlg.spacing = 6f;
+        infoLainVlg.childControlWidth = true;
+        infoLainVlg.childControlHeight = false;
+        infoLainVlg.childForceExpandWidth = true;
+        infoLainVlg.childForceExpandHeight = false;
+        infoLainVlg.childAlignment = TextAnchor.UpperLeft;
+
+        // A. Header Teks "INFO LAIN"
+        Transform infoLainTitle = infoLainSection.Find("InfoLainLabel");
+        if (infoLainTitle == null)
+        {
+            GameObject labelGo = new GameObject("InfoLainLabel", typeof(RectTransform), typeof(TextMeshProUGUI));
+            labelGo.transform.SetParent(infoLainSection, false);
+            infoLainTitle = labelGo.transform;
+
+            TextMeshProUGUI labelTmp = labelGo.GetComponent<TextMeshProUGUI>();
+            labelTmp.text = "INFO LAIN";
+            labelTmp.fontSize = 11.5f;
+            labelTmp.fontStyle = FontStyles.Bold;
+            labelTmp.color = new Color(0.55f, 0.65f, 0.80f, 1f);
+            labelTmp.alignment = TextAlignmentOptions.Left;
+
+            RectTransform labelRt = labelGo.GetComponent<RectTransform>();
+            labelRt.sizeDelta = new Vector2(0f, 16f);
+        }
+        infoLainTitle.SetSiblingIndex(0);
+
+        // B. Row Kartu Stat (HP & Mood)
+        RectTransform statsRow = GetOrCreateChildSection(infoLainSection, "StatsRow", 36f);
+        statsRow.SetSiblingIndex(1);
         if (!statsRow.TryGetComponent<HorizontalLayoutGroup>(out var statsHlg))
         {
             statsHlg = statsRow.gameObject.AddComponent<HorizontalLayoutGroup>();
@@ -557,7 +556,7 @@ public class EmployeePopup : PopupBase
         statsHlg.childForceExpandHeight = true;
         statsHlg.childAlignment = TextAnchor.MiddleCenter;
 
-        // HP Box
+        // Kartu HP
         RectTransform hpCard = GetOrCreateStatCard(statsRow, "HpCard");
         if (hpText != null)
         {
@@ -567,7 +566,7 @@ public class EmployeePopup : PopupBase
             hpText.alignment = TextAlignmentOptions.Center;
         }
 
-        // Mood Box
+        // Kartu Mood
         RectTransform moodCard = GetOrCreateStatCard(statsRow, "MoodCard");
         if (moodText != null)
         {
@@ -577,11 +576,9 @@ public class EmployeePopup : PopupBase
             moodText.alignment = TextAlignmentOptions.Center;
         }
 
-        //=========================================
-        // 5. SECTION: ACTIONS ROW (Tombol Interaksi)
-        //=========================================
-        RectTransform actionsRow = GetOrCreateChildSection(panel, "Section_Actions", 34f);
-        actionsRow.SetSiblingIndex(3);
+        // C. Row Tombol Aksi (Heal, Care, Return) jika aktif
+        RectTransform actionsRow = GetOrCreateChildSection(infoLainSection, "ActionsRow", 30f);
+        actionsRow.SetSiblingIndex(2);
         if (!actionsRow.TryGetComponent<HorizontalLayoutGroup>(out var actHlg))
         {
             actHlg = actionsRow.gameObject.AddComponent<HorizontalLayoutGroup>();
@@ -612,22 +609,15 @@ public class EmployeePopup : PopupBase
             StyleModernButton(backToDivisionButton, new Color(0.85f, 0.52f, 0.12f), new Color(0.95f, 0.62f, 0.22f), "↩ RETURN");
         }
 
-        if (testHairColorButton != null)
-        {
-            testHairColorButton.transform.SetParent(actionsRow, false);
-            StyleModernButton(testHairColorButton, new Color(0.20f, 0.26f, 0.36f), new Color(0.30f, 0.38f, 0.50f), "HAIR (F8)");
-        }
-
         //=========================================
-        // 6. Cleanup sisa child lama yang tidak terpakai
+        // 5. Cleanup sisa child lama yang tidak terpakai
         //=========================================
         for (int i = 0; i < panel.childCount; i++)
         {
             Transform child = panel.GetChild(i);
             if (child.name != "Section_Header" && 
                 child.name != "Section_Divider" && 
-                child.name != "Section_Stats" && 
-                child.name != "Section_Actions")
+                child.name != "Section_InfoLain")
             {
                 child.gameObject.SetActive(false);
             }
@@ -660,14 +650,14 @@ public class EmployeePopup : PopupBase
             found = go.transform;
 
             Image img = go.GetComponent<Image>();
-            img.color = new Color(0.10f, 0.14f, 0.22f, 0.95f); // Sleek dark card pill
+            img.color = new Color(0.12f, 0.16f, 0.24f, 0.95f); // Sleek dark card pill
 
             Outline outl = go.GetComponent<Outline>();
-            outl.effectColor = new Color(0.20f, 0.26f, 0.38f, 0.6f);
+            outl.effectColor = new Color(0.22f, 0.28f, 0.40f, 0.65f);
             outl.effectDistance = new Vector2(1f, -1f);
 
             var vlg = go.GetComponent<VerticalLayoutGroup>();
-            vlg.padding = new RectOffset(8, 8, 6, 6);
+            vlg.padding = new RectOffset(8, 8, 4, 4);
             vlg.childControlWidth = true;
             vlg.childControlHeight = true;
             vlg.childForceExpandWidth = true;
@@ -685,7 +675,7 @@ public class EmployeePopup : PopupBase
         var rt = btn.GetComponent<RectTransform>();
         if (rt != null)
         {
-            rt.sizeDelta = new Vector2(28f, 28f);
+            rt.sizeDelta = new Vector2(26f, 26f);
         }
 
         Color normal = new Color(0.18f, 0.22f, 0.32f, 0.9f);
@@ -707,7 +697,7 @@ public class EmployeePopup : PopupBase
         if (tmp != null)
         {
             tmp.text = "✕";
-            tmp.fontSize = 15f;
+            tmp.fontSize = 14f;
             tmp.fontStyle = FontStyles.Bold;
             tmp.color = new Color(0.92f, 0.94f, 0.98f, 1f);
             tmp.alignment = TextAlignmentOptions.Center;
@@ -721,7 +711,7 @@ public class EmployeePopup : PopupBase
         var rt = btn.GetComponent<RectTransform>();
         if (rt != null)
         {
-            rt.sizeDelta = new Vector2(95f, 32f);
+            rt.sizeDelta = new Vector2(95f, 28f);
         }
 
         if (btn.TryGetComponent<Image>(out var img))
@@ -742,10 +732,10 @@ public class EmployeePopup : PopupBase
         if (tmp != null)
         {
             if (!string.IsNullOrEmpty(labelText)) tmp.text = labelText;
-            tmp.fontSize = 12.5f;
+            tmp.fontSize = 12f;
             tmp.fontStyle = FontStyles.Bold;
             tmp.color = Color.white;
             tmp.alignment = TextAlignmentOptions.Center;
         }
     }
-}
+}

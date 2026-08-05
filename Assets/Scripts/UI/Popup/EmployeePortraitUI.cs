@@ -3,14 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Menampilkan portrait "muka" employee di UI popup dengan cara merekonstruksi
-/// komposit sprite kepala (Head + Hair + Eyes + Nose + Mouth + bagian aktif lainnya)
-/// ke dalam UI Image yang ada di <see cref="portraitContainer"/>.
-///
-/// "Ngikutin kepala" = setiap frame, sprite & warna tiap bagian kepala di-refresh
-/// dari SpriteRenderer asli di prefab employee, jadi kalau warna rambut diganti
-/// (mis. buat tes lewat <see cref="CycleTestHairColor"/>), gambar di popup ikut
-/// berubah real-time.
+/// Component UI yang menampilkan foto / portrait komposit kepala employee (Head + Hair + Eyes + Nose + Mouth).
+/// Mengikuti posisi, warna, dan sprite asli employee secara real-time.
 /// </summary>
 public class EmployeePortraitUI : MonoBehaviour
 {
@@ -47,24 +41,6 @@ public class EmployeePortraitUI : MonoBehaviour
         set => portraitContainer = value;
     }
 
-    //=========================================
-    // Test Hair Colors (untuk tes ganti warna rambut)
-    //=========================================
-    private static readonly Color[] testHairColors =
-    {
-        Color.white,                                      // asli / putih
-        new Color(0.15f, 0.12f, 0.10f),                   // hitam
-        new Color(0.55f, 0.32f, 0.15f),                   // coklat
-        new Color(0.95f, 0.78f, 0.20f),                   // pirang emas
-        new Color(0.90f, 0.25f, 0.25f),                   // merah menyala
-        new Color(0.20f, 0.60f, 0.95f),                   // biru neon
-        new Color(0.30f, 0.85f, 0.40f),                   // hijau emerald
-        new Color(0.85f, 0.35f, 0.85f),                   // ungu magenta
-        new Color(1.00f, 0.55f, 0.20f),                   // oranye cerah
-        new Color(0.20f, 0.85f, 0.85f),                   // cyan aqua
-    };
-    private int testColorIndex;
-
     public bool HasEmployee => targetEmployee != null;
 
     /// <summary>
@@ -73,7 +49,6 @@ public class EmployeePortraitUI : MonoBehaviour
     public void SetEmployee(Employee employee)
     {
         targetEmployee = employee;
-        testColorIndex = 0;
         needsRebuild = true;
         RebuildPortrait();
     }
@@ -91,28 +66,6 @@ public class EmployeePortraitUI : MonoBehaviour
         ClearContainer();
     }
 
-    /// <summary>
-    /// Tes: ganti warna rambut employee target ke warna berikutnya.
-    /// Panggil dari tombol test atau debug key (mis. F8) di EmployeePopup.
-    /// </summary>
-    public void CycleTestHairColor()
-    {
-        if (targetEmployee == null) return;
-        var appearance = targetEmployee.Appearance;
-        if (appearance == null || appearance.HairRenderer == null)
-        {
-            Debug.LogWarning("[EmployeePortraitUI] Tidak bisa ganti hair color: HairRenderer tidak ada.");
-            return;
-        }
-
-        testColorIndex = (testColorIndex + 1) % testHairColors.Length;
-        Color c = testHairColors[testColorIndex];
-        appearance.SetHairColor(c);
-        Debug.Log($"[EmployeePortraitUI] Ganti warna rambut {targetEmployee.EmployeeName} -> {c}");
-
-        // Segera refresh portrait
-        RefreshPortrait();
-    }
 
     private void Update()
     {
