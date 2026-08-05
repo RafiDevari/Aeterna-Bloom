@@ -25,11 +25,9 @@ public class RoomCreatorManager : MonoBehaviour
     [SerializeField] private float gridSnapSize = 0.5f;
     [SerializeField] private Camera mainCamera;
 
-    [Header("Prefabs Room Default (jika belum diassign di Inspector)")]
-    [SerializeField] private GameObject hallRoomPrefab;
-    [SerializeField] private GameObject mainHallPrefab;
-    [SerializeField] private GameObject botanistRoomPrefab;
-    [SerializeField] private GameObject liftPrefab;
+    [Header("Room Prefabs")]
+    [SerializeField] private List<GameObject> roomPrefabs = new List<GameObject>();
+    private Dictionary<string, GameObject> roomPrefabMap = new Dictionary<string, GameObject>();
 
     [Header("Employee Prefabs")]
     [SerializeField] private List<GameObject> employeePrefabs = new List<GameObject>();
@@ -82,6 +80,40 @@ public class RoomCreatorManager : MonoBehaviour
             if (!employeePrefabMap.ContainsKey(prefab.name))
             {
                 employeePrefabMap.Add(prefab.name, prefab);
+            }
+        }
+
+        InitializePrefabMap();
+    }
+
+    private void InitializePrefabMap()
+    {
+        roomPrefabMap.Clear();
+        foreach (var prefab in roomPrefabs)
+        {
+            if (prefab == null) continue;
+
+            if (!roomPrefabMap.ContainsKey(prefab.name))
+            {
+                roomPrefabMap.Add(prefab.name, prefab);
+            }
+            if (prefab.name.StartsWith("Prefab_"))
+            {
+                string shortName = prefab.name.Substring(7);
+                if (!roomPrefabMap.ContainsKey(shortName))
+                {
+                    roomPrefabMap.Add(shortName, prefab);
+                }
+            }
+
+            Room roomComp = prefab.GetComponent<Room>();
+            if (roomComp != null)
+            {
+                string typeName = roomComp.GetType().Name;
+                if (!roomPrefabMap.ContainsKey(typeName))
+                {
+                    roomPrefabMap.Add(typeName, prefab);
+                }
             }
         }
     }
@@ -157,6 +189,11 @@ public class RoomCreatorManager : MonoBehaviour
     /// </summary>
     public void EnsureDefaultInventory()
     {
+        if (roomPrefabMap == null || roomPrefabMap.Count == 0)
+        {
+            InitializePrefabMap();
+        }
+
         RoomInventoryData savedData = null;
 
         if (RoomInventorySaveSystem.Instance != null)
@@ -188,22 +225,58 @@ public class RoomCreatorManager : MonoBehaviour
         {
             inventoryItems = new List<RoomInventoryItemData>
             {
-                new RoomInventoryItemData("Hall Room", 4, hallRoomPrefab),
-                new RoomInventoryItemData("Main Hall", 2, mainHallPrefab),
-                new RoomInventoryItemData("Botanist Room", 1, botanistRoomPrefab),
-                new RoomInventoryItemData("Lift", 2, liftPrefab)
+                new RoomInventoryItemData("Hall Room", 4, FindPrefabForRoom("HallRoom", "Hall Room")),
+                new RoomInventoryItemData("Main Hall", 2, FindPrefabForRoom("MainRoom", "Main Hall")),
+                new RoomInventoryItemData("Botanist Room", 1, FindPrefabForRoom("DivisionBotanist", "Botanist Room")),
+                new RoomInventoryItemData("Lift", 2, FindPrefabForRoom("Lift", "Lift")),
+                new RoomInventoryItemData("Containment Room", 2, FindPrefabForRoom("ContainmentRoom", "Containment Room"))
             };
         }
     }
 
     private GameObject FindPrefabForRoom(string roomTypeId, string displayName)
     {
-        string nameLower = displayName.ToLower();
-        if (nameLower.Contains("hall room") || roomTypeId == "HallRoom") return hallRoomPrefab;
-        if (nameLower.Contains("main") || roomTypeId == "MainRoom") return mainHallPrefab;
-        if (nameLower.Contains("botanist") || roomTypeId == "DivisionBotanist") return botanistRoomPrefab;
-        if (nameLower.Contains("lift") || roomTypeId == "Lift") return liftPrefab;
+        if (string.IsNullOrEmpty(roomTypeId) && string.IsNullOrEmpty(displayName)) return null;
 
+        if (!string.IsNullOrEmpty(roomTypeId) && roomPrefabMap.TryGetValue(roomTypeId, out GameObject p1) && p1 != null) return p1;
+        if (!string.IsNullOrEmpty(displayName) && roomPrefabMap.TryGetValue(displayName, out GameObject p2) && p2 != null) return p2;
+
+        if (!string.IsNullOrEmpty(displayName))
+        {
+            string cleanDisplayName = displayName.Replace(" ", "");
+            if (roomPrefabMap.TryGetValue(cleanDisplayName, out GameObject p3) && p3 != null) return p3;
+        }
+
+        GameObject dynamicPrefab = LoadPrefabDynamic(roomTypeId);
+        if (dynamicPrefab != null) return dynamicPrefab;
+
+        dynamicPrefab = LoadPrefabDynamic(displayName);
+        if (dynamicPrefab != null) return dynamicPrefab;
+
+        dynamicPrefab = LoadPrefabDynamic($"Prefab_{roomTypeId}");
+        if (dynamicPrefab != null) return dynamicPrefab;
+
+        return null;
+    }
+
+    private GameObject LoadPrefabDynamic(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return null;
+
+        GameObject prefab = Resources.Load<GameObject>($"Rooms/{name}");
+        if (prefab != null) return prefab;
+
+        prefab = Resources.Load<GameObject>(name);
+        if (prefab != null) return prefab;
+
+#if UNITY_EDITOR
+        string[] guids = UnityEditor.AssetDatabase.FindAssets($"{name} t:Prefab");
+        if (guids.Length > 0)
+        {
+            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]);
+            return UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        }
+#endif
         return null;
     }
 
@@ -274,6 +347,7 @@ public class RoomCreatorManager : MonoBehaviour
         Vector3 mouseWorldPos = GetWorldMousePosition(eventData.position);
         GameObject previewObj = Instantiate(prefabToSpawn, mouseWorldPos, Quaternion.identity);
         previewObj.name = $"Preview_{itemData.displayName}";
+        DisableGameplayScripts(previewObj);
 
         activePreview = previewObj.GetComponent<RoomPlacementPreview>();
         if (activePreview == null)
@@ -643,6 +717,7 @@ public class RoomCreatorManager : MonoBehaviour
                 GameObject roomObj = Instantiate(prefab, roomData.position, Quaternion.identity);
                 roomObj.transform.localScale = roomData.scale;
                 roomObj.name = roomData.roomName;
+                DisableGameplayScripts(roomObj);
 
                 // Pastikan preview component tidak aktif/ter-destroy pada room yang di-load
                 RoomPlacementPreview previewComp = roomObj.GetComponent<RoomPlacementPreview>();
@@ -751,16 +826,15 @@ public class RoomCreatorManager : MonoBehaviour
         {
             if (roomObj == null) continue;
 
-            string roomName = roomObj.name.Replace("Preview_", "").Replace("(Clone)", "").Trim();
-
             // Cari item inventaris yang cocok dan tambahkan kembali stoknya (+1)
-            RoomInventoryItemData matchedItem = FindMatchingInventoryItem(roomName);
+            RoomInventoryItemData matchedItem = FindMatchingInventoryItem(roomObj);
             if (matchedItem != null)
             {
                 matchedItem.count++;
             }
             else
             {
+                string roomName = roomObj.name.Replace("Preview_", "").Replace("(Clone)", "").Trim();
                 // Jika jenis room belum ada di list inventaris, buatkan entry baru
                 GameObject prefab = FindPrefabForRoom(roomName, roomName);
                 inventoryItems.Add(new RoomInventoryItemData(roomName, 1, prefab));
@@ -782,23 +856,35 @@ public class RoomCreatorManager : MonoBehaviour
         Debug.Log("[RoomCreatorManager] Layout reset complete. Placed rooms returned to inventory.");
     }
 
-    private RoomInventoryItemData FindMatchingInventoryItem(string roomName)
+    private RoomInventoryItemData FindMatchingInventoryItem(GameObject roomObj)
     {
-        string nameLower = roomName.ToLower();
+        if (roomObj == null) return null;
+        Room roomComp = roomObj.GetComponent<Room>();
+        if (roomComp == null) return null;
+
+        string componentTypeName = roomComp.GetType().Name;
+
         foreach (var item in inventoryItems)
         {
             if (item == null) continue;
-            string itemLower = item.displayName.ToLower();
 
-            if (nameLower.Contains(itemLower) || itemLower.Contains(nameLower))
+            // Match via associated room prefab's Room component type
+            if (item.roomPrefab != null)
+            {
+                Room prefabRoomComp = item.roomPrefab.GetComponent<Room>();
+                if (prefabRoomComp != null && prefabRoomComp.GetType().Name == componentTypeName)
+                {
+                    return item;
+                }
+            }
+
+            // Fallback string matching on component type name vs display name
+            string typeNameLower = componentTypeName.ToLower();
+            string itemLower = item.displayName.ToLower();
+            if (itemLower.Contains(typeNameLower) || typeNameLower.Contains(itemLower))
             {
                 return item;
             }
-
-            if (nameLower.Contains("main") && itemLower.Contains("main")) return item;
-            if (nameLower.Contains("lift") && itemLower.Contains("lift")) return item;
-            if (nameLower.Contains("botanist") && itemLower.Contains("botanist")) return item;
-            if (nameLower.Contains("hall") && !nameLower.Contains("main") && itemLower.Contains("hall") && !itemLower.Contains("main")) return item;
         }
         return null;
     }
@@ -916,5 +1002,41 @@ public class RoomCreatorManager : MonoBehaviour
         col.size = new Vector2(2f, 2f);
 
         return room;
+    }
+
+    private void DisableGameplayScripts(GameObject roomObj)
+    {
+        if (roomObj == null) return;
+
+        // Manually configure BoxCollider2D for the Room since its Start() won't run when disabled
+        Room roomComp = roomObj.GetComponent<Room>();
+        if (roomComp != null)
+        {
+            BoxCollider2D col = roomObj.GetComponent<BoxCollider2D>();
+            if (col != null)
+            {
+                col.isTrigger = true;
+                SpriteRenderer sr = roomObj.GetComponent<SpriteRenderer>();
+                if (sr != null && sr.sprite != null)
+                {
+                    col.size = sr.sprite.bounds.size;
+                    col.offset = sr.sprite.bounds.center;
+                }
+            }
+        }
+
+        MonoBehaviour[] scripts = roomObj.GetComponentsInChildren<MonoBehaviour>(true);
+        foreach (MonoBehaviour script in scripts)
+        {
+            if (script == null) continue;
+            if (script is RoomPlacementPreview) continue;
+
+            System.Type type = script.GetType();
+            string assemblyName = type.Assembly.GetName().Name;
+            if (assemblyName == "Assembly-CSharp" || assemblyName.StartsWith("Assembly-CSharp-firstpass"))
+            {
+                script.enabled = false;
+            }
+        }
     }
 }

@@ -204,11 +204,8 @@ public class RoomCreatorSetup : MonoBehaviour
         testRt.anchoredPosition = new Vector2(-20, -20);
         Button testBtn = testBtnObj.GetComponent<Button>();
 
-        // 9. Find Prefabs from Assets/Prefabs/Rooms/
-        GameObject hallPrefab = LoadRoomPrefab("Prefab_HallRoom");
-        GameObject mainPrefab = LoadRoomPrefab("Prefab_MainRoom");
-        GameObject botanistPrefab = LoadRoomPrefab("Prefab_DivisionBotanist");
-        GameObject liftPrefab = LoadRoomPrefab("Prefab_Lift");
+        // 9. Find Prefabs dynamically from Assets/Prefabs/Rooms/
+        System.Collections.Generic.List<GameObject> allRoomPrefabs = FindAllRoomPrefabs();
 
         // 10. Assign references to RoomCreatorManager
         SetFieldValue(manager, "cardContainer", containerObj.transform);
@@ -220,10 +217,7 @@ public class RoomCreatorSetup : MonoBehaviour
         SetFieldValue(manager, "testPlayButton", testBtn);
         SetFieldValue(manager, "resetButton", resetBtn);
         SetFieldValue(manager, "statusMessageText", warnTmp);
-        SetFieldValue(manager, "hallRoomPrefab", hallPrefab);
-        SetFieldValue(manager, "mainHallPrefab", mainPrefab);
-        SetFieldValue(manager, "botanistRoomPrefab", botanistPrefab);
-        SetFieldValue(manager, "liftPrefab", liftPrefab);
+        SetFieldValue(manager, "roomPrefabs", allRoomPrefabs);
 
         manager.EnsureDefaultInventory();
         manager.RefreshInventoryUI();
@@ -301,6 +295,24 @@ public class RoomCreatorSetup : MonoBehaviour
         }
 #endif
         return null;
+    }
+
+    private static System.Collections.Generic.List<GameObject> FindAllRoomPrefabs()
+    {
+        var prefabs = new System.Collections.Generic.List<GameObject>();
+#if UNITY_EDITOR
+        string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs/Rooms" });
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab != null && prefab.GetComponent<Room>() != null)
+            {
+                prefabs.Add(prefab);
+            }
+        }
+#endif
+        return prefabs;
     }
 
     private static void SetFieldValue(object target, string fieldName, object value)

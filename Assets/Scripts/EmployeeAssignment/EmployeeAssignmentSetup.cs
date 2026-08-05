@@ -209,6 +209,9 @@ public class EmployeeAssignmentSetup : MonoBehaviour
         GameObject mainPrefab = LoadPrefab("Prefab_MainRoom");
         GameObject botanistPrefab = LoadPrefab("Prefab_DivisionBotanist");
         GameObject liftPrefab = LoadPrefab("Prefab_Lift");
+        GameObject containmentPrefab = LoadPrefab("Prefab_ContainmentRoom");
+        // 8. Find Prefabs dynamically from Assets/Prefabs/Rooms/
+        System.Collections.Generic.List<GameObject> allRoomPrefabs = FindAllRoomPrefabs();
 
         // 9. Find Employee Prefabs
         List<GameObject> employeePrefabs = new List<GameObject>();
@@ -226,10 +229,7 @@ public class EmployeeAssignmentSetup : MonoBehaviour
         SetFieldValue(manager, "playTestButton", testBtn);
         SetFieldValue(manager, "resetButton", resetBtn);
         SetFieldValue(manager, "statusMessageText", statusTmp);
-        SetFieldValue(manager, "hallRoomPrefab", hallPrefab);
-        SetFieldValue(manager, "mainHallPrefab", mainPrefab);
-        SetFieldValue(manager, "botanistRoomPrefab", botanistPrefab);
-        SetFieldValue(manager, "liftPrefab", liftPrefab);
+        SetFieldValue(manager, "roomPrefabs", allRoomPrefabs);
         SetFieldValue(manager, "employeePrefabs", employeePrefabs);
 
         Debug.Log("[EmployeeAssignmentSetup] Employee Assignment scene successfully configured programmatically!");
@@ -374,6 +374,24 @@ public class EmployeeAssignmentSetup : MonoBehaviour
         }
 #endif
         return null;
+    }
+
+    private static System.Collections.Generic.List<GameObject> FindAllRoomPrefabs()
+    {
+        var prefabs = new System.Collections.Generic.List<GameObject>();
+#if UNITY_EDITOR
+        string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs/Rooms" });
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab != null && prefab.GetComponent<Room>() != null)
+            {
+                prefabs.Add(prefab);
+            }
+        }
+#endif
+        return prefabs;
     }
 
     private static void SetFieldValue(object target, string fieldName, object value)

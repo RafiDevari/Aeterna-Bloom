@@ -2,5 +2,87 @@
     "defaultRoomTemperature": 20.0,
     "maxElectricity": 100.0,
     "maxEnergy": 100.0,
-    "rooms": []
+    "rooms": [
+        {
+            "roomType": "ContainmentRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -5.83631706237793,
+                "y": 2.8661246299743654,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.3061574697494507,
+                "y": 0.651849627494812,
+                "z": 1.0
+            },
+            "temperature": 0.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [
+                {
+                    "unitName": "Containment Unit",
+                    "monsterPrefabName": "",
+                    "localPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "plantInstanceId": ""
+                },
+                {
+                    "unitName": "Containment Unit",
+                    "monsterPrefabName": "Sunny Flower",
+                    "localPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "plantInstanceId": ""
+                }
+            ],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "MainRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -25.24222183227539,
+                "y": 2.2502670288085939,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.325924813747406,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -31.607887268066408,
+                "y": 2.2502670288085939,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.325924813747406,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        }
+    ]
 }

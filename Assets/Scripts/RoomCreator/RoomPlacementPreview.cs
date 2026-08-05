@@ -293,6 +293,7 @@ public class RoomPlacementPreview : MonoBehaviour
 
                         if (pBounds.Intersects(oCol.bounds))
                         {
+                            Debug.LogWarning($"[RoomPlacementPreview] Overlap detected! Preview collider '{pCol.gameObject.name}' ({pCol.GetType().Name}) bounds {pBounds} intersects with placed room '{placedRoom.name}' collider '{oCol.gameObject.name}' ({oCol.GetType().Name}) bounds {oCol.bounds}");
                             currentValidity = false;
                             return false;
                         }
