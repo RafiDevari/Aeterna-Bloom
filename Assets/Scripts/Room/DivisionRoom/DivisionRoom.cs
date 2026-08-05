@@ -40,10 +40,12 @@ public abstract class DivisionRoom : Room
     public IReadOnlyList<Employee> AssignedEmployees => assignedEmployees;
 
     /// <summary>
-    /// Tipe keahlian yang dipaksakan ke semua employee yang di-spawn dari divisi ini.
-    /// Diisi oleh child class spesifik (DivisionBotanist -> Botanist, DivisionResearcher -> Researcher).
+    /// Tipe divisi yang dinaungi oleh room ini (Botanist, Researcher, Security, Medic, Engineer, Clerk).
     /// </summary>
     protected abstract EmployeeDivision EmployeeDivisionType { get; }
+
+    /// <summary>Public accessor untuk tipe divisi room ini.</summary>
+    public EmployeeDivision RoomDivisionType => EmployeeDivisionType;
 
     protected override void Start()
     {
