@@ -66,14 +66,11 @@ public partial class Employee
     }
 
     /// <summary>
-    /// Suruh employee ini balik ke room divisi tempat dia ditugaskan (AssignedDivision),
-    /// dengan menambahkan satu MoveToTask ke akhir antrean task. Dipanggil otomatis sebagai
-    /// tahap akhir job Feed/Research/Harvest (lihat Employee.Feeding.cs/Research.cs/Harvest.cs)
-    /// supaya employee tidak diam begitu saja di tempat begitu tugasnya selesai.
-    ///
-    /// No-op (tidak menambah task apapun) kalau employee belum di-assign ke divisi manapun.
+    /// Suruh employee ini balik ke room divisi tempat dia ditugaskan (AssignedDivision).
+    /// Mengarahkan employee ke lantai/walkway terdekat dari ruangan divisi.
+    /// Jika clearExistingTasks = true, semua task yang sedang berjalan akan langsung dibatalkan (cancel).
     /// </summary>
-    public void BackToDivision()
+    public void BackToDivision(bool clearExistingTasks = false)
     {
         if (assignedDivision == null)
         {
@@ -81,10 +78,15 @@ public partial class Employee
             return;
         }
 
+        if (clearExistingTasks)
+        {
+            ClearTasksAndInterrupt();
+        }
+
         DivisionRoom targetDivision = assignedDivision;
 
         EnqueueTask(new MoveToTask(
-            () => targetDivision.transform.position,
+            () => targetDivision.GetNearestWalkablePosition(targetDivision.transform.position),
             () => assignedDivision == targetDivision));
 
         Debug.Log($"[Employee] {employeeName} akan kembali ke divisi : {targetDivision.RoomName}");

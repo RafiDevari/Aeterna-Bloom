@@ -8,7 +8,7 @@ using TMPro;
 /// - Kiri Atas: Foto / Portrait Kepala Employee (Head)
 /// - Kanan Atas: Nama Employee & Divisi
 /// - Kanan Pojok: Tombol Close (✕)
-/// - Bawah: Bagian "INFO LAIN" (HP, Mood, status, dan tombol aksi interaktif).
+/// - Bawah: Bagian "INFO LAIN" (HP, Mood, status, dan tombol aksi interaktif seperti ORDER TO dan RETURN).
 /// </summary>
 public class EmployeePopup : PopupBase
 {
@@ -24,9 +24,10 @@ public class EmployeePopup : PopupBase
 
     [Header("Buttons")]
     [SerializeField] private Button closeButton;
+    [SerializeField] private Button orderToButton;
+    [SerializeField] private Button backToDivisionButton;
     [SerializeField] private Button takeCareButton;
     [SerializeField] private Button healSickButton;
-    [SerializeField] private Button backToDivisionButton;
 
     [Header("Portrait (Muka)")]
     [Tooltip("Component yang menampilkan portrait kepala employee di popup.")]
@@ -40,17 +41,21 @@ public class EmployeePopup : PopupBase
 
         Instance = this;
 
+        EmployeeOrderController.EnsureInstance();
+
         EnsurePortraitUI();
         SetupCardLayout();
 
         if (closeButton != null)
             closeButton.onClick.AddListener(Close);
+        if (orderToButton != null)
+            orderToButton.onClick.AddListener(OnOrderToClicked);
+        if (backToDivisionButton != null)
+            backToDivisionButton.onClick.AddListener(OnBackToDivisionClicked);
         if (takeCareButton != null)
             takeCareButton.onClick.AddListener(OnTakeCareClicked);
         if (healSickButton != null)
             healSickButton.onClick.AddListener(OnHealSickClicked);
-        if (backToDivisionButton != null)
-            backToDivisionButton.onClick.AddListener(OnBackToDivisionClicked);
 
         Employee.OnAnyEmployeeRightClicked += HandleEmployeeRightClicked;
     }
@@ -130,20 +135,37 @@ public class EmployeePopup : PopupBase
             }
         }
 
-        // 5. Tombol Aksi Kondisional
+        // 5. Tombol Aksi
+
+        // A. Order To Button (Selalu tersedia untuk employee yang aktif/hidup)
+        if (orderToButton != null)
+        {
+            bool canOrder = employee != null &&
+                            employee.CurrentState != EmployeeState.Dead &&
+                            employee.CurrentState != EmployeeState.Hypnotized &&
+                            employee.CurrentState != EmployeeState.Sleeping;
+            orderToButton.gameObject.SetActive(canOrder);
+        }
+
+        // B. Back To Division Button (Selalu tersedia jika employee punya divisi yang di-assign)
+        if (backToDivisionButton != null)
+        {
+            bool canReturn = employee != null &&
+                             employee.CurrentState != EmployeeState.Dead &&
+                             employee.AssignedDivision != null;
+            backToDivisionButton.gameObject.SetActive(canReturn);
+        }
+
+        // C. Take Care (Khusus status Hypnotized)
         if (takeCareButton != null)
         {
             takeCareButton.gameObject.SetActive(employee != null && employee.CurrentState == EmployeeState.Hypnotized);
         }
 
+        // D. Heal Sick (Khusus status Sakit)
         if (healSickButton != null)
         {
             healSickButton.gameObject.SetActive(employee != null && employee.IsSick);
-        }
-
-        if (backToDivisionButton != null)
-        {
-            backToDivisionButton.gameObject.SetActive(employee != null && IsMonitoring(employee));
         }
 
         // 6. Render Foto Muka / Portrait Kepala
@@ -196,6 +218,38 @@ public class EmployeePopup : PopupBase
         return false;
     }
 
+    /// <summary>
+    /// Perintah Order To: Menutup popup dan memulai mode pemilihan ruangan tujuan di game world.
+    /// </summary>
+    private void OnOrderToClicked()
+    {
+        Employee capturedTarget = targetEmployee;
+        Close();
+
+        if (capturedTarget != null)
+        {
+            EmployeeOrderController.EnsureInstance();
+            EmployeeOrderController.Instance.StartOrder(capturedTarget);
+        }
+    }
+
+    /// <summary>
+    /// Perintah Back To Division: Membatalkan seluruh task yang sedang berjalan dan langsung
+    /// menyuruh employee kembali ke ruangan divisinya.
+    /// </summary>
+    private void OnBackToDivisionClicked()
+    {
+        Employee capturedTarget = targetEmployee;
+        Close();
+
+        if (capturedTarget != null)
+        {
+            capturedTarget.ClearTasksAndInterrupt();
+            capturedTarget.BackToDivision();
+            Debug.Log($"[EmployeePopup] {capturedTarget.EmployeeName} diperintahkan kembali ke divisi (semua task dibatalkan).");
+        }
+    }
+
     private void OnTakeCareClicked()
     {
         Employee capturedTarget = targetEmployee;
@@ -226,23 +280,11 @@ public class EmployeePopup : PopupBase
         }, typeof(DivisionMedic));
     }
 
-    private void OnBackToDivisionClicked()
-    {
-        Employee capturedTarget = targetEmployee;
-        Close();
-
-        if (capturedTarget != null)
-        {
-            capturedTarget.BackToDivision();
-            Debug.Log($"[EmployeePopup] {capturedTarget.EmployeeName} ordered to return to division.");
-        }
-    }
-
     private void OnGUI()
     {
         if (!IsOpen || targetEmployee == null) return;
 
-        // Fallback GUI jika tombol aksi tidak di-link di Unity Inspector
+        // Fallback GUI jika tombol aksi belum ter-assign di Unity Inspector
         float w = 180f;
         float h = 30f;
 
@@ -266,7 +308,7 @@ public class EmployeePopup : PopupBase
             }
         }
 
-        if (IsMonitoring(targetEmployee) && backToDivisionButton == null)
+        if (targetEmployee.AssignedDivision != null && backToDivisionButton == null)
         {
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height - 70f;
@@ -311,7 +353,7 @@ public class EmployeePopup : PopupBase
     /// Menata struktur UI popup agar presisi mengikuti sketsa format ID Card:
     /// - Kiri Atas: PortraitBox (Foto muka employee)
     /// - Kanan Atas: Nama (Yanuar / EmployeeName) + Divisi Badge + Close Button (✕)
-    /// - Bawah: Bagian "INFO LAIN" (HP, Mood, dan Tombol Aksi)
+    /// - Bawah: Bagian "INFO LAIN" (HP, Mood, dan Tombol Aksi: ORDER TO, RETURN, HEAL, CARE)
     /// </summary>
     private void SetupCardLayout()
     {
@@ -341,7 +383,7 @@ public class EmployeePopup : PopupBase
         panel.anchorMax = new Vector2(0.5f, 0.5f);
         panel.pivot = new Vector2(0.5f, 0.5f);
         panel.anchoredPosition = Vector2.zero;
-        panel.sizeDelta = new Vector2(440f, 250f);
+        panel.sizeDelta = new Vector2(450f, 255f);
 
         if (panel.TryGetComponent<Image>(out var bgImg))
         {
@@ -434,7 +476,7 @@ public class EmployeePopup : PopupBase
 
         // B. Kanan Atas: Nama (Yanuar / EmployeeName) & Divisi Badge
         RectTransform infoCol = GetOrCreateChildSection(headerRow, "InfoColumn", 88f);
-        infoCol.sizeDelta = new Vector2(268f, 88f);
+        infoCol.sizeDelta = new Vector2(278f, 88f);
         if (!infoCol.TryGetComponent<VerticalLayoutGroup>(out var infoVlg))
         {
             infoVlg = infoCol.gameObject.AddComponent<VerticalLayoutGroup>();
@@ -450,7 +492,7 @@ public class EmployeePopup : PopupBase
         if (nameText != null)
         {
             nameText.transform.SetParent(infoCol, false);
-            nameText.rectTransform.sizeDelta = new Vector2(260f, 30f);
+            nameText.rectTransform.sizeDelta = new Vector2(270f, 30f);
             nameText.color = Color.white;
             nameText.fontSize = 22f;
             nameText.fontStyle = FontStyles.Bold;
@@ -460,7 +502,7 @@ public class EmployeePopup : PopupBase
         if (divisionText != null)
         {
             divisionText.transform.SetParent(infoCol, false);
-            divisionText.rectTransform.sizeDelta = new Vector2(260f, 22f);
+            divisionText.rectTransform.sizeDelta = new Vector2(270f, 22f);
             divisionText.color = Color.white;
             divisionText.fontSize = 13.5f;
             divisionText.fontStyle = FontStyles.Bold;
@@ -507,7 +549,7 @@ public class EmployeePopup : PopupBase
         //=========================================
         // 4. BAWAH: "INFO LAIN" (Label + Stats HP & Mood + Actions)
         //=========================================
-        RectTransform infoLainSection = GetOrCreateChildSection(panel, "Section_InfoLain", 95f);
+        RectTransform infoLainSection = GetOrCreateChildSection(panel, "Section_InfoLain", 98f);
         infoLainSection.SetSiblingIndex(2);
         if (!infoLainSection.TryGetComponent<VerticalLayoutGroup>(out var infoLainVlg))
         {
@@ -542,7 +584,7 @@ public class EmployeePopup : PopupBase
         infoLainTitle.SetSiblingIndex(0);
 
         // B. Row Kartu Stat (HP & Mood)
-        RectTransform statsRow = GetOrCreateChildSection(infoLainSection, "StatsRow", 36f);
+        RectTransform statsRow = GetOrCreateChildSection(infoLainSection, "StatsRow", 34f);
         statsRow.SetSiblingIndex(1);
         if (!statsRow.TryGetComponent<HorizontalLayoutGroup>(out var statsHlg))
         {
@@ -576,7 +618,7 @@ public class EmployeePopup : PopupBase
             moodText.alignment = TextAlignmentOptions.Center;
         }
 
-        // C. Row Tombol Aksi (Heal, Care, Return) jika aktif
+        // C. Row Tombol Aksi (Order To, Return, Heal, Care)
         RectTransform actionsRow = GetOrCreateChildSection(infoLainSection, "ActionsRow", 30f);
         actionsRow.SetSiblingIndex(2);
         if (!actionsRow.TryGetComponent<HorizontalLayoutGroup>(out var actHlg))
@@ -591,22 +633,58 @@ public class EmployeePopup : PopupBase
         actHlg.childForceExpandHeight = false;
         actHlg.childAlignment = TextAnchor.MiddleRight;
 
+        // 1. Order To Button (Otomatis dibuat jika belum di-assign)
+        if (orderToButton == null)
+        {
+            Transform existingOrderBtn = actionsRow.Find("OrderToButton");
+            if (existingOrderBtn != null)
+            {
+                orderToButton = existingOrderBtn.GetComponent<Button>();
+            }
+            else
+            {
+                orderToButton = CreateActionButton(actionsRow, "OrderToButton");
+                orderToButton.onClick.AddListener(OnOrderToClicked);
+            }
+        }
+        if (orderToButton != null)
+        {
+            orderToButton.transform.SetParent(actionsRow, false);
+            StyleModernButton(orderToButton, new Color(0.08f, 0.52f, 0.78f), new Color(0.14f, 0.65f, 0.95f), "➤ ORDER TO");
+        }
+
+        // 2. Back To Division Button (Otomatis dibuat jika belum di-assign)
+        if (backToDivisionButton == null)
+        {
+            Transform existingReturnBtn = actionsRow.Find("BackToDivisionButton");
+            if (existingReturnBtn != null)
+            {
+                backToDivisionButton = existingReturnBtn.GetComponent<Button>();
+            }
+            else
+            {
+                backToDivisionButton = CreateActionButton(actionsRow, "BackToDivisionButton");
+                backToDivisionButton.onClick.AddListener(OnBackToDivisionClicked);
+            }
+        }
+        if (backToDivisionButton != null)
+        {
+            backToDivisionButton.transform.SetParent(actionsRow, false);
+            StyleModernButton(backToDivisionButton, new Color(0.85f, 0.50f, 0.10f), new Color(0.95f, 0.60f, 0.20f), "↩ RETURN");
+        }
+
+        // 3. Heal Button
         if (healSickButton != null)
         {
             healSickButton.transform.SetParent(actionsRow, false);
             StyleModernButton(healSickButton, new Color(0.06f, 0.58f, 0.40f), new Color(0.10f, 0.72f, 0.50f), "✦ HEAL");
         }
 
+        // 4. Care Button
         if (takeCareButton != null)
         {
             takeCareButton.transform.SetParent(actionsRow, false);
             StyleModernButton(takeCareButton, new Color(0.48f, 0.28f, 0.88f), new Color(0.58f, 0.38f, 0.98f), "❤ CARE");
-        }
-
-        if (backToDivisionButton != null)
-        {
-            backToDivisionButton.transform.SetParent(actionsRow, false);
-            StyleModernButton(backToDivisionButton, new Color(0.85f, 0.52f, 0.12f), new Color(0.95f, 0.62f, 0.22f), "↩ RETURN");
         }
 
         //=========================================
@@ -622,6 +700,22 @@ public class EmployeePopup : PopupBase
                 child.gameObject.SetActive(false);
             }
         }
+    }
+
+    private static Button CreateActionButton(RectTransform parent, string name)
+    {
+        GameObject btnGo = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+        btnGo.transform.SetParent(parent, false);
+
+        GameObject textGo = new GameObject("Text (TMP)", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textGo.transform.SetParent(btnGo.transform, false);
+
+        RectTransform textRt = textGo.GetComponent<RectTransform>();
+        textRt.anchorMin = Vector2.zero;
+        textRt.anchorMax = Vector2.one;
+        textRt.sizeDelta = Vector2.zero;
+
+        return btnGo.GetComponent<Button>();
     }
 
     private static RectTransform GetOrCreateChildSection(RectTransform parent, string name, float height)
@@ -711,7 +805,7 @@ public class EmployeePopup : PopupBase
         var rt = btn.GetComponent<RectTransform>();
         if (rt != null)
         {
-            rt.sizeDelta = new Vector2(95f, 28f);
+            rt.sizeDelta = new Vector2(100f, 28f);
         }
 
         if (btn.TryGetComponent<Image>(out var img))
@@ -732,7 +826,7 @@ public class EmployeePopup : PopupBase
         if (tmp != null)
         {
             if (!string.IsNullOrEmpty(labelText)) tmp.text = labelText;
-            tmp.fontSize = 12f;
+            tmp.fontSize = 11.5f;
             tmp.fontStyle = FontStyles.Bold;
             tmp.color = Color.white;
             tmp.alignment = TextAlignmentOptions.Center;
