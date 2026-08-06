@@ -1,0 +1,31 @@
+{
+    "hairs": [
+        {
+            "id": "Hair",
+            "name": "Hair Style 1",
+            "resourcePath": "Sprites/Employee/Hair/Hair"
+        },
+        {
+            "id": "Hair2",
+            "name": "Hair Style 2",
+            "resourcePath": "Sprites/Employee/Hair/Hair2"
+        }
+    ],
+    "bodies": [
+        {
+            "id": "Suit01",
+            "name": "Base Suit",
+            "resourcePath": "Sprites/Employee/EmployeeBase/Body"
+        },
+        {
+            "id": "Botanist",
+            "name": "Botanist Suit",
+            "resourcePath": "Sprites/Employee/Suits/Botanist"
+        },
+        {
+            "id": "Researcher",
+            "name": "Researcher Suit",
+            "resourcePath": "Sprites/Employee/Suits/Researcher"
+        }
+    ]
+}

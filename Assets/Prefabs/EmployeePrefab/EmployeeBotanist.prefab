@@ -585,7 +585,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -986,7 +986,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1466,14 +1466,14 @@ MonoBehaviour:
   eyeRenderer: {fileID: 3734615131032830092}
   noseRenderer: {fileID: 8009046557615486463}
   mouthRenderer: {fileID: 8730474086169141364}
-  bodySprite: {fileID: 104705311889192287, guid: 7a06a1d99048cd046b4b83ebf2c4562e, type: 3}
-  bodyColor: {r: 1, g: 1, b: 1, a: 1}
-  hairSprite: {fileID: 6291076074326483787, guid: 1f6f2c86a9923fc4393e048e8cb7ea2c, type: 3}
+  hairName: Hair
   hairColor: {r: 0.4862745, g: 0.9882354, b: 0, a: 1}
+  bodyName: Suit01
+  bodyColor: {r: 1, g: 1, b: 1, a: 1}
+  bodySprite: {fileID: 104705311889192287, guid: 7a06a1d99048cd046b4b83ebf2c4562e, type: 3}
+  hairSprite: {fileID: 6291076074326483787, guid: 1f6f2c86a9923fc4393e048e8cb7ea2c, type: 3}
   eyeSprite: {fileID: 1250541562, guid: 6238ba2c47b70f746a50d283cf4c3e69, type: 3}
   mouthSprite: {fileID: -1554016346080846349, guid: 869cdb11802100b4d94c5294dbd84ada, type: 3}
-  useWhiteOnlyTint: 1
-  whiteTintMaterial: {fileID: 0}
   suitFolder: {fileID: 0}
   resourcesFolderPath: 
 --- !u!111 &6562485900113063877
@@ -2010,7 +2010,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -2,39 +2,75 @@
     "employees": [
         {
             "employeeName": "Bob",
-            "employeePrefabName": "EmployeeBotanist"
+            "employeePrefabName": "EmployeeBotanist",
+            "hair": "Hair",
+            "hairColor": "#7CFC00",
+            "body": "Botanist",
+            "bodyColor": "#FFFFFF"
         },
         {
             "employeeName": "Alice",
-            "employeePrefabName": "EmployeeBotanist"
+            "employeePrefabName": "EmployeeBotanist",
+            "hair": "Hair2",
+            "hairColor": "#FFD700",
+            "body": "Botanist",
+            "bodyColor": "#FFFFFF"
         },
         {
             "employeeName": "Charlie",
-            "employeePrefabName": "EmployeeSecurity"
+            "employeePrefabName": "EmployeeSecurity",
+            "hair": "Hair",
+            "hairColor": "#1A1A1A",
+            "body": "Suit01",
+            "bodyColor": "#336699"
         },
         {
             "employeeName": "Daniel",
-            "employeePrefabName": "EmployeeMedic"
+            "employeePrefabName": "EmployeeMedic",
+            "hair": "Hair2",
+            "hairColor": "#8B0000",
+            "body": "Suit01",
+            "bodyColor": "#FFFFFF"
         },
         {
             "employeeName": "Edward",
-            "employeePrefabName": "EmployeeEngineer"
+            "employeePrefabName": "EmployeeEngineer",
+            "hair": "Hair",
+            "hairColor": "#FF8C00",
+            "body": "Suit01",
+            "bodyColor": "#E6E6FA"
         },
         {
             "employeeName": "Faelantern",
-            "employeePrefabName": "EmployeeResearcher"
+            "employeePrefabName": "EmployeeResearcher",
+            "hair": "Hair2",
+            "hairColor": "#EE82EE",
+            "body": "Researcher",
+            "bodyColor": "#0000FF"
         },
         {
             "employeeName": "Garion",
-            "employeePrefabName": "EmployeeEngineer"
+            "employeePrefabName": "EmployeeEngineer",
+            "hair": "Hair",
+            "hairColor": "#2E8B57",
+            "body": "Suit01",
+            "bodyColor": "#DAA520"
         },
         {
             "employeeName": "Harrold",
-            "employeePrefabName": "EmployeeEngineer"
+            "employeePrefabName": "EmployeeEngineer",
+            "hair": "Hair2",
+            "hairColor": "#708090",
+            "body": "Suit01",
+            "bodyColor": "#4682B4"
         },
         {
             "employeeName": "Ina",
-            "employeePrefabName": "EmployeeEngineer"
+            "employeePrefabName": "EmployeeEngineer",
+            "hair": "Hair",
+            "hairColor": "#FF69B4",
+            "body": "Suit01",
+            "bodyColor": "#8A2BE2"
         }
     ]
 }

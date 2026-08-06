@@ -287,6 +287,11 @@ public partial class Employee : MonoBehaviour
     {
         targetPosition = transform.position;
 
+        if (Appearance != null)
+        {
+            Appearance.RefreshAppearanceFromInventory();
+        }
+
         if (autoFitCollider)
         {
             AutoFitCollider();

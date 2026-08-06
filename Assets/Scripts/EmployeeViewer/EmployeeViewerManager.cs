@@ -160,6 +160,13 @@ public class EmployeeViewerManager : MonoBehaviour
                 sr.sortingOrder += 50;
             }
 
+            // Apply visual appearance from empData
+            EmployeeAppearance appearance = currentPreviewInstance.GetComponent<EmployeeAppearance>();
+            if (appearance != null)
+            {
+                appearance.ApplyAppearanceFromSaveData(empData);
+            }
+
             // Ensure preview employee components are in passive/idle state
             Employee empComp = currentPreviewInstance.GetComponent<Employee>();
             if (empComp != null)
