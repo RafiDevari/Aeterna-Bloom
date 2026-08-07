@@ -1,0 +1,385 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+/// <summary>
+/// Manager for the Employee Viewer scene.
+/// Displays an employee list on the left side and previews the selected employee's model and details on the right side.
+/// </summary>
+public class EmployeeViewerManager : MonoBehaviour
+{
+    public static EmployeeViewerManager Instance { get; private set; }
+
+    [Header("Employee Prefabs")]
+    [SerializeField] private List<GameObject> employeePrefabs = new List<GameObject>();
+
+    [Header("UI References")]
+    [SerializeField] private Transform cardContainer;
+    [SerializeField] private GameObject cardPrefab;
+    [SerializeField] private TextMeshProUGUI selectedNameText;
+    [SerializeField] private TextMeshProUGUI selectedRoleText;
+    [SerializeField] private TextMeshProUGUI selectedDetailsText;
+
+    [Header("Customization UI References")]
+    [SerializeField] private Button suitButton;
+    [SerializeField] private Button hairButton;
+    [SerializeField] private GameObject colorPalettePanel;
+    [SerializeField] private Button colorRedBtn;
+    [SerializeField] private Button colorGreenBtn;
+    [SerializeField] private Button colorBlackBtn;
+    [SerializeField] private Button saveColorBtn;
+    [SerializeField] private Button closePaletteBtn;
+    [SerializeField] private TextMeshProUGUI paletteTitleText;
+
+    [Header("Preview Settings")]
+    [SerializeField] private Transform previewAnchor;
+    [SerializeField] private Vector3 previewScale = new Vector3(10f, 20f, 1f);
+
+    public enum ColorCustomizationMode { None, Suit, Hair }
+    private ColorCustomizationMode currentMode = ColorCustomizationMode.None;
+    private Color activeSelectedColor = Color.white;
+
+    private Dictionary<string, GameObject> employeePrefabMap = new Dictionary<string, GameObject>();
+    private List<EmployeeListCardUI> cardUIList = new List<EmployeeListCardUI>();
+    private EmployeeListCardUI selectedCard;
+    private GameObject currentPreviewInstance;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
+        InitializePrefabMap();
+    }
+
+    private void Start()
+    {
+        InitializePrefabMap();
+        InitializeCustomizationUI();
+        LoadAndDisplayEmployeeList();
+    }
+
+    private void InitializeCustomizationUI()
+    {
+        if (suitButton != null)
+        {
+            suitButton.onClick.RemoveAllListeners();
+            suitButton.onClick.AddListener(OpenPaletteForSuit);
+        }
+
+        if (hairButton != null)
+        {
+            hairButton.onClick.RemoveAllListeners();
+            hairButton.onClick.AddListener(OpenPaletteForHair);
+        }
+
+        if (colorRedBtn != null)
+        {
+            colorRedBtn.onClick.RemoveAllListeners();
+            colorRedBtn.onClick.AddListener(() => OnColorSelected(new Color(0.9f, 0.2f, 0.2f, 1f)));
+        }
+
+        if (colorGreenBtn != null)
+        {
+            colorGreenBtn.onClick.RemoveAllListeners();
+            colorGreenBtn.onClick.AddListener(() => OnColorSelected(new Color(0.2f, 0.8f, 0.2f, 1f)));
+        }
+
+        if (colorBlackBtn != null)
+        {
+            colorBlackBtn.onClick.RemoveAllListeners();
+            colorBlackBtn.onClick.AddListener(() => OnColorSelected(new Color(0.15f, 0.15f, 0.15f, 1f)));
+        }
+
+        if (saveColorBtn != null)
+        {
+            saveColorBtn.onClick.RemoveAllListeners();
+            saveColorBtn.onClick.AddListener(SaveColorChanges);
+        }
+
+        if (closePaletteBtn != null)
+        {
+            closePaletteBtn.onClick.RemoveAllListeners();
+            closePaletteBtn.onClick.AddListener(ClosePalette);
+        }
+
+        if (colorPalettePanel != null)
+        {
+            colorPalettePanel.SetActive(false);
+        }
+    }
+
+    private void InitializePrefabMap()
+    {
+        employeePrefabMap.Clear();
+        foreach (var prefab in employeePrefabs)
+        {
+            if (prefab == null) continue;
+            if (!employeePrefabMap.ContainsKey(prefab.name))
+            {
+                employeePrefabMap.Add(prefab.name, prefab);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Loads employee data from EmployeeInventorySaveSystem and populates the left panel list.
+    /// </summary>
+    public void LoadAndDisplayEmployeeList()
+    {
+        // Clear previous cards
+        foreach (var card in cardUIList)
+        {
+            if (card != null && card.gameObject != null)
+            {
+                Destroy(card.gameObject);
+            }
+        }
+        cardUIList.Clear();
+
+        EmployeeInventoryData invData = null;
+        EmployeeInventorySaveSystem invSystem = EmployeeInventorySaveSystem.Instance;
+        if (invSystem == null) invSystem = FindFirstObjectByType<EmployeeInventorySaveSystem>();
+
+        if (invSystem != null)
+        {
+            invData = invSystem.LoadInventory();
+        }
+        else
+        {
+            // If no system instance exists in scene, create one to handle loading employee_inventory.json
+            GameObject go = new GameObject("EmployeeInventorySaveSystem");
+            invSystem = go.AddComponent<EmployeeInventorySaveSystem>();
+            invData = invSystem.LoadInventory();
+        }
+
+        if (cardContainer == null || cardPrefab == null)
+        {
+            Debug.LogWarning("[EmployeeViewerManager] Card container or card prefab is missing!");
+            return;
+        }
+
+        foreach (var empData in invData.employees)
+        {
+            GameObject cardObj = Instantiate(cardPrefab, cardContainer);
+            cardObj.SetActive(true);
+
+            EmployeeListCardUI cardUI = cardObj.GetComponent<EmployeeListCardUI>();
+            if (cardUI == null)
+            {
+                cardUI = cardObj.AddComponent<EmployeeListCardUI>();
+            }
+
+            cardUI.Setup(empData, this);
+            cardUIList.Add(cardUI);
+        }
+
+        // Auto-select the first employee by default if available
+        if (cardUIList.Count > 0)
+        {
+            SelectEmployeeCard(cardUIList[0]);
+        }
+    }
+
+    /// <summary>
+    /// Handles selection of an employee card.
+    /// </summary>
+    public void SelectEmployeeCard(EmployeeListCardUI cardUI)
+    {
+        if (cardUI == null || cardUI.ItemData == null) return;
+
+        if (selectedCard != null)
+        {
+            selectedCard.SetSelected(false);
+        }
+
+        selectedCard = cardUI;
+        selectedCard.SetSelected(true);
+
+        ClosePalette();
+        DisplayEmployeePreview(cardUI.ItemData);
+    }
+
+    public void OpenPaletteForSuit()
+    {
+        if (selectedCard == null || selectedCard.ItemData == null) return;
+        currentMode = ColorCustomizationMode.Suit;
+        activeSelectedColor = selectedCard.ItemData.suitColor;
+
+        if (paletteTitleText != null) paletteTitleText.text = "CUSTOMIZE SUIT COLOR";
+        if (colorPalettePanel != null) colorPalettePanel.SetActive(true);
+    }
+
+    public void OpenPaletteForHair()
+    {
+        if (selectedCard == null || selectedCard.ItemData == null) return;
+        currentMode = ColorCustomizationMode.Hair;
+        activeSelectedColor = selectedCard.ItemData.hairColor;
+
+        if (paletteTitleText != null) paletteTitleText.text = "CUSTOMIZE HAIR COLOR";
+        if (colorPalettePanel != null) colorPalettePanel.SetActive(true);
+    }
+
+    public void OnColorSelected(Color color)
+    {
+        activeSelectedColor = color;
+
+        // Apply color real-time to preview character model
+        if (currentPreviewInstance != null)
+        {
+            EmployeeAppearance appearance = currentPreviewInstance.GetComponent<EmployeeAppearance>();
+            if (appearance != null)
+            {
+                if (currentMode == ColorCustomizationMode.Suit)
+                {
+                    appearance.SetSuitColor(color);
+                }
+                else if (currentMode == ColorCustomizationMode.Hair)
+                {
+                    appearance.SetHairColor(color);
+                }
+            }
+        }
+    }
+
+    public void SaveColorChanges()
+    {
+        if (selectedCard == null || selectedCard.ItemData == null) return;
+
+        var empData = selectedCard.ItemData;
+        if (currentMode == ColorCustomizationMode.Suit)
+        {
+            empData.suitColor = activeSelectedColor;
+        }
+        else if (currentMode == ColorCustomizationMode.Hair)
+        {
+            empData.hairColor = activeSelectedColor;
+        }
+
+        // Save inventory changes to disk / JSON
+        EmployeeInventorySaveSystem invSystem = EmployeeInventorySaveSystem.Instance;
+        if (invSystem == null) invSystem = FindFirstObjectByType<EmployeeInventorySaveSystem>();
+        if (invSystem != null)
+        {
+            var invData = invSystem.CurrentData ?? invSystem.LoadInventory();
+            invSystem.SaveInventory(invData);
+        }
+
+        Debug.Log($"[EmployeeViewerManager] Saved new {(currentMode == ColorCustomizationMode.Suit ? "suit" : "hair")} color for employee '{empData.employeeName}'.");
+
+        ClosePalette();
+    }
+
+    public void ClosePalette()
+    {
+        currentMode = ColorCustomizationMode.None;
+        if (colorPalettePanel != null)
+        {
+            colorPalettePanel.SetActive(false);
+        }
+
+        // Re-apply original saved colors if palette closed without saving
+        if (selectedCard != null && selectedCard.ItemData != null && currentPreviewInstance != null)
+        {
+            EmployeeAppearance appearance = currentPreviewInstance.GetComponent<EmployeeAppearance>();
+            if (appearance != null)
+            {
+                appearance.SetAppearanceColors(selectedCard.ItemData.suitColor, selectedCard.ItemData.hairColor);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Spawns and displays the visual representation of the employee in the scene preview.
+    /// </summary>
+    private void DisplayEmployeePreview(EmployeeInventoryItemSaveData empData)
+    {
+        // Destroy existing preview instance
+        if (currentPreviewInstance != null)
+        {
+            Destroy(currentPreviewInstance);
+            currentPreviewInstance = null;
+        }
+
+        Vector3 spawnPos = previewAnchor != null ? previewAnchor.position : new Vector3(6.4f, -0.2f, 0f);
+
+        if (employeePrefabMap.TryGetValue(empData.employeePrefabName, out GameObject prefab))
+        {
+            currentPreviewInstance = Instantiate(prefab, spawnPos, Quaternion.identity);
+            currentPreviewInstance.name = $"Preview_{empData.employeeName}";
+            currentPreviewInstance.transform.localScale = previewScale;
+
+            EmployeeAppearance appearance = currentPreviewInstance.GetComponent<EmployeeAppearance>();
+            if (appearance != null)
+            {
+                Color suit = empData.suitColor.a > 0f ? empData.suitColor : Color.white;
+                Color hair = empData.hairColor.a > 0f ? empData.hairColor : Color.white;
+                appearance.SetAppearanceColors(suit, hair);
+            }
+
+            // Preserving relative sorting orders while moving the character layer in front of the UI panel (order 0)
+            SpriteRenderer[] spriteRenderers = currentPreviewInstance.GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (var sr in spriteRenderers)
+            {
+                sr.sortingOrder += 50;
+            }
+
+            // Ensure preview employee components are in passive/idle state
+            Employee empComp = currentPreviewInstance.GetComponent<Employee>();
+            if (empComp != null)
+            {
+                empComp.enabled = false; // Disable AI movement/tasks in viewer mode
+            }
+
+            // Ensure collider is disabled to prevent physics interactions
+            Collider2D col = currentPreviewInstance.GetComponent<Collider2D>();
+            if (col != null)
+            {
+                col.enabled = false;
+            }
+
+            Rigidbody2D rb = currentPreviewInstance.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.simulated = false;
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[EmployeeViewerManager] Prefab '{empData.employeePrefabName}' not found in employeePrefabMap!");
+        }
+
+        // Update Info UI
+        string roleName = empData.employeePrefabName.Replace("Employee", "");
+        if (selectedNameText != null) selectedNameText.text = empData.employeeName;
+        if (selectedRoleText != null) selectedRoleText.text = $"Role: {roleName}";
+        if (selectedDetailsText != null)
+        {
+            selectedDetailsText.text = GetRoleDescription(roleName);
+        }
+    }
+
+    private string GetRoleDescription(string role)
+    {
+        switch (role)
+        {
+            case "Botanist":
+                return "Specialist in plant cultivation, harvesting, and flora research.";
+            case "Researcher":
+                return "Conducts laboratory analysis, data processing, and technology upgrades.";
+            case "Security":
+                return "Maintains facility safety, suppresses containment breaches, and patrols corridors.";
+            case "Medic":
+                return "Provides medical care, restores employee health, and manages bio-hazards.";
+            case "Engineer":
+                return "Handles facility repairs, electrical grid maintenance, and machinery upgrades.";
+            default:
+                return "Facility staff member.";
+        }
+    }
+}

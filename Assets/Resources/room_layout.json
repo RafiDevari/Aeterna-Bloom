@@ -2,5 +2,99 @@
     "defaultRoomTemperature": 20.0,
     "maxElectricity": 100.0,
     "maxEnergy": 100.0,
-    "rooms": []
+    "rooms": [
+        {
+            "roomType": "MainRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -0.4369480609893799,
+                "y": -2.039090156555176,
+                "z": 0.0
+            },
+            "scale": {
+                "x": -0.2566526234149933,
+                "y": 0.325924813747406,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "ContainmentRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 18.968957901000978,
+                "y": -0.8378551006317139,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.3061574697494507,
+                "y": 2.833073139190674,
+                "z": 1.0
+            },
+            "temperature": 0.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "DivisionBotanist",
+            "roomName": "Botanist Room",
+            "position": {
+                "x": -9.020097732543946,
+                "y": -1.944319248199463,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": [
+                {
+                    "employeeName": "Bob",
+                    "employeePrefabName": "EmployeeBotanist",
+                    "suitColor": {
+                        "r": 0.4000000059604645,
+                        "g": 0.800000011920929,
+                        "b": 0.4000000059604645,
+                        "a": 1.0
+                    },
+                    "hairColor": {
+                        "r": 0.8999999761581421,
+                        "g": 0.20000000298023225,
+                        "b": 0.10000000149011612,
+                        "a": 1.0
+                    }
+                },
+                {
+                    "employeeName": "Alice",
+                    "employeePrefabName": "EmployeeBotanist",
+                    "suitColor": {
+                        "r": 0.4000000059604645,
+                        "g": 0.699999988079071,
+                        "b": 0.5,
+                        "a": 1.0
+                    },
+                    "hairColor": {
+                        "r": 0.800000011920929,
+                        "g": 0.5,
+                        "b": 0.20000000298023225,
+                        "a": 1.0
+                    }
+                }
+            ]
+        }
+    ]
 }

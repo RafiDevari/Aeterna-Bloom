@@ -357,9 +357,13 @@ public class EmployeeAssignmentManager : MonoBehaviour
                             
                             var nameField = nestedType.GetField("employeeName");
                             var prefabField = nestedType.GetField("employeePrefab");
+                            var suitColorField = nestedType.GetField("suitColor");
+                            var hairColorField = nestedType.GetField("hairColor");
 
                             if (nameField != null) nameField.SetValue(spawnData, empData.employeeName);
                             if (prefabField != null) prefabField.SetValue(spawnData, empPrefab);
+                            if (suitColorField != null) suitColorField.SetValue(spawnData, empData.suitColor);
+                            if (hairColorField != null) hairColorField.SetValue(spawnData, empData.hairColor);
 
                             newSpawnList.Add(spawnData);
 
@@ -623,17 +627,23 @@ public class EmployeeAssignmentManager : MonoBehaviour
         {
             if (pair.Value == room)
             {
-                // Find prefab name from our inventory cards list
-                string prefabName = "EmployeeBotanist";
+                EmployeeInventoryItemSaveData foundItem = null;
                 foreach (var card in cardUIList)
                 {
-                    if (card.ItemData.employeeName == pair.Key)
+                    if (card.ItemData != null && card.ItemData.employeeName == pair.Key)
                     {
-                        prefabName = card.ItemData.employeePrefabName;
+                        foundItem = card.ItemData;
                         break;
                     }
                 }
-                assigned.Add(new EmployeeInventoryItemSaveData(pair.Key, prefabName));
+                if (foundItem != null)
+                {
+                    assigned.Add(foundItem);
+                }
+                else
+                {
+                    assigned.Add(new EmployeeInventoryItemSaveData(pair.Key, "EmployeeBotanist"));
+                }
             }
         }
 
@@ -663,9 +673,13 @@ public class EmployeeAssignmentManager : MonoBehaviour
                             
                             var nameField = nestedType.GetField("employeeName");
                             var prefabField = nestedType.GetField("employeePrefab");
+                            var suitColorField = nestedType.GetField("suitColor");
+                            var hairColorField = nestedType.GetField("hairColor");
 
                             if (nameField != null) nameField.SetValue(spawnData, emp.employeeName);
                             if (prefabField != null) prefabField.SetValue(spawnData, empPrefab);
+                            if (suitColorField != null) suitColorField.SetValue(spawnData, emp.suitColor);
+                            if (hairColorField != null) hairColorField.SetValue(spawnData, emp.hairColor);
 
                             newSpawnList.Add(spawnData);
                         }
@@ -797,15 +811,22 @@ public class EmployeeAssignmentManager : MonoBehaviour
 
                             var nameField = item.GetType().GetField("employeeName");
                             var prefabField = item.GetType().GetField("employeePrefab");
+                            var suitColorField = item.GetType().GetField("suitColor");
+                            var hairColorField = item.GetType().GetField("hairColor");
 
                             string empName = nameField != null ? (string)nameField.GetValue(item) : "";
                             Employee empPrefab = prefabField != null ? (Employee)prefabField.GetValue(item) : null;
+                            Color sColor = suitColorField != null ? (Color)suitColorField.GetValue(item) : Color.white;
+                            Color hColor = hairColorField != null ? (Color)hairColorField.GetValue(item) : Color.white;
+
                             string prefabName = empPrefab != null ? empPrefab.gameObject.name : "";
 
                             emps.Add(new EmployeeSaveData
                             {
                                 employeeName = empName,
-                                employeePrefabName = prefabName
+                                employeePrefabName = prefabName,
+                                suitColor = sColor,
+                                hairColor = hColor
                             });
                         }
                     }

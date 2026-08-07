@@ -26,6 +26,12 @@ public abstract class DivisionRoom : Room
 
         [Tooltip("Prefab Employee (harus punya component Employee) yang mau di-spawn.")]
         public Employee employeePrefab;
+
+        [Tooltip("Warna baju/suit employee.")]
+        public Color suitColor;
+
+        [Tooltip("Warna rambut employee.")]
+        public Color hairColor;
     }
 
     [Header("Employee Spawn")]
@@ -85,6 +91,40 @@ public abstract class DivisionRoom : Room
 
             if (!string.IsNullOrEmpty(data.employeeName))
                 employee.EmployeeName = data.employeeName;
+
+            // Fetch suit color & hair color from employee inventory save system first
+            Color suit = Color.white;
+            Color hair = Color.white;
+            bool colorFoundInInventory = false;
+
+            EmployeeInventorySaveSystem invSystem = EmployeeInventorySaveSystem.Instance;
+            if (invSystem == null) invSystem = FindFirstObjectByType<EmployeeInventorySaveSystem>();
+
+            if (invSystem != null)
+            {
+                var invData = invSystem.CurrentData ?? invSystem.LoadInventory();
+                if (invData != null && invData.employees != null)
+                {
+                    var invItem = invData.employees.Find(e => e.employeeName == employee.EmployeeName);
+                    if (invItem != null)
+                    {
+                        if (invItem.suitColor.a > 0f) suit = invItem.suitColor;
+                        if (invItem.hairColor.a > 0f) hair = invItem.hairColor;
+                        colorFoundInInventory = true;
+                    }
+                }
+            }
+
+            if (!colorFoundInInventory)
+            {
+                if (data.suitColor.a > 0f) suit = data.suitColor;
+                if (data.hairColor.a > 0f) hair = data.hairColor;
+            }
+
+            if (employee.Appearance != null)
+            {
+                employee.Appearance.SetAppearanceColors(suit, hair);
+            }
 
             // Maintain native EmployeeDivision from prefab (do not overwrite with room's division)
             employee.AssignDivision(this);

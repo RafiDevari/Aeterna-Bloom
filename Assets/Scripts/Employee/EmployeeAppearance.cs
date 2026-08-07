@@ -32,8 +32,8 @@ public class EmployeeAppearance : MonoBehaviour
     [Header("Customizable Appearance Inputs")]
     [Tooltip("Optional sprite override for employee main body texture.")]
     [SerializeField] private Sprite bodySprite;
-    [Tooltip("Color tint for employee body (default White = un-tinted original image color).")]
-    [SerializeField] private Color bodyColor = Color.white;
+    [Tooltip("Color tint for employee suit (default White = un-tinted original image color).")]
+    [SerializeField] private Color suitColor = Color.white;
     [Tooltip("Optional sprite override for employee hair texture.")]
     [SerializeField] private Sprite hairSprite;
     [Tooltip("Color tint for employee hair (default White = un-tinted original image color).")]
@@ -80,10 +80,16 @@ public class EmployeeAppearance : MonoBehaviour
         set => SetBody(value);
     }
 
+    public Color SuitColor
+    {
+        get => suitColor;
+        set => SetSuitColor(value);
+    }
+
     public Color BodyColor
     {
-        get => bodyColor;
-        set => SetBodyColor(value);
+        get => SuitColor;
+        set => SuitColor = value;
     }
 
     public Sprite HairSprite
@@ -229,17 +235,19 @@ public class EmployeeAppearance : MonoBehaviour
         {
             EnsureWhiteTintShader(bodyRenderer);
             if (bodySprite != null) bodyRenderer.sprite = bodySprite;
-            bodyRenderer.color = bodyColor;
+            bodyRenderer.color = suitColor;
         }
 
         if (armLRenderer != null)
         {
             EnsureWhiteTintShader(armLRenderer);
+            armLRenderer.color = suitColor;
         }
 
         if (armRRenderer != null)
         {
             EnsureWhiteTintShader(armRRenderer);
+            armRRenderer.color = suitColor;
         }
 
         if (hairRenderer != null)
@@ -340,14 +348,23 @@ public class EmployeeAppearance : MonoBehaviour
         NotifyVisualsChanged();
     }
 
-    /// <summary>Sets the body color tint.</summary>
-    public void SetBodyColor(Color color)
+    /// <summary>Sets the suit color tint for body and arms.</summary>
+    public void SetSuitColor(Color color)
     {
-        bodyColor = color;
-        if (bodyRenderer != null)
-        {
-            bodyRenderer.color = bodyColor;
-        }
+        suitColor = color;
+        if (bodyRenderer != null) bodyRenderer.color = suitColor;
+        if (armLRenderer != null) armLRenderer.color = suitColor;
+        if (armRRenderer != null) armRRenderer.color = suitColor;
+    }
+
+    /// <summary>Sets the body/suit color tint (backward compatibility).</summary>
+    public void SetBodyColor(Color color) => SetSuitColor(color);
+
+    /// <summary>Sets both suit color and hair color simultaneously.</summary>
+    public void SetAppearanceColors(Color suit, Color hair)
+    {
+        SetSuitColor(suit);
+        SetHairColor(hair);
     }
 
     /// <summary>Sets the left arm sprite.</summary>
