@@ -199,6 +199,62 @@ public class EmployeeViewerSetup : MonoBehaviour
         roleTmp.color = new Color(0.4f, 0.8f, 1f);
         roleTmp.fontStyle = FontStyles.Italic;
 
+        // Customization Buttons (SUIT & HAIR) on left edge of detail panel
+        GameObject btnContainerObj = new GameObject("CustomizationButtons", typeof(RectTransform), typeof(VerticalLayoutGroup));
+        btnContainerObj.transform.SetParent(rightPanelObj.transform, false);
+        RectTransform btnContainerRt = btnContainerObj.GetComponent<RectTransform>();
+        btnContainerRt.anchorMin = new Vector2(0f, 0.5f);
+        btnContainerRt.anchorMax = new Vector2(0f, 0.5f);
+        btnContainerRt.pivot = new Vector2(1f, 0.5f);
+        btnContainerRt.anchoredPosition = new Vector2(-15, 0);
+        btnContainerRt.sizeDelta = new Vector2(110, 130);
+
+        VerticalLayoutGroup btnVlg = btnContainerObj.GetComponent<VerticalLayoutGroup>();
+        btnVlg.spacing = 10;
+        btnVlg.childAlignment = TextAnchor.MiddleCenter;
+        btnVlg.childControlWidth = true;
+        btnVlg.childControlHeight = true;
+        btnVlg.childForceExpandWidth = true;
+        btnVlg.childForceExpandHeight = true;
+
+        // Suit Button
+        GameObject suitBtnObj = new GameObject("SuitButton", typeof(RectTransform), typeof(Image), typeof(Button));
+        suitBtnObj.transform.SetParent(btnContainerObj.transform, false);
+        Image suitImg = suitBtnObj.GetComponent<Image>();
+        suitImg.color = new Color(0.15f, 0.35f, 0.55f, 0.95f);
+        Button suitBtn = suitBtnObj.GetComponent<Button>();
+
+        GameObject suitTextObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        suitTextObj.transform.SetParent(suitBtnObj.transform, false);
+        RectTransform suitTextRt = suitTextObj.GetComponent<RectTransform>();
+        suitTextRt.anchorMin = Vector2.zero;
+        suitTextRt.anchorMax = Vector2.one;
+        TextMeshProUGUI suitTmp = suitTextObj.GetComponent<TextMeshProUGUI>();
+        suitTmp.text = "SUIT";
+        suitTmp.fontSize = 16;
+        suitTmp.fontStyle = FontStyles.Bold;
+        suitTmp.alignment = TextAlignmentOptions.Center;
+        suitTmp.color = Color.white;
+
+        // Hair Button
+        GameObject hairBtnObj = new GameObject("HairButton", typeof(RectTransform), typeof(Image), typeof(Button));
+        hairBtnObj.transform.SetParent(btnContainerObj.transform, false);
+        Image hairImg = hairBtnObj.GetComponent<Image>();
+        hairImg.color = new Color(0.45f, 0.2f, 0.5f, 0.95f);
+        Button hairBtn = hairBtnObj.GetComponent<Button>();
+
+        GameObject hairTextObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        hairTextObj.transform.SetParent(hairBtnObj.transform, false);
+        RectTransform hairTextRt = hairTextObj.GetComponent<RectTransform>();
+        hairTextRt.anchorMin = Vector2.zero;
+        hairTextRt.anchorMax = Vector2.one;
+        TextMeshProUGUI hairTmp = hairTextObj.GetComponent<TextMeshProUGUI>();
+        hairTmp.text = "HAIR";
+        hairTmp.fontSize = 16;
+        hairTmp.fontStyle = FontStyles.Bold;
+        hairTmp.alignment = TextAlignmentOptions.Center;
+        hairTmp.color = Color.white;
+
         // Employee Details Text (Positioned at bottom of right panel)
         GameObject detailsObj = new GameObject("SelectedDetailsText", typeof(RectTransform), typeof(TextMeshProUGUI));
         detailsObj.transform.SetParent(rightPanelObj.transform, false);
@@ -214,7 +270,113 @@ public class EmployeeViewerSetup : MonoBehaviour
         detailsTmp.alignment = TextAlignmentOptions.TopLeft;
         detailsTmp.color = new Color(0.85f, 0.88f, 0.95f);
 
-        // 8. Create World Preview Anchor inside the Right Detail Panel
+        // 8. Build Middle Field Color Palette Panel
+        Transform existingPalette = canvas.transform.Find("ColorPalettePanel");
+        if (existingPalette != null) DestroyImmediate(existingPalette.gameObject);
+
+        GameObject paletteObj = new GameObject("ColorPalettePanel", typeof(RectTransform), typeof(Image));
+        paletteObj.transform.SetParent(canvas.transform, false);
+        RectTransform paletteRt = paletteObj.GetComponent<RectTransform>();
+        paletteRt.anchorMin = new Vector2(0.33f, 0.30f);
+        paletteRt.anchorMax = new Vector2(0.63f, 0.70f);
+        paletteRt.pivot = new Vector2(0.5f, 0.5f);
+        paletteRt.anchoredPosition = Vector2.zero;
+
+        Image paletteImg = paletteObj.GetComponent<Image>();
+        paletteImg.color = new Color(0.09f, 0.11f, 0.17f, 0.96f);
+
+        // Palette Title Text
+        GameObject paletteTitleObj = new GameObject("PaletteTitleText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        paletteTitleObj.transform.SetParent(paletteObj.transform, false);
+        RectTransform paletteTitleRt = paletteTitleObj.GetComponent<RectTransform>();
+        paletteTitleRt.anchorMin = new Vector2(0, 1);
+        paletteTitleRt.anchorMax = new Vector2(1, 1);
+        paletteTitleRt.pivot = new Vector2(0.5f, 1);
+        paletteTitleRt.anchoredPosition = new Vector2(0, -15);
+        paletteTitleRt.sizeDelta = new Vector2(-20, 35);
+
+        TextMeshProUGUI paletteTitleTmp = paletteTitleObj.GetComponent<TextMeshProUGUI>();
+        paletteTitleTmp.text = "CUSTOMIZE COLOR";
+        paletteTitleTmp.fontSize = 20;
+        paletteTitleTmp.alignment = TextAlignmentOptions.Center;
+        paletteTitleTmp.color = new Color(0.4f, 0.85f, 1f);
+        paletteTitleTmp.fontStyle = FontStyles.Bold;
+
+        // Palette Close Button (X)
+        GameObject closeBtnObj = new GameObject("CloseButton", typeof(RectTransform), typeof(Image), typeof(Button));
+        closeBtnObj.transform.SetParent(paletteObj.transform, false);
+        RectTransform closeRt = closeBtnObj.GetComponent<RectTransform>();
+        closeRt.anchorMin = new Vector2(1, 1);
+        closeRt.anchorMax = new Vector2(1, 1);
+        closeRt.pivot = new Vector2(1, 1);
+        closeRt.anchoredPosition = new Vector2(-10, -10);
+        closeRt.sizeDelta = new Vector2(30, 30);
+
+        Image closeImg = closeBtnObj.GetComponent<Image>();
+        closeImg.color = new Color(0.6f, 0.15f, 0.15f, 0.9f);
+        Button closeBtn = closeBtnObj.GetComponent<Button>();
+
+        GameObject closeTextObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        closeTextObj.transform.SetParent(closeBtnObj.transform, false);
+        RectTransform closeTextRt = closeTextObj.GetComponent<RectTransform>();
+        closeTextRt.anchorMin = Vector2.zero;
+        closeTextRt.anchorMax = Vector2.one;
+        TextMeshProUGUI closeTmp = closeTextObj.GetComponent<TextMeshProUGUI>();
+        closeTmp.text = "X";
+        closeTmp.fontSize = 16;
+        closeTmp.fontStyle = FontStyles.Bold;
+        closeTmp.alignment = TextAlignmentOptions.Center;
+        closeTmp.color = Color.white;
+
+        // Swatches Horizontal Container
+        GameObject swatchContainerObj = new GameObject("SwatchContainer", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+        swatchContainerObj.transform.SetParent(paletteObj.transform, false);
+        RectTransform swatchContainerRt = swatchContainerObj.GetComponent<RectTransform>();
+        swatchContainerRt.anchorMin = new Vector2(0.05f, 0.35f);
+        swatchContainerRt.anchorMax = new Vector2(0.95f, 0.70f);
+        swatchContainerRt.anchoredPosition = Vector2.zero;
+
+        HorizontalLayoutGroup swatchHlg = swatchContainerObj.GetComponent<HorizontalLayoutGroup>();
+        swatchHlg.spacing = 20;
+        swatchHlg.childAlignment = TextAnchor.MiddleCenter;
+        swatchHlg.childControlWidth = false;
+        swatchHlg.childControlHeight = false;
+
+        // Red Swatch Button
+        Button redBtn = CreateColorSwatchButton(swatchContainerObj.transform, "RedBtn", "Merah", new Color(0.9f, 0.2f, 0.2f, 1f));
+        // Green Swatch Button
+        Button greenBtn = CreateColorSwatchButton(swatchContainerObj.transform, "GreenBtn", "Hijau", new Color(0.2f, 0.8f, 0.2f, 1f));
+        // Black Swatch Button
+        Button blackBtn = CreateColorSwatchButton(swatchContainerObj.transform, "BlackBtn", "Hitam", new Color(0.15f, 0.15f, 0.15f, 1f));
+
+        // Save Color Button at Bottom of Palette
+        GameObject saveBtnObj = new GameObject("SaveColorButton", typeof(RectTransform), typeof(Image), typeof(Button));
+        saveBtnObj.transform.SetParent(paletteObj.transform, false);
+        RectTransform saveRt = saveBtnObj.GetComponent<RectTransform>();
+        saveRt.anchorMin = new Vector2(0.5f, 0.08f);
+        saveRt.anchorMax = new Vector2(0.5f, 0.08f);
+        saveRt.pivot = new Vector2(0.5f, 0f);
+        saveRt.sizeDelta = new Vector2(200, 45);
+
+        Image saveImg = saveBtnObj.GetComponent<Image>();
+        saveImg.color = new Color(0.15f, 0.6f, 0.35f, 0.95f);
+        Button saveBtn = saveBtnObj.GetComponent<Button>();
+
+        GameObject saveTextObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        saveTextObj.transform.SetParent(saveBtnObj.transform, false);
+        RectTransform saveTextRt = saveTextObj.GetComponent<RectTransform>();
+        saveTextRt.anchorMin = Vector2.zero;
+        saveTextRt.anchorMax = Vector2.one;
+        TextMeshProUGUI saveTmp = saveTextObj.GetComponent<TextMeshProUGUI>();
+        saveTmp.text = "SAVE";
+        saveTmp.fontSize = 18;
+        saveTmp.fontStyle = FontStyles.Bold;
+        saveTmp.alignment = TextAlignmentOptions.Center;
+        saveTmp.color = Color.white;
+
+        paletteObj.SetActive(false);
+
+        // 9. Create World Preview Anchor inside the Right Detail Panel
         GameObject previewAnchorObj = GameObject.Find("PreviewAnchor");
         if (previewAnchorObj == null)
         {
@@ -222,7 +384,7 @@ public class EmployeeViewerSetup : MonoBehaviour
         }
         previewAnchorObj.transform.position = new Vector3(6.4f, -0.2f, 0f);
 
-        // 9. Load Prefabs and Assign References
+        // 10. Load Prefabs and Assign References
         List<GameObject> employeePrefabs = new List<GameObject>();
 #if UNITY_EDITOR
         string[] employeeNames = { "EmployeeBotanist", "EmployeeResearcher", "EmployeeSecurity", "EmployeeMedic", "EmployeeEngineer" };
@@ -246,7 +408,44 @@ public class EmployeeViewerSetup : MonoBehaviour
         SetFieldValue(manager, "previewAnchor", previewAnchorObj.transform);
         SetFieldValue(manager, "employeePrefabs", employeePrefabs);
 
+        SetFieldValue(manager, "suitButton", suitBtn);
+        SetFieldValue(manager, "hairButton", hairBtn);
+        SetFieldValue(manager, "colorPalettePanel", paletteObj);
+        SetFieldValue(manager, "colorRedBtn", redBtn);
+        SetFieldValue(manager, "colorGreenBtn", greenBtn);
+        SetFieldValue(manager, "colorBlackBtn", blackBtn);
+        SetFieldValue(manager, "saveColorBtn", saveBtn);
+        SetFieldValue(manager, "closePaletteBtn", closeBtn);
+        SetFieldValue(manager, "paletteTitleText", paletteTitleTmp);
+
         Debug.Log("[EmployeeViewerSetup] Employee Viewer scene successfully configured programmatically!");
+    }
+
+    private static Button CreateColorSwatchButton(Transform parent, string name, string label, Color color)
+    {
+        GameObject swatchObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+        swatchObj.transform.SetParent(parent, false);
+        RectTransform swatchRt = swatchObj.GetComponent<RectTransform>();
+        swatchRt.sizeDelta = new Vector2(75, 75);
+
+        Image swatchImg = swatchObj.GetComponent<Image>();
+        swatchImg.color = color;
+        Button button = swatchObj.GetComponent<Button>();
+
+        GameObject textObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObj.transform.SetParent(swatchObj.transform, false);
+        RectTransform textRt = textObj.GetComponent<RectTransform>();
+        textRt.anchorMin = Vector2.zero;
+        textRt.anchorMax = Vector2.one;
+
+        TextMeshProUGUI tmp = textObj.GetComponent<TextMeshProUGUI>();
+        tmp.text = label;
+        tmp.fontSize = 14;
+        tmp.fontStyle = FontStyles.Bold;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.color = (color.r + color.g + color.b < 1.2f) ? Color.white : Color.black;
+
+        return button;
     }
 
     private static GameObject CreateEmployeeCardPrefab()

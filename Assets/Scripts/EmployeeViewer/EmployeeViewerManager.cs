@@ -21,9 +21,24 @@ public class EmployeeViewerManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI selectedRoleText;
     [SerializeField] private TextMeshProUGUI selectedDetailsText;
 
+    [Header("Customization UI References")]
+    [SerializeField] private Button suitButton;
+    [SerializeField] private Button hairButton;
+    [SerializeField] private GameObject colorPalettePanel;
+    [SerializeField] private Button colorRedBtn;
+    [SerializeField] private Button colorGreenBtn;
+    [SerializeField] private Button colorBlackBtn;
+    [SerializeField] private Button saveColorBtn;
+    [SerializeField] private Button closePaletteBtn;
+    [SerializeField] private TextMeshProUGUI paletteTitleText;
+
     [Header("Preview Settings")]
     [SerializeField] private Transform previewAnchor;
     [SerializeField] private Vector3 previewScale = new Vector3(10f, 20f, 1f);
+
+    public enum ColorCustomizationMode { None, Suit, Hair }
+    private ColorCustomizationMode currentMode = ColorCustomizationMode.None;
+    private Color activeSelectedColor = Color.white;
 
     private Dictionary<string, GameObject> employeePrefabMap = new Dictionary<string, GameObject>();
     private List<EmployeeListCardUI> cardUIList = new List<EmployeeListCardUI>();
@@ -45,7 +60,58 @@ public class EmployeeViewerManager : MonoBehaviour
     private void Start()
     {
         InitializePrefabMap();
+        InitializeCustomizationUI();
         LoadAndDisplayEmployeeList();
+    }
+
+    private void InitializeCustomizationUI()
+    {
+        if (suitButton != null)
+        {
+            suitButton.onClick.RemoveAllListeners();
+            suitButton.onClick.AddListener(OpenPaletteForSuit);
+        }
+
+        if (hairButton != null)
+        {
+            hairButton.onClick.RemoveAllListeners();
+            hairButton.onClick.AddListener(OpenPaletteForHair);
+        }
+
+        if (colorRedBtn != null)
+        {
+            colorRedBtn.onClick.RemoveAllListeners();
+            colorRedBtn.onClick.AddListener(() => OnColorSelected(new Color(0.9f, 0.2f, 0.2f, 1f)));
+        }
+
+        if (colorGreenBtn != null)
+        {
+            colorGreenBtn.onClick.RemoveAllListeners();
+            colorGreenBtn.onClick.AddListener(() => OnColorSelected(new Color(0.2f, 0.8f, 0.2f, 1f)));
+        }
+
+        if (colorBlackBtn != null)
+        {
+            colorBlackBtn.onClick.RemoveAllListeners();
+            colorBlackBtn.onClick.AddListener(() => OnColorSelected(new Color(0.15f, 0.15f, 0.15f, 1f)));
+        }
+
+        if (saveColorBtn != null)
+        {
+            saveColorBtn.onClick.RemoveAllListeners();
+            saveColorBtn.onClick.AddListener(SaveColorChanges);
+        }
+
+        if (closePaletteBtn != null)
+        {
+            closePaletteBtn.onClick.RemoveAllListeners();
+            closePaletteBtn.onClick.AddListener(ClosePalette);
+        }
+
+        if (colorPalettePanel != null)
+        {
+            colorPalettePanel.SetActive(false);
+        }
     }
 
     private void InitializePrefabMap()
@@ -135,7 +201,97 @@ public class EmployeeViewerManager : MonoBehaviour
         selectedCard = cardUI;
         selectedCard.SetSelected(true);
 
+        ClosePalette();
         DisplayEmployeePreview(cardUI.ItemData);
+    }
+
+    public void OpenPaletteForSuit()
+    {
+        if (selectedCard == null || selectedCard.ItemData == null) return;
+        currentMode = ColorCustomizationMode.Suit;
+        activeSelectedColor = selectedCard.ItemData.suitColor;
+
+        if (paletteTitleText != null) paletteTitleText.text = "CUSTOMIZE SUIT COLOR";
+        if (colorPalettePanel != null) colorPalettePanel.SetActive(true);
+    }
+
+    public void OpenPaletteForHair()
+    {
+        if (selectedCard == null || selectedCard.ItemData == null) return;
+        currentMode = ColorCustomizationMode.Hair;
+        activeSelectedColor = selectedCard.ItemData.hairColor;
+
+        if (paletteTitleText != null) paletteTitleText.text = "CUSTOMIZE HAIR COLOR";
+        if (colorPalettePanel != null) colorPalettePanel.SetActive(true);
+    }
+
+    public void OnColorSelected(Color color)
+    {
+        activeSelectedColor = color;
+
+        // Apply color real-time to preview character model
+        if (currentPreviewInstance != null)
+        {
+            EmployeeAppearance appearance = currentPreviewInstance.GetComponent<EmployeeAppearance>();
+            if (appearance != null)
+            {
+                if (currentMode == ColorCustomizationMode.Suit)
+                {
+                    appearance.SetSuitColor(color);
+                }
+                else if (currentMode == ColorCustomizationMode.Hair)
+                {
+                    appearance.SetHairColor(color);
+                }
+            }
+        }
+    }
+
+    public void SaveColorChanges()
+    {
+        if (selectedCard == null || selectedCard.ItemData == null) return;
+
+        var empData = selectedCard.ItemData;
+        if (currentMode == ColorCustomizationMode.Suit)
+        {
+            empData.suitColor = activeSelectedColor;
+        }
+        else if (currentMode == ColorCustomizationMode.Hair)
+        {
+            empData.hairColor = activeSelectedColor;
+        }
+
+        // Save inventory changes to disk / JSON
+        EmployeeInventorySaveSystem invSystem = EmployeeInventorySaveSystem.Instance;
+        if (invSystem == null) invSystem = FindFirstObjectByType<EmployeeInventorySaveSystem>();
+        if (invSystem != null)
+        {
+            var invData = invSystem.CurrentData ?? invSystem.LoadInventory();
+            invSystem.SaveInventory(invData);
+        }
+
+        Debug.Log($"[EmployeeViewerManager] Saved new {(currentMode == ColorCustomizationMode.Suit ? "suit" : "hair")} color for employee '{empData.employeeName}'.");
+
+        ClosePalette();
+    }
+
+    public void ClosePalette()
+    {
+        currentMode = ColorCustomizationMode.None;
+        if (colorPalettePanel != null)
+        {
+            colorPalettePanel.SetActive(false);
+        }
+
+        // Re-apply original saved colors if palette closed without saving
+        if (selectedCard != null && selectedCard.ItemData != null && currentPreviewInstance != null)
+        {
+            EmployeeAppearance appearance = currentPreviewInstance.GetComponent<EmployeeAppearance>();
+            if (appearance != null)
+            {
+                appearance.SetAppearanceColors(selectedCard.ItemData.suitColor, selectedCard.ItemData.hairColor);
+            }
+        }
     }
 
     /// <summary>
