@@ -758,12 +758,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7877704855510896641, guid: 61e5cd27991d82b4b86459a0d470a3e7, type: 3}
+  m_Sprite: {fileID: 6291076074326483787, guid: 1f6f2c86a9923fc4393e048e8cb7ea2c, type: 3}
   m_Color: {r: 0.9333334, g: 0.509804, b: 0.9333334, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 3.670393, y: 3.75}
+  m_Size: {x: 3.6203876, y: 3.75}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -1117,7 +1117,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.024209071, y: 0.053079925}
+  m_Offset: {x: -0.024708081, y: 0.05306896}
   m_SpriteTilingProperty:
     border: {x: 0.049999997, y: 0.049999997, z: 0.049999997, w: 0.049999997}
     pivot: {x: 0.5, y: 0.5}
@@ -1127,7 +1127,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.2598297, y: 0.2185667}
+  m_Size: {x: 0.25883168, y: 0.21854477}
   m_EdgeRadius: 0
 --- !u!114 &4021511664053678059
 MonoBehaviour:
@@ -1217,7 +1217,7 @@ MonoBehaviour:
   mouthRenderer: {fileID: 8730474086169141364}
   bodySprite: {fileID: 104705311889192287, guid: 7a06a1d99048cd046b4b83ebf2c4562e, type: 3}
   suitColor: {r: 1, g: 1, b: 1, a: 1}
-  hairSprite: {fileID: 7877704855510896641, guid: 61e5cd27991d82b4b86459a0d470a3e7, type: 3}
+  hairSprite: {fileID: 6291076074326483787, guid: 1f6f2c86a9923fc4393e048e8cb7ea2c, type: 3}
   hairColor: {r: 0.9333334, g: 0.509804, b: 0.9333334, a: 1}
   eyeSprite: {fileID: 1250541562, guid: 6238ba2c47b70f746a50d283cf4c3e69, type: 3}
   mouthSprite: {fileID: -1554016346080846349, guid: 869cdb11802100b4d94c5294dbd84ada, type: 3}
