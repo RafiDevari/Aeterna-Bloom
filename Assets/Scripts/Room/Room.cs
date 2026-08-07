@@ -558,6 +558,97 @@ public abstract class Room : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Menghitung koordinat lantai / walkway terdekat di bagian bawah ruangan ini
+    /// berdasarkan titik world yang diklik pemain.
+    /// Memastikan posisi Y berada tepat di lantai (CollisionBounds) dan posisi X di-clamp
+    /// di dalam batas lebar ruangan dengan margin aman.
+    /// </summary>
+    public Vector3 GetNearestWalkablePosition(Vector3 worldPoint)
+    {
+        Bounds[] boundsList = CollisionBounds;
+        if (boundsList == null || boundsList.Length == 0)
+        {
+            return transform.position;
+        }
+
+        Vector3 bestPoint = boundsList[0].center;
+        float minDistanceSqr = float.MaxValue;
+
+        foreach (var b in boundsList)
+        {
+            // Margin aman dari dinding kiri dan kanan agar employee tidak mentok di ujung
+            float marginX = Mathf.Min(0.35f, b.size.x * 0.2f);
+            float minX = b.min.x + marginX;
+            float maxX = b.max.x - marginX;
+
+            float x = (minX < maxX) ? Mathf.Clamp(worldPoint.x, minX, maxX) : b.center.x;
+            
+            // Y ditaruh tepat di tengah area walkway/lantai bounds ini
+            float y = b.center.y;
+            Vector3 candidate = new Vector3(x, y, 0f);
+
+            float distSqr = (worldPoint - candidate).sqrMagnitude;
+            if (distSqr < minDistanceSqr)
+            {
+                minDistanceSqr = distSqr;
+                bestPoint = candidate;
+            }
+        }
+
+        bestPoint.z = 0f;
+        return bestPoint;
+    }
+
+    /// <summary>
+    /// Mencari instance Room yang berada di bawah posisi pointer/mouse di world.
+    /// Mengecek BoxCollider2D, Contains(), dan SpriteRenderer bounds dari semua Room yang terdaftar.
+    /// </summary>
+    public static Room FindRoomUnderPointer(Vector3 worldPoint)
+    {
+        worldPoint.z = 0f;
+
+        if (Facility.Instance != null && Facility.Instance.Rooms != null)
+        {
+            // 1. Cek langsung via Room.Contains atau SpriteRenderer bounds
+            foreach (Room room in Facility.Instance.Rooms)
+            {
+                if (room == null) continue;
+
+                if (room.Contains(worldPoint))
+                    return room;
+
+                if (room.spriteRenderer != null && room.spriteRenderer.bounds.Contains(worldPoint))
+                    return room;
+
+                var col = room.GetComponent<BoxCollider2D>();
+                if (col != null && col.OverlapPoint(worldPoint))
+                    return room;
+            }
+
+            // 2. Fallback: Cari room dengan jarak terdekat jika klik sedikit di luar margin (radius 1.5 unit)
+            Room closestRoom = null;
+            float closestDist = 1.5f;
+
+            foreach (Room room in Facility.Instance.Rooms)
+            {
+                if (room == null) continue;
+                Bounds b = room.spriteRenderer != null ? room.spriteRenderer.bounds : room.RoomBounds;
+                float dist = Mathf.Sqrt(b.SqrDistance(worldPoint));
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestRoom = room;
+                }
+            }
+
+            if (closestRoom != null)
+                return closestRoom;
+        }
+
+        return RoomPathfinder.FindRoomAt(worldPoint);
+    }
+
 #if UNITY_EDITOR
 private void OnDrawGizmosSelected()
 {
