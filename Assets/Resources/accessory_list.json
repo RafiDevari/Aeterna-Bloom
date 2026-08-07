@@ -1,0 +1,30 @@
+{
+  "suits": [
+    {
+      "id": "Suit_1",
+      "name": "Suit Style 1",
+      "spritePath": "Sprites/Employee/Suit/Suit_1",
+      "isUnlocked": true
+    },
+    {
+      "id": "Suit_2",
+      "name": "Suit Style 2",
+      "spritePath": "Sprites/Employee/Suit/Suit_2",
+      "isUnlocked": true
+    }
+  ],
+  "hairs": [
+    {
+      "id": "Hair_1",
+      "name": "Hair Style 1",
+      "spritePath": "Sprites/Employee/Hair/Hair_1",
+      "isUnlocked": true
+    },
+    {
+      "id": "Hair_2",
+      "name": "Hair Style 2",
+      "spritePath": "Sprites/Employee/Hair/Hair_2",
+      "isUnlocked": true
+    }
+  ]
+}
