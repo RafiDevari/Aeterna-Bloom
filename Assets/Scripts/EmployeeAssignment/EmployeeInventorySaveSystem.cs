@@ -7,47 +7,17 @@ public class EmployeeInventoryItemSaveData
 {
     public string employeeName;
     public string employeePrefabName; // e.g. EmployeeBotanist, EmployeeResearcher, etc.
-    public string hair = "Hair";
-    public string hairColor = "#FFFFFF";
-    public string colorHair; // alias support for JSON
-    public string body = "Suit01";
-    public string bodyColor = "#FFFFFF";
-    public string colorBody; // alias support for JSON
+    public Color suitColor = Color.white;
+    public Color hairColor = Color.white;
 
     public EmployeeInventoryItemSaveData() { }
 
-    public EmployeeInventoryItemSaveData(string name, string prefabName, string hair = "Hair", string hairColor = "#FFFFFF", string body = "Suit01", string bodyColor = "#FFFFFF")
+    public EmployeeInventoryItemSaveData(string name, string prefabName, Color? suit = null, Color? hair = null)
     {
         employeeName = name;
         employeePrefabName = prefabName;
-        this.hair = hair;
-        this.hairColor = hairColor;
-        this.body = body;
-        this.bodyColor = bodyColor;
-    }
-
-    public string GetHair()
-    {
-        return !string.IsNullOrEmpty(hair) ? hair : "Hair";
-    }
-
-    public string GetHairColorHex()
-    {
-        if (!string.IsNullOrEmpty(hairColor)) return hairColor;
-        if (!string.IsNullOrEmpty(colorHair)) return colorHair;
-        return "#FFFFFF";
-    }
-
-    public string GetBody()
-    {
-        return !string.IsNullOrEmpty(body) ? body : "Suit01";
-    }
-
-    public string GetBodyColorHex()
-    {
-        if (!string.IsNullOrEmpty(bodyColor)) return bodyColor;
-        if (!string.IsNullOrEmpty(colorBody)) return colorBody;
-        return "#FFFFFF";
+        suitColor = suit ?? Color.white;
+        hairColor = hair ?? Color.white;
     }
 }
 
@@ -178,15 +148,11 @@ public class EmployeeInventorySaveSystem : MonoBehaviour
         {
             employees = new List<EmployeeInventoryItemSaveData>
             {
-                new EmployeeInventoryItemSaveData("Bob", "EmployeeBotanist", "Hair", "#7CFC00", "Botanist", "#FFFFFF"),
-                new EmployeeInventoryItemSaveData("Alice", "EmployeeBotanist", "Hair2", "#FFD700", "Botanist", "#FFFFFF"),
-                new EmployeeInventoryItemSaveData("Charlie", "EmployeeSecurity", "Hair", "#1A1A1A", "Suit01", "#336699"),
-                new EmployeeInventoryItemSaveData("Daniel", "EmployeeMedic", "Hair2", "#8B0000", "Suit01", "#FFFFFF"),
-                new EmployeeInventoryItemSaveData("Edward", "EmployeeEngineer", "Hair", "#FF8C00", "Suit01", "#E6E6FA"),
-                new EmployeeInventoryItemSaveData("Faelantern", "EmployeeResearcher", "Hair2", "#EE82EE", "Researcher", "#0000FF"),
-                new EmployeeInventoryItemSaveData("Garion", "EmployeeEngineer", "Hair", "#2E8B57", "Suit01", "#DAA520"),
-                new EmployeeInventoryItemSaveData("Harrold", "EmployeeEngineer", "Hair2", "#708090", "Suit01", "#4682B4"),
-                new EmployeeInventoryItemSaveData("Ina", "EmployeeEngineer", "Hair", "#FF69B4", "Suit01", "#8A2BE2")
+                new EmployeeInventoryItemSaveData("Bob", "EmployeeBotanist", new Color(0.4f, 0.8f, 0.4f, 1f), new Color(0.9f, 0.2f, 0.1f, 1f)),
+                new EmployeeInventoryItemSaveData("Alice", "EmployeeResearcher", new Color(0.4f, 0.6f, 0.9f, 1f), new Color(0.9f, 0.8f, 0.4f, 1f)),
+                new EmployeeInventoryItemSaveData("Charlie", "EmployeeSecurity", new Color(0.8f, 0.3f, 0.3f, 1f), new Color(0.1f, 0.1f, 0.1f, 1f)),
+                new EmployeeInventoryItemSaveData("Daniel", "EmployeeMedic", new Color(0.7f, 0.4f, 0.8f, 1f), new Color(0.5f, 0.3f, 0.2f, 1f)),
+                new EmployeeInventoryItemSaveData("Edward", "EmployeeEngineer", new Color(0.9f, 0.7f, 0.3f, 1f), new Color(0.4f, 0.4f, 0.4f, 1f))
             }
         };
     }

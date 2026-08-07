@@ -77,14 +77,19 @@ public class EmployeeViewerManager : MonoBehaviour
         cardUIList.Clear();
 
         EmployeeInventoryData invData = null;
-        if (EmployeeInventorySaveSystem.Instance != null)
-        {
-            invData = EmployeeInventorySaveSystem.Instance.LoadInventory();
-        }
+        EmployeeInventorySaveSystem invSystem = EmployeeInventorySaveSystem.Instance;
+        if (invSystem == null) invSystem = FindFirstObjectByType<EmployeeInventorySaveSystem>();
 
-        if (invData == null || invData.employees == null || invData.employees.Count == 0)
+        if (invSystem != null)
         {
-            invData = EmployeeInventorySaveSystem.GetDefaultInventoryData();
+            invData = invSystem.LoadInventory();
+        }
+        else
+        {
+            // If no system instance exists in scene, create one to handle loading employee_inventory.json
+            GameObject go = new GameObject("EmployeeInventorySaveSystem");
+            invSystem = go.AddComponent<EmployeeInventorySaveSystem>();
+            invData = invSystem.LoadInventory();
         }
 
         if (cardContainer == null || cardPrefab == null)
@@ -153,18 +158,19 @@ public class EmployeeViewerManager : MonoBehaviour
             currentPreviewInstance.name = $"Preview_{empData.employeeName}";
             currentPreviewInstance.transform.localScale = previewScale;
 
+            EmployeeAppearance appearance = currentPreviewInstance.GetComponent<EmployeeAppearance>();
+            if (appearance != null)
+            {
+                Color suit = empData.suitColor.a > 0f ? empData.suitColor : Color.white;
+                Color hair = empData.hairColor.a > 0f ? empData.hairColor : Color.white;
+                appearance.SetAppearanceColors(suit, hair);
+            }
+
             // Preserving relative sorting orders while moving the character layer in front of the UI panel (order 0)
             SpriteRenderer[] spriteRenderers = currentPreviewInstance.GetComponentsInChildren<SpriteRenderer>(true);
             foreach (var sr in spriteRenderers)
             {
                 sr.sortingOrder += 50;
-            }
-
-            // Apply visual appearance from empData
-            EmployeeAppearance appearance = currentPreviewInstance.GetComponent<EmployeeAppearance>();
-            if (appearance != null)
-            {
-                appearance.ApplyAppearanceFromSaveData(empData);
             }
 
             // Ensure preview employee components are in passive/idle state

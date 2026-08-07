@@ -30,23 +30,24 @@ public class EmployeeAppearance : MonoBehaviour
     [SerializeField] private SpriteRenderer mouthRenderer;
 
     [Header("Customizable Appearance Inputs")]
-    [Tooltip("Identifier name or sprite name for employee hair (e.g. Hair, Hair2).")]
-    [SerializeField] private string hairName = "Hair";
-    [Tooltip("Color tint for employee hair (default White = original image color).")]
-    [SerializeField] private Color hairColor = Color.white;
-    [Tooltip("Identifier name or sprite name for employee body/suit (e.g. Suit01, Botanist, Researcher).")]
-    [SerializeField] private string bodyName = "Suit01";
-    [Tooltip("Color tint for employee body (default White = original image color).")]
-    [SerializeField] private Color bodyColor = Color.white;
-
     [Tooltip("Optional sprite override for employee main body texture.")]
     [SerializeField] private Sprite bodySprite;
+    [Tooltip("Color tint for employee suit (default White = un-tinted original image color).")]
+    [SerializeField] private Color suitColor = Color.white;
     [Tooltip("Optional sprite override for employee hair texture.")]
     [SerializeField] private Sprite hairSprite;
+    [Tooltip("Color tint for employee hair (default White = un-tinted original image color).")]
+    [SerializeField] private Color hairColor = Color.white;
     [Tooltip("Optional sprite override for employee eye texture.")]
     [SerializeField] private Sprite eyeSprite;
     [Tooltip("Optional sprite override for employee mouth texture.")]
     [SerializeField] private Sprite mouthSprite;
+
+    [Header("Shader Tint Settings")]
+    [Tooltip("If enabled, automatically applies the Custom/SpriteWhiteTint shader to body & arms so only white shirt areas change color while keeping skin and neck untouched.")]
+    [SerializeField] private bool useWhiteOnlyTint = true;
+    [Tooltip("Optional override material with Custom/SpriteWhiteTint shader.")]
+    [SerializeField] private Material whiteTintMaterial;
 
 #if UNITY_EDITOR
     [Header("Folder Auto-Fill (Drag & Drop Folder)")]
@@ -73,28 +74,22 @@ public class EmployeeAppearance : MonoBehaviour
     public SpriteRenderer MouthRenderer => mouthRenderer;
 
     // Public getters and setters for Inspector properties
-    public string HairName
-    {
-        get => hairName;
-        set => hairName = value;
-    }
-
-    public string BodyName
-    {
-        get => bodyName;
-        set => bodyName = value;
-    }
-
     public Sprite BodySprite
     {
         get => bodySprite;
         set => SetBody(value);
     }
 
+    public Color SuitColor
+    {
+        get => suitColor;
+        set => SetSuitColor(value);
+    }
+
     public Color BodyColor
     {
-        get => bodyColor;
-        set => SetBodyColor(value);
+        get => SuitColor;
+        set => SuitColor = value;
     }
 
     public Sprite HairSprite
@@ -125,7 +120,6 @@ public class EmployeeAppearance : MonoBehaviour
     {
         ResolveRenderers();
         AutoFillFromFolder();
-        RefreshAppearanceFromInventory();
         ApplyCustomInputs();
         NotifyVisualsChanged();
     }
@@ -137,184 +131,6 @@ public class EmployeeAppearance : MonoBehaviour
         AutoFillFromFolder();
 #endif
         ApplyCustomInputs();
-    }
-
-    /// <summary>
-    /// Loads saved appearance data (hair, hairColor, body, bodyColor) from employee_inventory.json by employee name.
-    /// </summary>
-    public void RefreshAppearanceFromInventory()
-    {
-        string empName = "";
-        if (TryGetComponent<Employee>(out var emp))
-        {
-            empName = emp.EmployeeName;
-        }
-
-        if (string.IsNullOrEmpty(empName)) return;
-
-        EmployeeInventoryData invData = null;
-        if (EmployeeInventorySaveSystem.Instance != null)
-        {
-            invData = EmployeeInventorySaveSystem.Instance.LoadInventory();
-        }
-
-        if (invData == null || invData.employees == null) return;
-
-        EmployeeInventoryItemSaveData saveData = invData.employees.Find(e => e.employeeName == empName);
-        if (saveData != null)
-        {
-            ApplyAppearanceFromSaveData(saveData);
-        }
-    }
-
-    /// <summary>
-    /// Applies appearance configuration from EmployeeInventoryItemSaveData.
-    /// </summary>
-    public void ApplyAppearanceFromSaveData(EmployeeInventoryItemSaveData saveData)
-    {
-        if (saveData == null) return;
-
-        Color hColor = Color.white;
-        if (!ColorUtility.TryParseHtmlString(saveData.GetHairColorHex(), out hColor))
-        {
-            hColor = Color.white;
-        }
-
-        Color bColor = Color.white;
-        if (!ColorUtility.TryParseHtmlString(saveData.GetBodyColorHex(), out bColor))
-        {
-            bColor = Color.white;
-        }
-
-        ApplyAppearance(saveData.GetHair(), hColor, saveData.GetBody(), bColor);
-    }
-
-    /// <summary>
-    /// Dynamic API to apply 4 input customization variables: hair, hairColor, body, bodyColor.
-    /// </summary>
-    public void ApplyAppearance(string newHairName, Color newHairColor, string newBodyName, Color newBodyColor)
-    {
-        this.hairName = newHairName;
-        this.hairColor = newHairColor;
-        this.bodyName = newBodyName;
-        this.bodyColor = newBodyColor;
-
-        // Resolve hair sprite
-        Sprite resolvedHair = LoadHairSprite(newHairName);
-        if (resolvedHair != null)
-        {
-            this.hairSprite = resolvedHair;
-        }
-
-        // Resolve body sprite if available
-        Sprite resolvedBody = LoadBodySprite(newBodyName);
-        if (resolvedBody != null)
-        {
-            this.bodySprite = resolvedBody;
-        }
-
-        ApplyCustomInputs();
-    }
-
-    private Sprite LoadHairSprite(string nameStr)
-    {
-        if (string.IsNullOrEmpty(nameStr)) return null;
-
-        Sprite sp = Resources.Load<Sprite>($"Employee/Hair/{nameStr}");
-        if (sp != null) return sp;
-
-        sp = Resources.Load<Sprite>($"Sprites/Employee/Hair/{nameStr}");
-        if (sp != null) return sp;
-
-        sp = Resources.Load<Sprite>(nameStr);
-        if (sp != null) return sp;
-
-        Sprite[] allHair = Resources.LoadAll<Sprite>("Employee/Hair");
-        if (allHair != null && allHair.Length > 0)
-        {
-            foreach (var h in allHair)
-            {
-                if (h != null && (h.name.Equals(nameStr, System.StringComparison.OrdinalIgnoreCase) || h.name.Contains(nameStr)))
-                    return h;
-            }
-            return allHair[0];
-        }
-
-#if UNITY_EDITOR
-        string[] guids = UnityEditor.AssetDatabase.FindAssets($"{nameStr} t:Sprite");
-        foreach (var g in guids)
-        {
-            string p = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
-            if (p.Contains("/Hair/") || p.Contains("Hair"))
-            {
-                Sprite loaded = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p);
-                if (loaded != null) return loaded;
-            }
-        }
-        if (guids.Length > 0)
-        {
-            return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]));
-        }
-#endif
-        return null;
-    }
-
-    private Sprite LoadBodySprite(string nameStr)
-    {
-        if (string.IsNullOrEmpty(nameStr)) return null;
-
-        Sprite sp = Resources.Load<Sprite>($"Employee/Body/{nameStr}");
-        if (sp != null) return sp;
-
-        sp = Resources.Load<Sprite>($"Employee/Body/EmployeeSuit");
-        if (sp != null) return sp;
-
-        sp = Resources.Load<Sprite>($"Sprites/Employee/Body/{nameStr}");
-        if (sp != null) return sp;
-
-        sp = Resources.Load<Sprite>(nameStr);
-        if (sp != null) return sp;
-
-        Sprite[] allBody = Resources.LoadAll<Sprite>("Employee/Body");
-        if (allBody != null && allBody.Length > 0)
-        {
-            foreach (var b in allBody)
-            {
-                if (b != null && (b.name.Equals(nameStr, System.StringComparison.OrdinalIgnoreCase) || b.name.Contains("Suit") || b.name.Contains("Body")))
-                    return b;
-            }
-            return allBody[0];
-        }
-
-#if UNITY_EDITOR
-        string[] guids = UnityEditor.AssetDatabase.FindAssets($"{nameStr} t:Sprite");
-        if (guids.Length > 0)
-        {
-            return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]));
-        }
-#endif
-        return null;
-    }
-
-    /// <summary>
-    /// Ensures SpriteRenderer has a valid, non-null material (URP 2D or default sprite material) to prevent pink missing material artifacts.
-    /// </summary>
-    private void EnsureValidMaterial(SpriteRenderer renderer)
-    {
-        if (renderer == null) return;
-
-        if (renderer.sharedMaterial == null || renderer.sharedMaterial.shader == null || 
-            renderer.sharedMaterial.shader.name.Contains("InternalErrorShader") || 
-            renderer.sharedMaterial.shader.name == "Custom/SpriteWhiteTint")
-        {
-            Shader defaultShader = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
-            if (defaultShader == null) defaultShader = Shader.Find("Sprites/Default");
-
-            if (defaultShader != null)
-            {
-                renderer.sharedMaterial = new Material(defaultShader);
-            }
-        }
     }
 
     /// <summary>
@@ -411,47 +227,58 @@ public class EmployeeAppearance : MonoBehaviour
     }
 
     /// <summary>
-    /// Applies customizable inputs (Body, Hair, Eyes, Mouth) and colors directly to SpriteRenderers.
-    /// Uses standard SpriteRenderer colors without any custom shader tinting.
+    /// Applies customizable inputs (Body, Hair, Eyes, Mouth) and colors if set.
     /// </summary>
     public void ApplyCustomInputs()
     {
         if (bodyRenderer != null)
         {
-            EnsureValidMaterial(bodyRenderer);
+            EnsureWhiteTintShader(bodyRenderer);
             if (bodySprite != null) bodyRenderer.sprite = bodySprite;
-            bodyRenderer.color = bodyColor;
+            bodyRenderer.color = suitColor;
         }
 
         if (armLRenderer != null)
         {
-            EnsureValidMaterial(armLRenderer);
-            armLRenderer.color = bodyColor;
+            EnsureWhiteTintShader(armLRenderer);
+            armLRenderer.color = suitColor;
         }
 
         if (armRRenderer != null)
         {
-            EnsureValidMaterial(armRRenderer);
-            armRRenderer.color = bodyColor;
+            EnsureWhiteTintShader(armRRenderer);
+            armRRenderer.color = suitColor;
         }
 
         if (hairRenderer != null)
         {
-            EnsureValidMaterial(hairRenderer);
             if (hairSprite != null) hairRenderer.sprite = hairSprite;
             hairRenderer.color = hairColor;
         }
 
-        if (eyeRenderer != null)
-        {
-            EnsureValidMaterial(eyeRenderer);
-            if (eyeSprite != null) eyeRenderer.sprite = eyeSprite;
-        }
+        if (eyeRenderer != null && eyeSprite != null) eyeRenderer.sprite = eyeSprite;
+        if (mouthRenderer != null && mouthSprite != null) mouthRenderer.sprite = mouthSprite;
+    }
 
-        if (mouthRenderer != null)
+    private void EnsureWhiteTintShader(SpriteRenderer renderer)
+    {
+        if (renderer == null || !useWhiteOnlyTint) return;
+
+        Shader whiteShader = Shader.Find("Custom/SpriteWhiteTint");
+        if (whiteShader == null) return;
+
+        if (renderer.sharedMaterial == null || renderer.sharedMaterial.shader != whiteShader)
         {
-            EnsureValidMaterial(mouthRenderer);
-            if (mouthSprite != null) mouthRenderer.sprite = mouthSprite;
+            if (whiteTintMaterial != null && whiteTintMaterial.shader == whiteShader)
+            {
+                renderer.sharedMaterial = whiteTintMaterial;
+            }
+            else
+            {
+                Material newMat = new Material(whiteShader);
+                newMat.name = "SpriteWhiteTint_Instance";
+                renderer.material = newMat;
+            }
         }
     }
 
@@ -521,14 +348,23 @@ public class EmployeeAppearance : MonoBehaviour
         NotifyVisualsChanged();
     }
 
-    /// <summary>Sets the body color tint.</summary>
-    public void SetBodyColor(Color color)
+    /// <summary>Sets the suit color tint for body and arms.</summary>
+    public void SetSuitColor(Color color)
     {
-        bodyColor = color;
-        if (bodyRenderer != null)
-        {
-            bodyRenderer.color = bodyColor;
-        }
+        suitColor = color;
+        if (bodyRenderer != null) bodyRenderer.color = suitColor;
+        if (armLRenderer != null) armLRenderer.color = suitColor;
+        if (armRRenderer != null) armRRenderer.color = suitColor;
+    }
+
+    /// <summary>Sets the body/suit color tint (backward compatibility).</summary>
+    public void SetBodyColor(Color color) => SetSuitColor(color);
+
+    /// <summary>Sets both suit color and hair color simultaneously.</summary>
+    public void SetAppearanceColors(Color suit, Color hair)
+    {
+        SetSuitColor(suit);
+        SetHairColor(hair);
     }
 
     /// <summary>Sets the left arm sprite.</summary>

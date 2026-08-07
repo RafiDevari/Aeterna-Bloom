@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
@@ -286,11 +286,6 @@ public partial class Employee : MonoBehaviour
     private void Start()
     {
         targetPosition = transform.position;
-
-        if (Appearance != null)
-        {
-            Appearance.RefreshAppearanceFromInventory();
-        }
 
         if (autoFitCollider)
         {
