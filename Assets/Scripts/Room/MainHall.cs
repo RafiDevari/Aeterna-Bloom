@@ -22,7 +22,7 @@ public class MainRoom : Room
         {
             Bounds spriteBounds = spriteRenderer.bounds;
             float floorY = spriteBounds.min.y;
-            float height = 0.5f;
+            float height = 1.8f;
 
             Vector3 center = new Vector3(
                 spriteBounds.center.x,
