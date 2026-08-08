@@ -134,6 +134,26 @@ public abstract class DivisionRoom : Room
     }
 
     /// <summary>
+    /// Mendapatkan jumlah entry employee yang tersimpan di employeesToSpawn.
+    /// </summary>
+    public int GetEmployeesToSpawnCount() => employeesToSpawn != null ? employeesToSpawn.Count : 0;
+
+    /// <summary>
+    /// Hook virtual yang dipanggil ketika employee berhasil di-assign ke divisi ini.
+    /// </summary>
+    protected virtual void OnEmployeeAssigned(Employee employee) { }
+
+    /// <summary>
+    /// Hook virtual yang dipanggil ketika employee keluar/di-unassign dari divisi ini.
+    /// </summary>
+    protected virtual void OnEmployeeUnassigned(Employee employee) { }
+
+    /// <summary>
+    /// Virtual method untuk meng-update tampilan visual room yang bergantung pada state/assignment.
+    /// </summary>
+    public virtual void UpdateVisuals() { }
+
+    /// <summary>
     /// Dipanggil dari Employee.AssignDivision() -- jangan panggil ini langsung dari luar,
     /// panggil Employee.AssignDivision(divisionRoom) supaya sisi Employee-nya ikut ke-update.
     /// </summary>
@@ -145,6 +165,8 @@ public abstract class DivisionRoom : Room
         assignedEmployees.Add(employee);
 
         Debug.Log($"[{RoomName}] {employee.EmployeeName} bergabung ke divisi ini.");
+        OnEmployeeAssigned(employee);
+        UpdateVisuals();
     }
 
     /// <summary>
@@ -159,5 +181,7 @@ public abstract class DivisionRoom : Room
         assignedEmployees.Remove(employee);
 
         Debug.Log($"[{RoomName}] {employee.EmployeeName} keluar dari divisi ini.");
+        OnEmployeeUnassigned(employee);
+        UpdateVisuals();
     }
 }

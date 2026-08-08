@@ -374,6 +374,7 @@ public class EmployeeAssignmentManager : MonoBehaviour
                 }
 
                 field.SetValue(divisionRoom, newSpawnList);
+                divisionRoom.UpdateVisuals();
             }
         }
     }
@@ -687,6 +688,7 @@ public class EmployeeAssignmentManager : MonoBehaviour
                 }
 
                 field.SetValue(room, newSpawnList);
+                room.UpdateVisuals();
             }
         }
     }

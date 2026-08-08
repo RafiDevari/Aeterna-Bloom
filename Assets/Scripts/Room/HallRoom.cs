@@ -8,7 +8,7 @@ public class HallRoom : Room
     [SerializeField] private GameObject[] effectObjects;
 
     [Tooltip("Peluang aktifnya masing-masing efek saat ruangan di-spawn (0.10 = 10%).")]
-    [SerializeField] [Range(0f, 1f)] private float effectActivationChance = 0.10f;
+    [SerializeField] [Range(0f, 1f)] private float effectActivationChance = 0.20f;
 
     protected override void Start()
     {
