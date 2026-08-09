@@ -384,7 +384,7 @@ public class EmployeeViewerManager : MonoBehaviour
                 else
                 {
                     activeSelectedHairPath = spritePath;
-                    Sprite h = Resources.Load<Sprite>(spritePath);
+                    Sprite h = appearance.LoadSpriteFromPath(spritePath);
                     if (h != null) appearance.HairSprite = h;
                 }
             }
@@ -442,7 +442,7 @@ public class EmployeeViewerManager : MonoBehaviour
 
                 if (!string.IsNullOrEmpty(selectedCard.ItemData.hairPath))
                 {
-                    Sprite h = Resources.Load<Sprite>(selectedCard.ItemData.hairPath);
+                    Sprite h = appearance.LoadSpriteFromPath(selectedCard.ItemData.hairPath);
                     if (h != null) appearance.HairSprite = h;
                 }
             }
@@ -481,7 +481,7 @@ public class EmployeeViewerManager : MonoBehaviour
 
                 if (!string.IsNullOrEmpty(empData.hairPath))
                 {
-                    Sprite h = Resources.Load<Sprite>(empData.hairPath);
+                    Sprite h = appearance.LoadSpriteFromPath(empData.hairPath);
                     if (h != null) appearance.HairSprite = h;
                 }
             }

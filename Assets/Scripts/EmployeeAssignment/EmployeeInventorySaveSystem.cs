@@ -38,6 +38,7 @@ public class EmployeeInventoryData
 public class EmployeeInventorySaveSystem : MonoBehaviour
 {
     public static EmployeeInventorySaveSystem Instance { get; private set; }
+    public static event System.Action OnInventoryChanged;
 
     private const string FILE_NAME = "employee_inventory.json";
     private const string RESOURCE_PATH = "employee_inventory";
@@ -135,6 +136,8 @@ public class EmployeeInventorySaveSystem : MonoBehaviour
         UnityEditor.AssetDatabase.Refresh();
         Debug.Log($"[EmployeeInventorySaveSystem] Saved inventory to Resources: {resourcesPath}");
 #endif
+
+        OnInventoryChanged?.Invoke();
     }
 
     /// <summary>
