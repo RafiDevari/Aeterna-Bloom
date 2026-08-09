@@ -115,6 +115,13 @@ public class FacilityHUD : MonoBehaviour
         // Draw Lobotomy Corp Energy & Electricity Bar HUD at top-left
         DrawLobotomyTopLeftHUD(fac, hudX, hudY, hudWidth, hudHeight);
 
+        // Draw Overload Countdown at Top Center
+        if (fac.OverloadTimer > 0f && !fac.IsBlackout)
+        {
+            float timeLeft = Mathf.Max(0f, fac.OverloadToleranceDuration - fac.OverloadTimer);
+            DrawOverloadCountdown(timeLeft);
+        }
+
         // Draw Broadcasts in the center left of the screen (larger size)
         if (activeBroadcasts.Count > 0)
         {
@@ -306,6 +313,30 @@ public class FacilityHUD : MonoBehaviour
         };
 
         GUI.Label(barRect, "⚠️ SYSTEM BLACKOUT - POWER OVERLOAD ⚠️", alertStyle);
+    }
+
+    private void DrawOverloadCountdown(float timeLeft)
+    {
+        float w = 350f;
+        float h = 60f;
+        float x = (Screen.width - w) / 2f;
+        float y = 20f;
+
+        Rect panelRect = new Rect(x, y, w, h);
+        
+        float pulse = Mathf.PingPong(Time.time * 4f, 1f);
+        Color warningColor = Color.Lerp(new Color(0.8f, 0.2f, 0.1f, 1f), dangerColor, pulse);
+
+        DrawRect(panelRect, new Color(0.08f, 0.02f, 0.02f, 0.95f));
+        DrawThickOutline(panelRect, warningColor, 2);
+
+        GUIStyle style = new GUIStyle(digitalValueStyle)
+        {
+            fontSize = 18,
+            normal = { textColor = warningColor }
+        };
+
+        GUI.Label(panelRect, $"⚠️ POWER OVERLOAD ⚠️\nBlackout in {timeLeft:F1}s", style);
     }
 
     private void DrawGearOrnament(Rect gearRect)

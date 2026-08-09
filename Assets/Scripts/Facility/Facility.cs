@@ -39,6 +39,9 @@ public class Facility : MonoBehaviour
     private float overloadTimer = 0f;
     private float debugOverloadTimer = 0f;
 
+    public float OverloadTimer => overloadTimer;
+    public float OverloadToleranceDuration => overloadToleranceDuration;
+
     //────────────────────────────────────────────────────────
 
     public float Energy
