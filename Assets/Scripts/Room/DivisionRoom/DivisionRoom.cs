@@ -97,6 +97,9 @@ public abstract class DivisionRoom : Room
             Color hair = Color.white;
             bool colorFoundInInventory = false;
 
+            string suitPath = "";
+            string hairPath = "";
+
             EmployeeInventorySaveSystem invSystem = EmployeeInventorySaveSystem.Instance;
             if (invSystem == null) invSystem = FindFirstObjectByType<EmployeeInventorySaveSystem>();
 
@@ -110,6 +113,8 @@ public abstract class DivisionRoom : Room
                     {
                         if (invItem.suitColor.a > 0f) suit = invItem.suitColor;
                         if (invItem.hairColor.a > 0f) hair = invItem.hairColor;
+                        suitPath = invItem.suitPath;
+                        hairPath = invItem.hairPath;
                         colorFoundInInventory = true;
                     }
                 }
@@ -124,6 +129,21 @@ public abstract class DivisionRoom : Room
             if (employee.Appearance != null)
             {
                 employee.Appearance.SetAppearanceColors(suit, hair);
+
+                if (!string.IsNullOrEmpty(suitPath))
+                {
+                    employee.Appearance.LoadBodyAndArmsFromResources(suitPath);
+                }
+
+                if (!string.IsNullOrEmpty(hairPath))
+                {
+                    Sprite hSprite = Resources.Load<Sprite>(hairPath);
+                    if (hSprite != null)
+                    {
+                        employee.Appearance.HairSprite = hSprite;
+                        employee.Appearance.HairColor = hair;
+                    }
+                }
             }
 
             // Maintain native EmployeeDivision from prefab (do not overwrite with room's division)
