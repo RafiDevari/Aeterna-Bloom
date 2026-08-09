@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
@@ -283,6 +283,54 @@ public partial class Employee : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        EmployeeInventorySaveSystem.OnInventoryChanged += RefreshAppearanceFromInventory;
+    }
+
+    private void OnDisable()
+    {
+        EmployeeInventorySaveSystem.OnInventoryChanged -= RefreshAppearanceFromInventory;
+    }
+
+    /// <summary>
+    /// Refreshes employee appearance (suit color, hair color, suit path, hair path) from inventory save system.
+    /// </summary>
+    public void RefreshAppearanceFromInventory()
+    {
+        if (Appearance == null) return;
+
+        EmployeeInventorySaveSystem invSystem = EmployeeInventorySaveSystem.Instance;
+        if (invSystem == null) invSystem = FindFirstObjectByType<EmployeeInventorySaveSystem>();
+        if (invSystem == null) return;
+
+        var invData = invSystem.CurrentData ?? invSystem.LoadInventory();
+        if (invData == null || invData.employees == null) return;
+
+        var invItem = invData.employees.Find(e => e.employeeName == EmployeeName);
+        if (invItem != null)
+        {
+            Color suit = invItem.suitColor.a > 0f ? invItem.suitColor : Color.white;
+            Color hair = invItem.hairColor.a > 0f ? invItem.hairColor : Color.white;
+            Appearance.SetAppearanceColors(suit, hair);
+
+            if (!string.IsNullOrEmpty(invItem.suitPath))
+            {
+                Appearance.LoadBodyAndArmsFromResources(invItem.suitPath);
+            }
+
+            if (!string.IsNullOrEmpty(invItem.hairPath))
+            {
+                Sprite hSprite = Appearance.LoadSpriteFromPath(invItem.hairPath);
+                if (hSprite != null)
+                {
+                    Appearance.HairSprite = hSprite;
+                    Appearance.HairColor = hair;
+                }
+            }
+        }
+    }
+
     private void Start()
     {
         targetPosition = transform.position;
@@ -291,6 +339,8 @@ public partial class Employee : MonoBehaviour
         {
             AutoFitCollider();
         }
+
+        RefreshAppearanceFromInventory();
 
         Facility.Instance?.RegisterEmployee(this);
     }

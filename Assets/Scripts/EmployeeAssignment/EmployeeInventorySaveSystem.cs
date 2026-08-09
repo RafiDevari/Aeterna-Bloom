@@ -9,15 +9,19 @@ public class EmployeeInventoryItemSaveData
     public string employeePrefabName; // e.g. EmployeeBotanist, EmployeeResearcher, etc.
     public Color suitColor = Color.white;
     public Color hairColor = Color.white;
+    public string suitPath = "";
+    public string hairPath = "";
 
     public EmployeeInventoryItemSaveData() { }
 
-    public EmployeeInventoryItemSaveData(string name, string prefabName, Color? suit = null, Color? hair = null)
+    public EmployeeInventoryItemSaveData(string name, string prefabName, Color? suit = null, Color? hair = null, string sPath = "", string hPath = "")
     {
         employeeName = name;
         employeePrefabName = prefabName;
         suitColor = suit ?? Color.white;
         hairColor = hair ?? Color.white;
+        suitPath = sPath;
+        hairPath = hPath;
     }
 }
 
@@ -34,6 +38,7 @@ public class EmployeeInventoryData
 public class EmployeeInventorySaveSystem : MonoBehaviour
 {
     public static EmployeeInventorySaveSystem Instance { get; private set; }
+    public static event System.Action OnInventoryChanged;
 
     private const string FILE_NAME = "employee_inventory.json";
     private const string RESOURCE_PATH = "employee_inventory";
@@ -131,6 +136,8 @@ public class EmployeeInventorySaveSystem : MonoBehaviour
         UnityEditor.AssetDatabase.Refresh();
         Debug.Log($"[EmployeeInventorySaveSystem] Saved inventory to Resources: {resourcesPath}");
 #endif
+
+        OnInventoryChanged?.Invoke();
     }
 
     /// <summary>

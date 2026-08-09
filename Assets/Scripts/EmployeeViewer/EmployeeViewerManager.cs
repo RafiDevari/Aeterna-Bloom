@@ -39,6 +39,12 @@ public class EmployeeViewerManager : MonoBehaviour
     public enum ColorCustomizationMode { None, Suit, Hair }
     private ColorCustomizationMode currentMode = ColorCustomizationMode.None;
     private Color activeSelectedColor = Color.white;
+    private string activeSelectedSuitPath = "";
+    private string activeSelectedHairPath = "";
+
+    private AccessoryListSaveData accessoryData;
+    private GameObject dynamicColorGrid;
+    private GameObject dynamicAccessoryList;
 
     private Dictionary<string, GameObject> employeePrefabMap = new Dictionary<string, GameObject>();
     private List<EmployeeListCardUI> cardUIList = new List<EmployeeListCardUI>();
@@ -60,8 +66,24 @@ public class EmployeeViewerManager : MonoBehaviour
     private void Start()
     {
         InitializePrefabMap();
+        LoadAccessoryData();
         InitializeCustomizationUI();
         LoadAndDisplayEmployeeList();
+    }
+
+    private void LoadAccessoryData()
+    {
+        TextAsset jsonAsset = Resources.Load<TextAsset>("accessory_list");
+        if (jsonAsset != null)
+        {
+            accessoryData = JsonUtility.FromJson<AccessoryListSaveData>(jsonAsset.text);
+            Debug.Log("[EmployeeViewerManager] Loaded accessory_list.json");
+        }
+        else
+        {
+            Debug.LogWarning("[EmployeeViewerManager] Could not find accessory_list in Resources!");
+            accessoryData = new AccessoryListSaveData();
+        }
     }
 
     private void InitializeCustomizationUI()
@@ -78,24 +100,6 @@ public class EmployeeViewerManager : MonoBehaviour
             hairButton.onClick.AddListener(OpenPaletteForHair);
         }
 
-        if (colorRedBtn != null)
-        {
-            colorRedBtn.onClick.RemoveAllListeners();
-            colorRedBtn.onClick.AddListener(() => OnColorSelected(new Color(0.9f, 0.2f, 0.2f, 1f)));
-        }
-
-        if (colorGreenBtn != null)
-        {
-            colorGreenBtn.onClick.RemoveAllListeners();
-            colorGreenBtn.onClick.AddListener(() => OnColorSelected(new Color(0.2f, 0.8f, 0.2f, 1f)));
-        }
-
-        if (colorBlackBtn != null)
-        {
-            colorBlackBtn.onClick.RemoveAllListeners();
-            colorBlackBtn.onClick.AddListener(() => OnColorSelected(new Color(0.15f, 0.15f, 0.15f, 1f)));
-        }
-
         if (saveColorBtn != null)
         {
             saveColorBtn.onClick.RemoveAllListeners();
@@ -108,10 +112,77 @@ public class EmployeeViewerManager : MonoBehaviour
             closePaletteBtn.onClick.AddListener(ClosePalette);
         }
 
+        // Hide legacy hardcoded color buttons
+        if (colorRedBtn != null) colorRedBtn.gameObject.SetActive(false);
+        if (colorGreenBtn != null) colorGreenBtn.gameObject.SetActive(false);
+        if (colorBlackBtn != null) colorBlackBtn.gameObject.SetActive(false);
+
+        BuildDynamicCustomizationUI();
+
         if (colorPalettePanel != null)
         {
             colorPalettePanel.SetActive(false);
         }
+    }
+
+    private void BuildDynamicCustomizationUI()
+    {
+        if (colorPalettePanel == null) return;
+
+        // Create Color Grid
+        dynamicColorGrid = new GameObject("DynamicColorGrid", typeof(RectTransform));
+        dynamicColorGrid.transform.SetParent(colorPalettePanel.transform, false);
+        
+        GridLayoutGroup grid = dynamicColorGrid.AddComponent<GridLayoutGroup>();
+        grid.cellSize = new Vector2(40, 40);
+        grid.spacing = new Vector2(10, 10);
+        grid.childAlignment = TextAnchor.UpperCenter;
+        
+        RectTransform gridRt = dynamicColorGrid.GetComponent<RectTransform>();
+        gridRt.anchorMin = new Vector2(0.5f, 0.5f);
+        gridRt.anchorMax = new Vector2(0.5f, 0.5f);
+        gridRt.pivot = new Vector2(0.5f, 0.5f);
+        gridRt.anchoredPosition = new Vector2(0, 75); // Shifted higher up
+        gridRt.sizeDelta = new Vector2(240, 140); // Proper grid height
+
+        Color[] paletteColors = new Color[]
+        {
+            Color.white, Color.black, Color.gray, 
+            new Color(0.9f, 0.2f, 0.2f), new Color(0.2f, 0.8f, 0.2f), new Color(0.2f, 0.4f, 0.9f),
+            new Color(0.9f, 0.8f, 0.2f), new Color(0.8f, 0.3f, 0.8f), new Color(0.3f, 0.8f, 0.8f),
+            new Color(0.6f, 0.3f, 0.1f), new Color(0.1f, 0.5f, 0.3f), new Color(0.9f, 0.5f, 0.2f)
+        };
+
+        foreach (Color c in paletteColors)
+        {
+            GameObject btnObj = new GameObject("ColorBtn", typeof(RectTransform), typeof(Image), typeof(Button));
+            btnObj.transform.SetParent(dynamicColorGrid.transform, false);
+            
+            Image img = btnObj.GetComponent<Image>();
+            img.color = c;
+            
+            Button btn = btnObj.GetComponent<Button>();
+            Color capturedColor = c;
+            btn.onClick.AddListener(() => OnColorSelected(capturedColor));
+        }
+
+        // Create Accessory List View
+        dynamicAccessoryList = new GameObject("DynamicAccessoryList", typeof(RectTransform));
+        dynamicAccessoryList.transform.SetParent(colorPalettePanel.transform, false);
+
+        VerticalLayoutGroup vLayout = dynamicAccessoryList.AddComponent<VerticalLayoutGroup>();
+        vLayout.spacing = 6f;
+        vLayout.childAlignment = TextAnchor.UpperCenter;
+        vLayout.childControlWidth = true;
+        vLayout.childForceExpandWidth = true;
+        vLayout.childControlHeight = false;
+
+        RectTransform listRt = dynamicAccessoryList.GetComponent<RectTransform>();
+        listRt.anchorMin = new Vector2(0.5f, 0.5f);
+        listRt.anchorMax = new Vector2(0.5f, 0.5f);
+        listRt.pivot = new Vector2(0.5f, 1f); // Top pivot so it grows downwards
+        listRt.anchoredPosition = new Vector2(0, -10); // Positioned just below the color grid
+        listRt.sizeDelta = new Vector2(240, 150);
     }
 
     private void InitializePrefabMap()
@@ -210,9 +281,12 @@ public class EmployeeViewerManager : MonoBehaviour
         if (selectedCard == null || selectedCard.ItemData == null) return;
         currentMode = ColorCustomizationMode.Suit;
         activeSelectedColor = selectedCard.ItemData.suitColor;
+        activeSelectedSuitPath = selectedCard.ItemData.suitPath;
 
         if (paletteTitleText != null) paletteTitleText.text = "CUSTOMIZE SUIT COLOR";
         if (colorPalettePanel != null) colorPalettePanel.SetActive(true);
+
+        if (accessoryData != null) PopulateAccessoryList(accessoryData.suits, true);
     }
 
     public void OpenPaletteForHair()
@@ -220,9 +294,12 @@ public class EmployeeViewerManager : MonoBehaviour
         if (selectedCard == null || selectedCard.ItemData == null) return;
         currentMode = ColorCustomizationMode.Hair;
         activeSelectedColor = selectedCard.ItemData.hairColor;
+        activeSelectedHairPath = selectedCard.ItemData.hairPath;
 
         if (paletteTitleText != null) paletteTitleText.text = "CUSTOMIZE HAIR COLOR";
         if (colorPalettePanel != null) colorPalettePanel.SetActive(true);
+
+        if (accessoryData != null) PopulateAccessoryList(accessoryData.hairs, false);
     }
 
     public void OnColorSelected(Color color)
@@ -247,6 +324,73 @@ public class EmployeeViewerManager : MonoBehaviour
         }
     }
 
+    private void PopulateAccessoryList(List<AccessoryItemData> items, bool isSuit)
+    {
+        if (dynamicAccessoryList == null) return;
+
+        // Clear existing items
+        foreach (Transform child in dynamicAccessoryList.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        if (items == null) return;
+
+        foreach (var item in items)
+        {
+            if (!item.isUnlocked) continue;
+
+            GameObject btnObj = new GameObject("AccBtn_" + item.id, typeof(RectTransform), typeof(Image), typeof(Button));
+            btnObj.transform.SetParent(dynamicAccessoryList.transform, false);
+
+            RectTransform rt = btnObj.GetComponent<RectTransform>();
+            rt.sizeDelta = new Vector2(240, 25);
+
+            Image img = btnObj.GetComponent<Image>();
+            img.color = new Color(0.18f, 0.22f, 0.32f);
+
+            Button btn = btnObj.GetComponent<Button>();
+
+            GameObject txtObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+            txtObj.transform.SetParent(btnObj.transform, false);
+            RectTransform txtRt = txtObj.GetComponent<RectTransform>();
+            txtRt.anchorMin = Vector2.zero;
+            txtRt.anchorMax = Vector2.one;
+            txtRt.sizeDelta = Vector2.zero;
+
+            TextMeshProUGUI tmp = txtObj.GetComponent<TextMeshProUGUI>();
+            tmp.text = item.name;
+            tmp.fontSize = 12;
+            tmp.color = Color.white;
+            tmp.alignment = TextAlignmentOptions.Center;
+
+            string capturedPath = item.spritePath;
+            btn.onClick.AddListener(() => OnAccessorySelected(capturedPath, isSuit));
+        }
+    }
+
+    private void OnAccessorySelected(string spritePath, bool isSuit)
+    {
+        if (currentPreviewInstance != null)
+        {
+            EmployeeAppearance appearance = currentPreviewInstance.GetComponent<EmployeeAppearance>();
+            if (appearance != null)
+            {
+                if (isSuit)
+                {
+                    activeSelectedSuitPath = spritePath;
+                    appearance.LoadBodyAndArmsFromResources(spritePath);
+                }
+                else
+                {
+                    activeSelectedHairPath = spritePath;
+                    Sprite h = appearance.LoadSpriteFromPath(spritePath);
+                    if (h != null) appearance.HairSprite = h;
+                }
+            }
+        }
+    }
+
     public void SaveColorChanges()
     {
         if (selectedCard == null || selectedCard.ItemData == null) return;
@@ -255,10 +399,12 @@ public class EmployeeViewerManager : MonoBehaviour
         if (currentMode == ColorCustomizationMode.Suit)
         {
             empData.suitColor = activeSelectedColor;
+            empData.suitPath = activeSelectedSuitPath;
         }
         else if (currentMode == ColorCustomizationMode.Hair)
         {
             empData.hairColor = activeSelectedColor;
+            empData.hairPath = activeSelectedHairPath;
         }
 
         // Save inventory changes to disk / JSON
@@ -290,6 +436,15 @@ public class EmployeeViewerManager : MonoBehaviour
             if (appearance != null)
             {
                 appearance.SetAppearanceColors(selectedCard.ItemData.suitColor, selectedCard.ItemData.hairColor);
+
+                if (!string.IsNullOrEmpty(selectedCard.ItemData.suitPath))
+                    appearance.LoadBodyAndArmsFromResources(selectedCard.ItemData.suitPath);
+
+                if (!string.IsNullOrEmpty(selectedCard.ItemData.hairPath))
+                {
+                    Sprite h = appearance.LoadSpriteFromPath(selectedCard.ItemData.hairPath);
+                    if (h != null) appearance.HairSprite = h;
+                }
             }
         }
     }
@@ -320,6 +475,15 @@ public class EmployeeViewerManager : MonoBehaviour
                 Color suit = empData.suitColor.a > 0f ? empData.suitColor : Color.white;
                 Color hair = empData.hairColor.a > 0f ? empData.hairColor : Color.white;
                 appearance.SetAppearanceColors(suit, hair);
+
+                if (!string.IsNullOrEmpty(empData.suitPath))
+                    appearance.LoadBodyAndArmsFromResources(empData.suitPath);
+
+                if (!string.IsNullOrEmpty(empData.hairPath))
+                {
+                    Sprite h = appearance.LoadSpriteFromPath(empData.hairPath);
+                    if (h != null) appearance.HairSprite = h;
+                }
             }
 
             // Preserving relative sorting orders while moving the character layer in front of the UI panel (order 0)

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// Handles references to individual SpriteRenderers of the employee's modular body parts:
@@ -212,17 +213,124 @@ public class EmployeeAppearance : MonoBehaviour
     }
 
     /// <summary>
-    /// Loads body, left arm, and right arm sprites from a Resources folder path (e.g. "Suits/Suit01").
+    /// Loads a single Sprite from Resources or AssetDatabase (in Unity Editor fallback).
+    /// Handles single sprites as well as Multiple sprite sheet textures.
+    /// </summary>
+    public Sprite LoadSpriteFromPath(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return null;
+
+        Sprite sprite = Resources.Load<Sprite>(path);
+        if (sprite != null) return sprite;
+
+        Sprite[] sprites = LoadAllSpritesFromPath(path);
+        if (sprites != null && sprites.Length > 0)
+        {
+            return sprites[0];
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Loads all Sprites from Resources or AssetDatabase (in Unity Editor fallback).
+    /// </summary>
+    public Sprite[] LoadAllSpritesFromPath(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return new Sprite[0];
+
+        // 1. Try Resources.LoadAll
+        Sprite[] resourcesSprites = Resources.LoadAll<Sprite>(path);
+        if (resourcesSprites != null && resourcesSprites.Length > 0)
+        {
+            return resourcesSprites;
+        }
+
+#if UNITY_EDITOR
+        // 2. Editor Fallback using AssetDatabase
+        string cleanPath = path.TrimStart('/', '\\');
+        if (!cleanPath.StartsWith("Assets/", System.StringComparison.OrdinalIgnoreCase))
+        {
+            cleanPath = "Assets/" + cleanPath;
+        }
+
+        string[] extensions = new string[] { "", ".png", ".jpg", ".tga" };
+        foreach (var ext in extensions)
+        {
+            string fullPath = cleanPath + ext;
+            Object[] assets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(fullPath);
+            if (assets != null && assets.Length > 0)
+            {
+                List<Sprite> spriteList = new List<Sprite>();
+                foreach (var obj in assets)
+                {
+                    if (obj is Sprite s) spriteList.Add(s);
+                }
+                if (spriteList.Count > 0) return spriteList.ToArray();
+            }
+        }
+
+        string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+        if (!string.IsNullOrEmpty(fileName))
+        {
+            string[] guids = UnityEditor.AssetDatabase.FindAssets($"{fileName} t:Texture2D");
+            if (guids == null || guids.Length == 0)
+            {
+                guids = UnityEditor.AssetDatabase.FindAssets($"{fileName} t:Sprite");
+            }
+
+            if (guids != null && guids.Length > 0)
+            {
+                foreach (var guid in guids)
+                {
+                    string assetPath = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+                    Object[] assets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetPath);
+                    if (assets != null && assets.Length > 0)
+                    {
+                        List<Sprite> spriteList = new List<Sprite>();
+                        foreach (var obj in assets)
+                        {
+                            if (obj is Sprite s) spriteList.Add(s);
+                        }
+                        if (spriteList.Count > 0) return spriteList.ToArray();
+                    }
+                }
+            }
+        }
+#endif
+
+        Debug.LogWarning($"[EmployeeAppearance] Could not load sprites from path: '{path}'");
+        return new Sprite[0];
+    }
+
+    /// <summary>
+    /// Loads body, left arm, and right arm sprites from Resources or project path.
     /// </summary>
     public void LoadBodyAndArmsFromResources(string folderPath)
     {
-        Sprite[] sprites = Resources.LoadAll<Sprite>(folderPath);
+        if (string.IsNullOrEmpty(folderPath)) return;
+
+        Sprite[] sprites = LoadAllSpritesFromPath(folderPath);
         if (sprites == null || sprites.Length == 0) return;
 
+        bool matchedAny = false;
         foreach (var sprite in sprites)
         {
-            AssignSpriteByName(sprite);
+            if (sprite == null) continue;
+            string lowerName = sprite.name.ToLower();
+            if (lowerName.Contains("body") || lowerName.Contains("arm") || lowerName.Contains("hand") || lowerName.Contains("leg"))
+            {
+                AssignSpriteByName(sprite);
+                matchedAny = true;
+            }
         }
+
+        // If sub-sprites inside texture didn't have specific limb names (e.g. Suit_1_0), set the first sprite as main body sprite
+        if (!matchedAny && sprites.Length > 0)
+        {
+            SetBody(sprites[0]);
+        }
+
         NotifyVisualsChanged();
     }
 
@@ -372,7 +480,7 @@ public class EmployeeAppearance : MonoBehaviour
     {
         if (armLRenderer != null && newArmLSprite != null)
         {
-            armLRenderer.sprite = newArmLSprite;
+                armLRenderer.sprite = newArmLSprite;
         }
         NotifyVisualsChanged();
     }

@@ -4,33 +4,37 @@
             "employeeName": "Bob",
             "employeePrefabName": "EmployeeBotanist",
             "suitColor": {
+                "r": 0.6000000238418579,
+                "g": 0.30000001192092898,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "hairColor": {
+                "r": 0.6000000238418579,
+                "g": 0.30000001192092898,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            },
+            "suitPath": "Sprites/Employee/Suit/Suit_2",
+            "hairPath": "Sprites/Employee/Hair/Hair_2"
+        },
+        {
+            "employeeName": "Alice",
+            "employeePrefabName": "EmployeeBotanist",
+            "suitColor": {
                 "r": 0.8999999761581421,
                 "g": 0.20000000298023225,
                 "b": 0.20000000298023225,
                 "a": 1.0
             },
             "hairColor": {
-                "r": 0.15000000596046449,
-                "g": 0.15000000596046449,
-                "b": 0.15000000596046449,
-                "a": 1.0
-            }
-        },
-        {
-            "employeeName": "Alice",
-            "employeePrefabName": "EmployeeBotanist",
-            "suitColor": {
-                "r": 0.4000000059604645,
-                "g": 0.699999988079071,
-                "b": 0.5,
-                "a": 1.0
-            },
-            "hairColor": {
-                "r": 0.800000011920929,
-                "g": 0.5,
+                "r": 0.8999999761581421,
+                "g": 0.20000000298023225,
                 "b": 0.20000000298023225,
                 "a": 1.0
-            }
+            },
+            "suitPath": "Sprites/Employee/Suit/Suit_2",
+            "hairPath": ""
         },
         {
             "employeeName": "Charlie",
@@ -46,7 +50,9 @@
                 "g": 0.10000000149011612,
                 "b": 0.10000000149011612,
                 "a": 1.0
-            }
+            },
+            "suitPath": "",
+            "hairPath": ""
         },
         {
             "employeeName": "Daniel",
@@ -62,7 +68,9 @@
                 "g": 0.30000001192092898,
                 "b": 0.20000000298023225,
                 "a": 1.0
-            }
+            },
+            "suitPath": "",
+            "hairPath": ""
         },
         {
             "employeeName": "Edward",
@@ -78,23 +86,27 @@
                 "g": 0.4000000059604645,
                 "b": 0.4000000059604645,
                 "a": 1.0
-            }
+            },
+            "suitPath": "",
+            "hairPath": ""
         },
         {
             "employeeName": "Faelantern",
             "employeePrefabName": "EmployeeResearcher",
             "suitColor": {
-                "r": 0.4000000059604645,
-                "g": 0.6000000238418579,
+                "r": 0.20000000298023225,
+                "g": 0.4000000059604645,
                 "b": 0.8999999761581421,
                 "a": 1.0
             },
             "hairColor": {
                 "r": 0.8999999761581421,
                 "g": 0.800000011920929,
-                "b": 0.4000000059604645,
+                "b": 0.20000000298023225,
                 "a": 1.0
-            }
+            },
+            "suitPath": "",
+            "hairPath": "Sprites/Employee/Hair/Hair_2"
         },
         {
             "employeeName": "Garion",
@@ -110,7 +122,9 @@
                 "g": 0.15000000596046449,
                 "b": 0.10000000149011612,
                 "a": 1.0
-            }
+            },
+            "suitPath": "",
+            "hairPath": ""
         },
         {
             "employeeName": "Harrold",
@@ -126,7 +140,9 @@
                 "g": 0.30000001192092898,
                 "b": 0.10000000149011612,
                 "a": 1.0
-            }
+            },
+            "suitPath": "",
+            "hairPath": ""
         },
         {
             "employeeName": "Ina",
@@ -142,7 +158,9 @@
                 "g": 0.30000001192092898,
                 "b": 0.4000000059604645,
                 "a": 1.0
-            }
+            },
+            "suitPath": "",
+            "hairPath": ""
         }
     ]
 }
