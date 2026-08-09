@@ -38,6 +38,7 @@ public class Facility : MonoBehaviour
     [SerializeField] private float overloadToleranceDuration = 10f;
     private float overloadTimer = 0f;
     private float debugOverloadTimer = 0f;
+    private bool hasBroadcastedCountdown = false;
 
     public float OverloadTimer => overloadTimer;
     public float OverloadToleranceDuration => overloadToleranceDuration;
@@ -201,7 +202,7 @@ public class Facility : MonoBehaviour
     private void Update()
     {
         // SEMENTARA: Spawn tikus jika energy > 75%
-        if (energy > 75f)
+            if (energy > 75f)
         {
             Pest.Spawn();
         }
@@ -223,6 +224,12 @@ public class Facility : MonoBehaviour
             float actualUsage = rooms.Sum(room => room.ElectricityCost);
             if (actualUsage > maxElectricity)
             {
+                if (!hasBroadcastedCountdown)
+                {
+                    hasBroadcastedCountdown = true;
+                    FacilityHUD.ShowBroadcast($"Penggunaan listrik berlebih! Pemadaman listrik dalam {overloadToleranceDuration:F0} detik.", "System");
+                }
+
                 overloadTimer += Time.deltaTime;
                 debugOverloadTimer += Time.deltaTime;
 
@@ -241,6 +248,7 @@ public class Facility : MonoBehaviour
             {
                 overloadTimer = 0f;
                 debugOverloadTimer = 0f;
+                hasBroadcastedCountdown = false;
             }
         }
     }
@@ -255,6 +263,7 @@ public class Facility : MonoBehaviour
         {
             overloadTimer = 0f;
             debugOverloadTimer = 0f;
+            hasBroadcastedCountdown = false;
         }
     }
 
@@ -262,8 +271,10 @@ public class Facility : MonoBehaviour
     {
         isBlackout = true;
         blackoutTimer = 0f;
+        hasBroadcastedCountdown = false;
         OnElectricityChanged?.Invoke(Electricity); // Will trigger with 0f
         Debug.LogWarning("[Facility] MATI LAMPU! Penggunaan listrik melebihi 100%.");
+        FacilityHUD.ShowBroadcast("MATI LAMPU! Penggunaan listrik melebihi 100%.", "System");
     }
 
     public void ResolveBlackout()
