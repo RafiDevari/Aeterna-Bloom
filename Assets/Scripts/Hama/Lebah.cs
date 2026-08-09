@@ -26,8 +26,9 @@ public class Lebah : Pest
     private bool isMoving = false;
     private bool hasArrivedAtTarget = false;
 
-    private void Start()
+    protected virtual void Start()
     {
+        base.Start();
         // Pastikan ada Rigidbody2D agar interaksi trigger/klik bekerja
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb == null)

@@ -1,17 +1,17 @@
 using UnityEngine;
 
 /// <summary>
-/// Hama jenis Jamur. Jika berada di dalam ruangan selama 10 detik tanpa disterilisasi,
+/// Hama jenis Jamur. Jika berada di dalam ruangan selama 30 detik tanpa disterilisasi,
 /// ia akan menyebarkan racun ke ruangan (IsPoisoned = true) dan mengurangi Mood monster di dalamnya sebesar 1.
 /// </summary>
 public class Jamur : Pest
 {
     [Header("Jamur Mechanics")]
-    [SerializeField] private float poisonSpreadInterval = 10f;
+    [SerializeField] private float poisonSpreadInterval = 30f;
     private float poisonTimer = 0f;
 
     [Header("Spreading Mechanics")]
-    [SerializeField] private float spreadInterval = 20f;
+    [SerializeField] private float spreadInterval = 60f;
     private float spreadTimer = 0f;
 
     private void Awake()

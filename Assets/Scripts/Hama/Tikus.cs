@@ -30,8 +30,9 @@ public class Tikus : Pest
     private float repathTimer = 0f;
     private const float repathInterval = 0.5f;
 
-    private void Start()
+    protected virtual void Start()
     {
+        base.Start();
         wanderTarget = transform.position;
     }
 

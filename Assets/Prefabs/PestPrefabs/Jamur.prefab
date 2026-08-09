@@ -152,11 +152,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d62ec0ae73c021946bf4d9bf42d95bfe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Jamur
-  pestName: Hama
+  pestName: Jamur
   hp: 20
   maxHp: 20
   immuneToPoison: 0
   hazardInterval: 1
   hazardDamageAmount: 5
-  poisonSpreadInterval: 10
-  spreadInterval: 20
+  poisonSpreadInterval: 30
+  spreadInterval: 60

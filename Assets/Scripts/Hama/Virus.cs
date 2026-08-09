@@ -18,8 +18,9 @@ public class Virus : Pest
         immuneToPoison = true;
     }
 
-    private void Start()
+    protected virtual void Start()
     {
+        base.Start();
         transform.localScale = visualScale;
 
         BoxCollider2D collider = GetComponent<BoxCollider2D>();

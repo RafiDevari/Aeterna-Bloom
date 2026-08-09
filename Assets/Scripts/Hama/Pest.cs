@@ -26,6 +26,20 @@ public class Pest : MonoBehaviour
 
     public bool IsDead => isDead;
 
+    public string PestName
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(pestName) && pestName != "Hama") return pestName;
+            return GetType().Name;
+        }
+    }
+
+    protected virtual void Start()
+    {
+        FacilityHUD.ShowBroadcast($"{PestName} Terdeteksi difasilitas", "System");
+    }
+
     public int Hp
     {
         get => hp;

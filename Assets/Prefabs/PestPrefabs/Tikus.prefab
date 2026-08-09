@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 478785c8355e18a40a15c5d4ba4052e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tikus
-  pestName: tikus
+  pestName: Tikus
   hp: 20
   maxHp: 20
   immuneToPoison: 0
