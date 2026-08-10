@@ -53,6 +53,23 @@ public class Virus : Pest
         }
     }
 
+    [Header("Virus Lifetime Mechanic")]
+    [SerializeField] private float lifetime = 120f;
+    private float ageTimer = 0f;
+
+    protected override void Update()
+    {
+        if (isDead) return;
+        base.Update();
+
+        ageTimer += Time.deltaTime;
+        if (ageTimer >= lifetime)
+        {
+            Debug.Log("[Virus] Virus bertahan 2 menit tanpa tersentuh lalu hilang.");
+            Destroy(gameObject);
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (isDead) return;
@@ -78,6 +95,37 @@ public class Virus : Pest
     }
 
     private static bool hasSpawned = false;
+
+    public static void SpawnAt(Vector3 spawnPos)
+    {
+#if UNITY_EDITOR
+        GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/PestPrefabs/Virus.prefab");
+        if (prefab == null)
+        {
+            prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/PestPrefabs/Jamur.prefab");
+        }
+#else
+        GameObject prefab = null;
+#endif
+        if (prefab != null)
+        {
+            GameObject go = Instantiate(prefab, spawnPos, Quaternion.identity);
+            if (go.GetComponent<Virus>() == null)
+            {
+                Jamur jamur = go.GetComponent<Jamur>();
+                if (jamur != null) Destroy(jamur);
+                go.AddComponent<Virus>();
+            }
+            Debug.Log($"[Virus] Virus berhasil di-spawn pada posisi {spawnPos}");
+        }
+        else
+        {
+            GameObject go = new GameObject("Virus");
+            go.transform.position = spawnPos;
+            go.AddComponent<Virus>();
+            Debug.Log($"[Virus] Virus (fallback object) di-spawn pada posisi {spawnPos}");
+        }
+    }
 
     public static new void Spawn()
     {
@@ -112,14 +160,7 @@ public class Virus : Pest
                 float spawnY = bounds.center.y;
                 Vector3 spawnPos = new Vector3(randomX, spawnY, 0f);
 
-                GameObject go = Instantiate(prefab, spawnPos, Quaternion.identity);
-                if (go.GetComponent<Virus>() == null)
-                {
-                    Jamur jamur = go.GetComponent<Jamur>();
-                    if (jamur != null) Destroy(jamur);
-                    go.AddComponent<Virus>();
-                }
-                Debug.Log($"[Virus] Virus berhasil di-spawn di ruangan {targetRoom.RoomName} pada posisi {spawnPos}");
+                SpawnAt(spawnPos);
             }
         }
     }
