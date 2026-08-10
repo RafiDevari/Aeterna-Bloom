@@ -1,0 +1,68 @@
+{
+  "items": [
+    {
+      "id": "seed_sunflower",
+      "title": "Sunflower Seed",
+      "category": "Seed",
+      "price": 100,
+      "description": "Produces bright sunlit blooms.",
+      "spritePath": "Sprites/Tanaman/SunnyFlower/Sunny_Flower_Phase1"
+    },
+    {
+      "id": "seed_dandelectric",
+      "title": "Dandelectric Seed",
+      "category": "Seed",
+      "price": 250,
+      "description": "Generates spark electricity.",
+      "spritePath": "Sprites/Tanaman/Dandelectric/Dandelectric_Phase1"
+    },
+    {
+      "id": "seed_monster",
+      "title": "Monster Seed",
+      "category": "Seed",
+      "price": 400,
+      "description": "A rare aggressive floral species.",
+      "spritePath": "Sprites/monsterTest1234"
+    },
+    {
+      "id": "room_containment",
+      "title": "Containment Unit",
+      "category": "Room",
+      "price": 500,
+      "description": "High security chamber for dangerous specimens.",
+      "spritePath": "Sprites/bg containment unit"
+    },
+    {
+      "id": "room_greenhouse",
+      "title": "Greenhouse Chamber",
+      "category": "Room",
+      "price": 350,
+      "description": "Controlled climate room for fast plant growth.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
+      "id": "acc_suit1",
+      "title": "Worker Suit v1",
+      "category": "Accessory",
+      "price": 150,
+      "description": "Standard protective uniform for facility workers.",
+      "spritePath": "Sprites/Employee/Suit/Suit_1"
+    },
+    {
+      "id": "acc_suit2",
+      "title": "Worker Suit v2",
+      "category": "Accessory",
+      "price": 200,
+      "description": "Reinforced protective suit with safety trim.",
+      "spritePath": "Sprites/Employee/Suit/Suit_2"
+    },
+    {
+      "id": "acc_hair1",
+      "title": "Stylish Haircut 1",
+      "category": "Accessory",
+      "price": 80,
+      "description": "Neat professional hairstyle for staff.",
+      "spritePath": "Sprites/Employee/Hair/Hair_1"
+    }
+  ]
+}
