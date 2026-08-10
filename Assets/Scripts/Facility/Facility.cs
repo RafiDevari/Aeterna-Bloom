@@ -33,7 +33,20 @@ public class Facility : MonoBehaviour
 
     public bool IsBlackout => isBlackout;
     public float MaxElectricity => maxElectricity;
-    public float MaxEnergy => (maxEnergy == 1000f || maxEnergy <= 0f) ? 100f : maxEnergy;
+    public float MaxEnergy
+    {
+        get
+        {
+            RecalculateMaxEnergy();
+            return maxEnergy;
+        }
+    }
+
+    public void RecalculateMaxEnergy()
+    {
+        int day = (GameSaveSystem.Instance != null) ? GameSaveSystem.Instance.Day : 1;
+        maxEnergy = 100f * Mathf.Pow(1.1f, Mathf.Max(0, day - 1));
+    }
     [Header("Overload Settings")]
     [SerializeField] private float overloadToleranceDuration = 10f;
     private float overloadTimer = 0f;
@@ -50,7 +63,7 @@ public class Facility : MonoBehaviour
         get => energy;
         set
         {
-            energy = Mathf.Clamp(value, 0, maxEnergy);
+            energy = Mathf.Clamp(value, 0, MaxEnergy);
             OnEnergyChanged?.Invoke(energy);
         }
     }
@@ -97,10 +110,37 @@ public class Facility : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        RecalculateMaxEnergy();
     }
+
+    private void OnEnable()
+    {
+        GameSaveSystem.OnDayChanged += HandleDayChanged;
+        RecalculateMaxEnergy();
+    }
+
+    private void OnDisable()
+    {
+        GameSaveSystem.OnDayChanged -= HandleDayChanged;
+    }
+
+    private void HandleDayChanged(int newDay)
+    {
+        RecalculateMaxEnergy();
+        energy = Mathf.Clamp(energy, 0, maxEnergy);
+        OnEnergyChanged?.Invoke(energy);
+    }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        RecalculateMaxEnergy();
+    }
+#endif
 
     private void Start()
     {
+        RecalculateMaxEnergy();
         foreach (var room in rooms)
         {
             if (room != null)
@@ -202,7 +242,7 @@ public class Facility : MonoBehaviour
     private void Update()
     {
         // SEMENTARA: Spawn tikus jika energy > 75%
-            if (energy > 75f)
+        if (energy > MaxEnergy * 0.75f)
         {
             Pest.Spawn();
         }
