@@ -253,6 +253,10 @@ public class ShopManager : MonoBehaviour
             {
                 GameSaveSystem.Instance.AddPurchasedItem(item.id);
             }
+            else if (string.Equals(item.category, "Room", System.StringComparison.OrdinalIgnoreCase))
+            {
+                AddPurchasedRoomToInventory(item);
+            }
 
             ShowToast($"<color=#55FF55>Successfully bought {item.title} for {item.price} Gold!</color>");
             RefreshCarouselDisplay();
@@ -263,6 +267,61 @@ public class ShopManager : MonoBehaviour
         }
 
         return success;
+    }
+
+    private void AddPurchasedRoomToInventory(ShopItemData item)
+    {
+        if (item == null || !string.Equals(item.category, "Room", System.StringComparison.OrdinalIgnoreCase))
+            return;
+
+        string roomTypeId = "";
+        string displayName = item.title;
+
+        string idLower = (item.id ?? "").ToLower();
+        string titleLower = (item.title ?? "").ToLower();
+
+        if (idLower.Contains("hall") || titleLower.Contains("hall"))
+        {
+            roomTypeId = "HallRoom";
+            displayName = "Hall Room";
+        }
+        else if (idLower.Contains("lift") || titleLower.Contains("lift"))
+        {
+            roomTypeId = "Lift";
+            displayName = "Lift";
+        }
+        else if (idLower.Contains("main") || titleLower.Contains("main"))
+        {
+            roomTypeId = "MainRoom";
+            displayName = "Main Hall";
+        }
+        else if (idLower.Contains("botanist") || titleLower.Contains("botanist"))
+        {
+            roomTypeId = "DivisionBotanist";
+            displayName = "Botanist Room";
+        }
+        else if (idLower.Contains("containment") || titleLower.Contains("containment"))
+        {
+            roomTypeId = "ContainmentRoom";
+            displayName = "Containment Room";
+        }
+        else
+        {
+            roomTypeId = item.id;
+        }
+
+        RoomInventorySaveSystem saveSys = RoomInventorySaveSystem.Instance;
+        if (saveSys == null) saveSys = FindFirstObjectByType<RoomInventorySaveSystem>();
+        if (saveSys == null)
+        {
+            GameObject go = new GameObject("RoomInventorySaveSystem");
+            saveSys = go.AddComponent<RoomInventorySaveSystem>();
+        }
+
+        if (saveSys != null)
+        {
+            saveSys.AddRoomStock(roomTypeId, displayName, 1);
+        }
     }
 
     private void OnAddMoneyClicked()
