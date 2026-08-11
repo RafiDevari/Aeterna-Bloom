@@ -1,28 +1,12 @@
 {
   "items": [
     {
-      "id": "seed_sunflower",
-      "title": "Sunflower Seed",
+      "id": "plant_sunny_flower",
+      "title": "Sunny Flower",
       "category": "Seed",
       "price": 100,
-      "description": "Produces bright sunlit blooms.",
-      "spritePath": "Sprites/Tanaman/SunnyFlower/Sunny_Flower_Phase1"
-    },
-    {
-      "id": "seed_dandelectric",
-      "title": "Dandelectric Seed",
-      "category": "Seed",
-      "price": 250,
-      "description": "Generates spark electricity.",
-      "spritePath": "Sprites/Tanaman/Dandelectric/Dandelectric_Phase1"
-    },
-    {
-      "id": "seed_monster",
-      "title": "Monster Seed",
-      "category": "Seed",
-      "price": 400,
-      "description": "A rare aggressive floral species.",
-      "spritePath": "Sprites/monsterTest1234"
+      "description": "A radiant sun-kissed flower specimen.",
+      "spritePath": "Sprites/Tanaman/SunnyFlower/Mutated/SunnyFlower_Mutated_Bunga"
     },
     {
       "id": "room_hall",

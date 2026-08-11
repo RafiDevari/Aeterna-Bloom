@@ -1,8 +1,9 @@
 {
-    "money": 130,
+    "money": 30,
     "day": 50,
     "purchasedItemIds": [
         "acc_suit3",
-        "Suit_3"
+        "Suit_3",
+        "plant_sunny_flower"
     ]
 }

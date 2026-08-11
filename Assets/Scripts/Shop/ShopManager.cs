@@ -252,6 +252,11 @@ public class ShopManager : MonoBehaviour
             if (IsOneTimePurchaseCategory(item.category))
             {
                 GameSaveSystem.Instance.AddPurchasedItem(item.id);
+
+                if (string.Equals(item.category, "Seed", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    AddPurchasedPlantToInventory(item);
+                }
             }
             else if (string.Equals(item.category, "Room", System.StringComparison.OrdinalIgnoreCase))
             {
@@ -321,6 +326,27 @@ public class ShopManager : MonoBehaviour
         if (saveSys != null)
         {
             saveSys.AddRoomStock(roomTypeId, displayName, 1);
+        }
+    }
+
+    private void AddPurchasedPlantToInventory(ShopItemData item)
+    {
+        if (item == null || !string.Equals(item.category, "Seed", System.StringComparison.OrdinalIgnoreCase))
+            return;
+
+        string plantId = item.title;
+
+        PlantInventorySaveSystem saveSys = PlantInventorySaveSystem.Instance;
+        if (saveSys == null) saveSys = FindFirstObjectByType<PlantInventorySaveSystem>();
+        if (saveSys == null)
+        {
+            GameObject go = new GameObject("PlantInventorySaveSystem");
+            saveSys = go.AddComponent<PlantInventorySaveSystem>();
+        }
+
+        if (saveSys != null)
+        {
+            saveSys.AddPlantStock(plantId);
         }
     }
 
