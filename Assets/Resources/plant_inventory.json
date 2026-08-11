@@ -17,12 +17,6 @@
             "plantId": "Dandelectric",
             "growth": 0.0,
             "completedResearchIds": []
-        },
-        {
-            "plantInstanceId": "Room_Unit-A4",
-            "plantId": "Sunny Flower",
-            "growth": 0.0,
-            "completedResearchIds": []
         }
     ]
 }
