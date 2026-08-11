@@ -1,4 +1,5 @@
 {
-  "money": 1000,
-  "day": 50
+    "money": 30,
+    "day": 50,
+    "purchasedItemIds": []
 }

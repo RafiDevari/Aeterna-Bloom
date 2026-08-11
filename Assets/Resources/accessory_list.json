@@ -11,6 +11,12 @@
       "name": "Suit Style 2",
       "spritePath": "Sprites/Employee/Suit/Suit_2",
       "isUnlocked": true
+    },
+    {
+      "id": "Suit_3",
+      "name": "Suit Style 3",
+      "spritePath": "Sprites/Employee/Suit/Suit_3",
+      "isUnlocked": false
     }
   ],
   "hairs": [
@@ -25,6 +31,12 @@
       "name": "Hair Style 2",
       "spritePath": "Sprites/Employee/Hair/Hair_2",
       "isUnlocked": true
+    },
+    {
+      "id": "Hair_3",
+      "name": "Hair Style 3",
+      "spritePath": "Sprites/Employee/Hair/Hair_3",
+      "isUnlocked": false
     }
   ]
 }

@@ -3,7 +3,7 @@
         {
             "roomTypeId": "HallRoom",
             "displayName": "Hall Room",
-            "count": 97
+            "count": 98
         },
         {
             "roomTypeId": "MainRoom",
@@ -18,7 +18,7 @@
         {
             "roomTypeId": "Lift",
             "displayName": "Lift",
-            "count": 102
+            "count": 103
         },
         {
             "roomTypeId": "ContainmentRoom",

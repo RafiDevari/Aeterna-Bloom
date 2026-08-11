@@ -156,6 +156,33 @@ public class RoomInventorySaveSystem : MonoBehaviour
     }
 
     /// <summary>
+    /// Menambah stok room ke inventaris dan menyimpan ke room_inventory.json.
+    /// </summary>
+    public void AddRoomStock(string roomTypeId, string displayName, int amount = 1)
+    {
+        LoadInventory();
+
+        if (currentData == null) currentData = new RoomInventoryData();
+        if (currentData.items == null) currentData.items = new List<RoomInventoryItemSaveData>();
+
+        RoomInventoryItemSaveData existingItem = currentData.items.Find(x => 
+            string.Equals(x.roomTypeId, roomTypeId, System.StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.displayName, displayName, System.StringComparison.OrdinalIgnoreCase));
+
+        if (existingItem != null)
+        {
+            existingItem.count += amount;
+        }
+        else
+        {
+            currentData.items.Add(new RoomInventoryItemSaveData(roomTypeId, displayName, amount));
+        }
+
+        SaveInventory(currentData);
+        Debug.Log($"[RoomInventorySaveSystem] Added +{amount} stock for room '{roomTypeId}' ({displayName}). New count: {(existingItem != null ? existingItem.count : amount)}");
+    }
+
+    /// <summary>
     /// Me-reset inventaris ke data default (4 Hall Room, 1 Main Hall, 4 Botanist Room, 2 Lift).
     /// </summary>
     public void ResetInventoryToDefault()

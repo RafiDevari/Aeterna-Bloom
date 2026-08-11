@@ -1,0 +1,68 @@
+{
+  "items": [
+    {
+      "id": "plant_sunny_flower",
+      "title": "Sunny Flower",
+      "category": "Seed",
+      "price": 100,
+      "description": "A radiant sun-kissed flower specimen.",
+      "spritePath": "Sprites/Tanaman/SunnyFlower/Mutated/SunnyFlower_Mutated_Bunga"
+    },
+    {
+      "id": "room_hall",
+      "title": "Hall Room",
+      "category": "Room",
+      "price": 150,
+      "description": "Standard hallway connection room for facility expansion.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
+      "id": "room_lift",
+      "title": "Lift",
+      "category": "Room",
+      "price": 200,
+      "description": "Elevator shaft for vertical movement between floors.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
+      "id": "room_main",
+      "title": "Main Hall",
+      "category": "Room",
+      "price": 300,
+      "description": "Central hub room for facility management.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
+      "id": "room_botanist",
+      "title": "Botanist Room",
+      "category": "Room",
+      "price": 350,
+      "description": "Specialized laboratory room for flora research and botanists.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
+      "id": "room_containment",
+      "title": "Containment Unit",
+      "category": "Room",
+      "price": 500,
+      "description": "High security chamber for dangerous specimens.",
+      "spritePath": "Sprites/bg containment unit"
+    },
+    {
+      "id": "Suit_3",
+      "title": "Worker Suit v3",
+      "category": "Accessory",
+      "price": 250,
+      "description": "Advanced protective uniform for senior staff.",
+      "spritePath": "Sprites/Employee/Suit/Suit_3"
+    },
+    {
+      "id": "Hair_3",
+      "title": "Stylish Haircut 3",
+      "category": "Accessory",
+      "price": 120,
+      "description": "Modern aesthetic hairstyle for staff.",
+      "spritePath": "Sprites/Employee/Hair/Hair_3"
+    }
+  ]
+}
