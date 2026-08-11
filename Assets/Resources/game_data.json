@@ -1,4 +1,7 @@
 {
-    "money": 300,
-    "day": 50
+    "money": 1050,
+    "day": 50,
+    "purchasedItemIds": [
+        "seed_monster"
+    ]
 }

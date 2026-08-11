@@ -168,7 +168,23 @@ public class ShopManager : MonoBehaviour
         // Navigation button interactability
         if (prevButton != null) prevButton.interactable = (currentItemIndex > 0);
         if (nextButton != null) nextButton.interactable = (currentItemIndex < currentCategoryItems.Count - 1);
-        if (buyButton != null) buyButton.interactable = true;
+
+        bool isOneTime = IsOneTimePurchaseCategory(item.category);
+        bool isAlreadyPurchased = isOneTime && GameSaveSystem.Instance.IsItemPurchased(item.id);
+
+        if (buyButton != null) buyButton.interactable = !isAlreadyPurchased;
+
+        TextMeshProUGUI btnText = buyButtonText != null ? buyButtonText : (buyButton != null ? buyButton.GetComponentInChildren<TextMeshProUGUI>() : null);
+        if (btnText != null)
+        {
+            btnText.text = isAlreadyPurchased ? "OWNED" : "BUY NOW";
+        }
+    }
+
+    private bool IsOneTimePurchaseCategory(string category)
+    {
+        return string.Equals(category, "Seed", System.StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(category, "Accessory", System.StringComparison.OrdinalIgnoreCase);
     }
 
     private void OnPrevItemClicked()
@@ -196,6 +212,13 @@ public class ShopManager : MonoBehaviour
 
         ShopItemData currentItem = currentCategoryItems[currentItemIndex];
 
+        if (IsOneTimePurchaseCategory(currentItem.category) && GameSaveSystem.Instance.IsItemPurchased(currentItem.id))
+        {
+            ShowToast($"<color=#FF5555>You already own {currentItem.title}!</color>");
+            RefreshCarouselDisplay();
+            return;
+        }
+
         if (confirmationPopup != null)
         {
             confirmationPopup.Show(currentItem, () =>
@@ -214,12 +237,25 @@ public class ShopManager : MonoBehaviour
     {
         if (item == null) return false;
 
+        if (IsOneTimePurchaseCategory(item.category) && GameSaveSystem.Instance.IsItemPurchased(item.id))
+        {
+            ShowToast($"<color=#FF5555>You already own {item.title}!</color>");
+            RefreshCarouselDisplay();
+            return false;
+        }
+
         // Try spend money using GameSaveSystem (returns true if successful, false if insufficient funds)
         bool success = GameSaveSystem.Instance.TrySpendMoney(item.price);
 
         if (success)
         {
+            if (IsOneTimePurchaseCategory(item.category))
+            {
+                GameSaveSystem.Instance.AddPurchasedItem(item.id);
+            }
+
             ShowToast($"<color=#55FF55>Successfully bought {item.title} for {item.price} Gold!</color>");
+            RefreshCarouselDisplay();
         }
         else
         {

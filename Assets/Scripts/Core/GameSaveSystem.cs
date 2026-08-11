@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -6,6 +7,7 @@ public class GameData
 {
     public int money = 1000;
     public int day = 1;
+    public List<string> purchasedItemIds = new List<string>();
 
     public GameData() { }
 
@@ -13,6 +15,7 @@ public class GameData
     {
         money = initialMoney;
         day = initialDay;
+        purchasedItemIds = new List<string>();
     }
 }
 
@@ -112,6 +115,11 @@ public class GameSaveSystem : MonoBehaviour
         {
             currentData = GetDefaultData();
             SaveData(currentData);
+        }
+
+        if (currentData.purchasedItemIds == null)
+        {
+            currentData.purchasedItemIds = new List<string>();
         }
 
         OnDataLoaded?.Invoke();
@@ -215,6 +223,39 @@ public class GameSaveSystem : MonoBehaviour
         SaveData(currentData);
         OnMoneyChanged?.Invoke(currentData.money);
         OnDayChanged?.Invoke(currentData.day);
+    }
+
+    /// <summary>
+    /// Check if a shop item ID has already been purchased.
+    /// </summary>
+    public bool IsItemPurchased(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId)) return false;
+        if (currentData == null) LoadData();
+        if (currentData.purchasedItemIds == null)
+        {
+            currentData.purchasedItemIds = new List<string>();
+        }
+        return currentData.purchasedItemIds.Contains(itemId);
+    }
+
+    /// <summary>
+    /// Record a shop item ID as purchased and save data.
+    /// </summary>
+    public void AddPurchasedItem(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId)) return;
+        if (currentData == null) LoadData();
+        if (currentData.purchasedItemIds == null)
+        {
+            currentData.purchasedItemIds = new List<string>();
+        }
+
+        if (!currentData.purchasedItemIds.Contains(itemId))
+        {
+            currentData.purchasedItemIds.Add(itemId);
+            SaveData(currentData);
+        }
     }
 
     public static GameData GetDefaultData()
