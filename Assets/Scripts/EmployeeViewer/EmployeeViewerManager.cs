@@ -324,6 +324,36 @@ public class EmployeeViewerManager : MonoBehaviour
         }
     }
 
+    private bool IsAccessoryUnlocked(AccessoryItemData item)
+    {
+        if (item == null) return false;
+        if (item.isUnlocked) return true;
+
+        GameSaveSystem saveSys = GameSaveSystem.Instance;
+        if (saveSys == null) saveSys = FindFirstObjectByType<GameSaveSystem>();
+
+        if (saveSys != null)
+        {
+            if (saveSys.IsItemPurchased(item.id)) return true;
+            if (saveSys.IsItemPurchased("acc_" + item.id.ToLower())) return true;
+            if (saveSys.IsItemPurchased("acc_" + item.id.Replace("_", "").ToLower())) return true;
+
+            ShopDatabase shopDb = ShopDatabase.LoadFromResources("shop_items");
+            if (shopDb != null && shopDb.items != null)
+            {
+                foreach (var shopItem in shopDb.items)
+                {
+                    if (string.Equals(shopItem.spritePath, item.spritePath, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (saveSys.IsItemPurchased(shopItem.id)) return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     private void PopulateAccessoryList(List<AccessoryItemData> items, bool isSuit)
     {
         if (dynamicAccessoryList == null) return;
@@ -338,7 +368,7 @@ public class EmployeeViewerManager : MonoBehaviour
 
         foreach (var item in items)
         {
-            if (!item.isUnlocked) continue;
+            if (!IsAccessoryUnlocked(item)) continue;
 
             GameObject btnObj = new GameObject("AccBtn_" + item.id, typeof(RectTransform), typeof(Image), typeof(Button));
             btnObj.transform.SetParent(dynamicAccessoryList.transform, false);
