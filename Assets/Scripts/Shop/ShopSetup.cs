@@ -187,6 +187,8 @@ public class ShopSetup : MonoBehaviour
         cardFrameRt.offsetMax = Vector2.zero;
         Image cardFrameImg = cardFrameObj.GetComponent<Image>();
         cardFrameImg.color = new Color(0.12f, 0.15f, 0.22f, 0.95f);
+        cardFrameImg.raycastTarget = true;
+        ShopCarouselSwipeHandler swipeComp = cardFrameObj.AddComponent<ShopCarouselSwipeHandler>();
 
         // 1) TITLE ABOVE IMAGE
         GameObject titleObj = CreateTextObject("ItemTitleText", cardFrameObj.transform, "Item Title", 30, TextAlignmentOptions.Center);
@@ -364,6 +366,8 @@ public class ShopSetup : MonoBehaviour
         mgrSo.FindProperty("nextButton").objectReferenceValue = nextBtnObj.GetComponent<Button>();
         mgrSo.FindProperty("pageIndicatorText").objectReferenceValue = pageIndObj.GetComponent<TextMeshProUGUI>();
 
+        mgrSo.FindProperty("itemCardFrame").objectReferenceValue = cardFrameRt;
+        mgrSo.FindProperty("swipeHandler").objectReferenceValue = swipeComp;
         mgrSo.FindProperty("itemTitleText").objectReferenceValue = titleObj.GetComponent<TextMeshProUGUI>();
         mgrSo.FindProperty("itemImage").objectReferenceValue = itemImg;
         mgrSo.FindProperty("itemPriceText").objectReferenceValue = priceObj.GetComponent<TextMeshProUGUI>();
