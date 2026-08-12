@@ -6,7 +6,8 @@
       "category": "Seed",
       "price": 100,
       "description": "A radiant sun-kissed flower specimen.",
-      "spritePath": "Sprites/Tanaman/SunnyFlower/Mutated/SunnyFlower_Mutated_Bunga"
+      "spritePath": "Sprites/Tanaman/SunnyFlower/Mutated/SunnyFlower_Mutated_Bunga",
+      "day": 5
     },
     {
       "id": "room_hall",

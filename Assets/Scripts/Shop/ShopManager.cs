@@ -48,13 +48,20 @@ public class ShopManager : MonoBehaviour
 
     private void Awake()
     {
-        // Subscribe to GameSaveSystem money events
+        // Subscribe to GameSaveSystem money & day events
         GameSaveSystem.OnMoneyChanged += UpdateMoneyDisplay;
+        GameSaveSystem.OnDayChanged += OnDayChangedHandler;
     }
 
     private void OnDestroy()
     {
         GameSaveSystem.OnMoneyChanged -= UpdateMoneyDisplay;
+        GameSaveSystem.OnDayChanged -= OnDayChangedHandler;
+    }
+
+    private void OnDayChangedHandler(int newDay)
+    {
+        RefreshCarouselDisplay();
     }
 
     private void Start()
@@ -171,13 +178,25 @@ public class ShopManager : MonoBehaviour
 
         bool isOneTime = IsOneTimePurchaseCategory(item.category);
         bool isAlreadyPurchased = isOneTime && GameSaveSystem.Instance.IsItemPurchased(item.id);
+        bool isDayLocked = item.day > 0 && GameSaveSystem.Instance.Day < item.day;
 
-        if (buyButton != null) buyButton.interactable = !isAlreadyPurchased;
+        if (buyButton != null) buyButton.interactable = !isAlreadyPurchased && !isDayLocked;
 
         TextMeshProUGUI btnText = buyButtonText != null ? buyButtonText : (buyButton != null ? buyButton.GetComponentInChildren<TextMeshProUGUI>() : null);
         if (btnText != null)
         {
-            btnText.text = isAlreadyPurchased ? "OWNED" : "BUY NOW";
+            if (isAlreadyPurchased)
+            {
+                btnText.text = "OWNED";
+            }
+            else if (isDayLocked)
+            {
+                btnText.text = $"LOCKED (DAY {item.day})";
+            }
+            else
+            {
+                btnText.text = "BUY NOW";
+            }
         }
     }
 
@@ -212,6 +231,13 @@ public class ShopManager : MonoBehaviour
 
         ShopItemData currentItem = currentCategoryItems[currentItemIndex];
 
+        if (currentItem.day > 0 && GameSaveSystem.Instance.Day < currentItem.day)
+        {
+            ShowToast($"<color=#FF5555>{currentItem.title} is locked! Unlocks at Day {currentItem.day}.</color>");
+            RefreshCarouselDisplay();
+            return;
+        }
+
         if (IsOneTimePurchaseCategory(currentItem.category) && GameSaveSystem.Instance.IsItemPurchased(currentItem.id))
         {
             ShowToast($"<color=#FF5555>You already own {currentItem.title}!</color>");
@@ -236,6 +262,13 @@ public class ShopManager : MonoBehaviour
     public bool ExecutePurchase(ShopItemData item)
     {
         if (item == null) return false;
+
+        if (item.day > 0 && GameSaveSystem.Instance.Day < item.day)
+        {
+            ShowToast($"<color=#FF5555>{item.title} is locked! Unlocks at Day {item.day}.</color>");
+            RefreshCarouselDisplay();
+            return false;
+        }
 
         if (IsOneTimePurchaseCategory(item.category) && GameSaveSystem.Instance.IsItemPurchased(item.id))
         {
