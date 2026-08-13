@@ -1231,6 +1231,7 @@ public class RoomCreatorManager : MonoBehaviour
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/EmployeeAssignment.unity");
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/GameplaySaveLoad.unity");
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/Gameplay1.unity");
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/Tutorial.unity");
 
         if (modified)
         {
