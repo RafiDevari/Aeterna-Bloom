@@ -29,41 +29,7 @@ public class ElectricityRoom : Room
         }
     }
 
-    private void OnMouseUp()
-    {
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
 
-        HandleClick();
-    }
-
-    private void HandleClick()
-    {
-        // Hanya bisa diklik saat mati lampu
-        if (!Facility.Instance.IsBlackout)
-        {
-            Debug.Log($"[{RoomName}] Listrik stabil. Tidak perlu perbaikan.");
-            return;
-        }
-
-        if (isFixing)
-        {
-            Debug.Log($"[{RoomName}] Perbaikan sedang dilakukan oleh employee lain.");
-            return;
-        }
-
-        Debug.Log($"[{RoomName}] Membuka EmployeeSelectPopup untuk menugaskan perbaikan listrik.");
-
-        // Membuka popup pemilihan employee
-        EmployeeSelectPopup.Instance.Open(
-            employee => {
-                employee.GoFixElectricity(this);
-            },
-            typeof(DivisionEngineer) // Prioritaskan divisi Engineer jika ada
-        );
-    }
 
     public override string GetHUDInfo()
     {
