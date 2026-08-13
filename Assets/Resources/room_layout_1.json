@@ -25,6 +25,7 @@
                 {
                     "employeeName": "Bob",
                     "employeePrefabName": "EmployeeBotanist",
+                    "division": 1,
                     "suitColor": {
                         "r": 0.6000000238418579,
                         "g": 0.30000001192092898,
@@ -41,6 +42,7 @@
                 {
                     "employeeName": "Alice",
                     "employeePrefabName": "EmployeeBotanist",
+                    "division": 1,
                     "suitColor": {
                         "r": 0.8999999761581421,
                         "g": 0.20000000298023225,
@@ -50,6 +52,23 @@
                     "hairColor": {
                         "r": 0.8999999761581421,
                         "g": 0.20000000298023225,
+                        "b": 0.20000000298023225,
+                        "a": 1.0
+                    }
+                },
+                {
+                    "employeeName": "Faelantern",
+                    "employeePrefabName": "EmployeeResearcher",
+                    "division": 0,
+                    "suitColor": {
+                        "r": 0.20000000298023225,
+                        "g": 0.4000000059604645,
+                        "b": 0.8999999761581421,
+                        "a": 1.0
+                    },
+                    "hairColor": {
+                        "r": 0.8999999761581421,
+                        "g": 0.800000011920929,
                         "b": 0.20000000298023225,
                         "a": 1.0
                     }

@@ -128,11 +128,13 @@ public class ExportRoomLayoutTool : EditorWindow
 
                             var nameField = item.GetType().GetField("employeeName");
                             var prefabField = item.GetType().GetField("employeePrefab");
+                            var divisionField = item.GetType().GetField("division");
                             var suitColorField = item.GetType().GetField("suitColor");
                             var hairColorField = item.GetType().GetField("hairColor");
 
                             string empName = nameField != null ? (string)nameField.GetValue(item) : "";
                             Employee empPrefab = prefabField != null ? (Employee)prefabField.GetValue(item) : null;
+                            EmployeeDivision empDiv = divisionField != null ? (EmployeeDivision)divisionField.GetValue(item) : EmployeeDivision.Researcher;
                             Color sColor = suitColorField != null ? (Color)suitColorField.GetValue(item) : Color.white;
                             Color hColor = hairColorField != null ? (Color)hairColorField.GetValue(item) : Color.white;
 
@@ -142,6 +144,7 @@ public class ExportRoomLayoutTool : EditorWindow
                             {
                                 employeeName = empName,
                                 employeePrefabName = prefabName,
+                                division = empDiv,
                                 suitColor = sColor,
                                 hairColor = hColor
                             });

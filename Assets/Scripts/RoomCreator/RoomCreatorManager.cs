@@ -750,6 +750,38 @@ public class RoomCreatorManager : MonoBehaviour
     /// </summary>
     public void SaveLayoutToJson(string fileName = "room_layout_1.json")
     {
+        // Load existing layout JSON to preserve employee assignments
+        FacilityLayoutData existingLayoutData = null;
+        string existingJson = "";
+#if UNITY_EDITOR
+        string editorPath = Path.Combine(Application.dataPath, "Resources", fileName);
+        if (File.Exists(editorPath))
+        {
+            existingJson = File.ReadAllText(editorPath);
+        }
+#endif
+        if (string.IsNullOrEmpty(existingJson))
+        {
+            string savePath = Path.Combine(Application.persistentDataPath, fileName);
+            if (File.Exists(savePath))
+            {
+                existingJson = File.ReadAllText(savePath);
+            }
+            else
+            {
+                TextAsset targetAsset = Resources.Load<TextAsset>(fileName.Replace(".json", ""));
+                if (targetAsset != null)
+                {
+                    existingJson = targetAsset.text;
+                }
+            }
+        }
+
+        if (!string.IsNullOrEmpty(existingJson))
+        {
+            existingLayoutData = JsonUtility.FromJson<FacilityLayoutData>(existingJson);
+        }
+
         FacilityLayoutData layoutData = new FacilityLayoutData
         {
             defaultRoomTemperature = 20f,
@@ -799,11 +831,13 @@ public class RoomCreatorManager : MonoBehaviour
 
                             var nameField = item.GetType().GetField("employeeName");
                             var prefabField = item.GetType().GetField("employeePrefab");
+                            var divisionField = item.GetType().GetField("division");
                             var suitColorField = item.GetType().GetField("suitColor");
                             var hairColorField = item.GetType().GetField("hairColor");
 
                             string empName = nameField != null ? (string)nameField.GetValue(item) : "";
                             Employee empPrefab = prefabField != null ? (Employee)prefabField.GetValue(item) : null;
+                            EmployeeDivision empDiv = divisionField != null ? (EmployeeDivision)divisionField.GetValue(item) : EmployeeDivision.Researcher;
                             Color sColor = suitColorField != null ? (Color)suitColorField.GetValue(item) : Color.white;
                             Color hColor = hairColorField != null ? (Color)hairColorField.GetValue(item) : Color.white;
 
@@ -813,9 +847,26 @@ public class RoomCreatorManager : MonoBehaviour
                             {
                                 employeeName = empName,
                                 employeePrefabName = prefabName,
+                                division = empDiv,
                                 suitColor = sColor,
                                 hairColor = hColor
                             });
+                        }
+                    }
+                }
+            }
+
+            // Preserve existing employee assignments if none exist in RoomCreator scene instance
+            if (emps.Count == 0 && existingLayoutData != null && existingLayoutData.rooms != null)
+            {
+                foreach (var oldRoom in existingLayoutData.rooms)
+                {
+                    if (oldRoom != null && oldRoom.employeesToSpawn != null && oldRoom.employeesToSpawn.Count > 0)
+                    {
+                        if (Vector3.Distance(oldRoom.position, roomObj.transform.position) < 0.1f || oldRoom.roomName == displayName)
+                        {
+                            emps = oldRoom.employeesToSpawn;
+                            break;
                         }
                     }
                 }
@@ -1003,11 +1054,13 @@ public class RoomCreatorManager : MonoBehaviour
                                             
                                             var nameField = nestedType.GetField("employeeName");
                                             var prefabField = nestedType.GetField("employeePrefab");
+                                            var divisionField = nestedType.GetField("division");
                                             var suitColorField = nestedType.GetField("suitColor");
                                             var hairColorField = nestedType.GetField("hairColor");
 
                                             if (nameField != null) nameField.SetValue(spawnData, empData.employeeName);
                                             if (prefabField != null) prefabField.SetValue(spawnData, empPrefab);
+                                            if (divisionField != null) divisionField.SetValue(spawnData, empData.division);
                                             if (suitColorField != null) suitColorField.SetValue(spawnData, empData.suitColor);
                                             if (hairColorField != null) hairColorField.SetValue(spawnData, empData.hairColor);
 
