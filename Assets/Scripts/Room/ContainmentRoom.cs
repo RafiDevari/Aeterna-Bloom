@@ -88,68 +88,6 @@ public class ContainmentRoom : Room
         return monsters.Average(m => m.SuitableTemperature);
     }
 
-    /// <summary>
-    /// Handle right-click on the room to assign a researcher for monitoring.
-    /// Overrides poison click behavior - room is still clickable when poisoned.
-    /// </summary>
-    protected virtual void OnMouseOver()
-    {
-        // Ignore if pointer over UI
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            return;
-
-        // Right click to assign monitor
-        if (Input.GetMouseButtonDown(1))
-        {
-            HandleMonitorClick();
-        }
-    }
-
-    private void HandleMonitorClick()
-    {
-        // Room must have monsters to be monitorable
-        if (!HasMonsters)
-        {
-            Debug.Log($"[{RoomName}] No monsters in room - cannot assign monitor.");
-            return;
-        }
-
-        // Already has a monitor
-        if (HasMonitor)
-        {
-            Debug.Log($"[{RoomName}] Already has a monitor assigned: {assignedMonitor.EmployeeName}");
-            return;
-        }
-
-        Debug.Log($"[{RoomName}] Opening EmployeeSelectPopup for monitoring assignment.");
-
-        if (EmployeeSelectPopup.Instance != null)
-        {
-            EmployeeSelectPopup.Instance.Open(
-                employee =>
-                {
-                    // Validate: must be a researcher
-                    if (employee.Division != EmployeeDivision.Researcher)
-                    {
-                        Debug.LogWarning($"[{RoomName}] Only Researchers can monitor containment rooms. {employee.EmployeeName} is {employee.Division}.");
-                        return;
-                    }
-
-                    // Create and enqueue monitoring task
-                    var monitoringTask = new MonitoringTask(this);
-                    employee.EnqueueTask(monitoringTask);
-
-                    // Assign monitor immediately so room knows it's taken
-                    AssignMonitor(employee);
-                },
-                typeof(DivisionResearcher) // Filter to only show Researcher divisions
-            );
-        }
-        else
-        {
-            Debug.LogError("[ContainmentRoom] EmployeeSelectPopup.Instance not found. Make sure it's in the scene.");
-        }
-    }
 
     public override string GetHUDInfo()
     {
