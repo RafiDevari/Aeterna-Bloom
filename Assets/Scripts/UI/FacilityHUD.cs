@@ -7,7 +7,22 @@ using System.Collections.Generic;
 public class FacilityHUD : MonoBehaviour
 {
     private static FacilityHUD instance;
-    public static FacilityHUD Instance => instance;
+    public static FacilityHUD Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindFirstObjectByType<FacilityHUD>();
+                if (instance == null)
+                {
+                    GameObject hudObj = new GameObject("FacilityHUD");
+                    instance = hudObj.AddComponent<FacilityHUD>();
+                }
+            }
+            return instance;
+        }
+    }
 
     [Header("Colors & Theme")]
     [SerializeField] private Color outerFrameBgColor = new Color(0.08f, 0.06f, 0.06f, 0.95f);
@@ -18,6 +33,12 @@ public class FacilityHUD : MonoBehaviour
     [SerializeField] private Color redTextColor = new Color(1f, 0.45f, 0.45f, 1f);
     [SerializeField] private Color dangerColor = new Color(1f, 0.15f, 0.15f, 1f);
     [SerializeField] private Color roomPanelBgColor = new Color(0.05f, 0.05f, 0.15f, 0.85f);
+
+    [Header("Broadcast Settings")]
+    [SerializeField] private float broadcastWidth = 850f;
+    [SerializeField] private float broadcastHeight = 76f;
+    [SerializeField] private int broadcastSenderFontSize = 22;
+    [SerializeField] private int broadcastMessageFontSize = 20;
 
     private GUIStyle digitalValueStyle;
     private GUIStyle badgeStyle;
@@ -45,7 +66,14 @@ public class FacilityHUD : MonoBehaviour
 
     private void Awake()
     {
-        instance = this;
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void OnDestroy()
@@ -68,21 +96,21 @@ public class FacilityHUD : MonoBehaviour
         }
     }
 
-    public void AddBroadcast(string message, string sender = "System")
+    public void AddBroadcast(string message, string sender = "System", float duration = 10f)
     {
         activeBroadcasts.Insert(0, new BroadcastMessage
         {
             Sender = sender,
             Message = message,
-            Duration = 10f
+            Duration = duration
         });
     }
 
-    public static void ShowBroadcast(string message, string sender = "System")
+    public static void ShowBroadcast(string message, string sender = "System", float duration = 10f)
     {
-        if (instance != null)
+        if (Instance != null)
         {
-            instance.AddBroadcast(message, sender);
+            Instance.AddBroadcast(message, sender, duration);
         }
         else
         {
@@ -103,6 +131,22 @@ public class FacilityHUD : MonoBehaviour
     {
         InitStyles();
 
+        // Draw Broadcasts in the center left of the screen (larger size) - rendered even if Facility is null (e.g., in Tutorial scene)
+        if (activeBroadcasts.Count > 0)
+        {
+            float broadcastSpacing = 10f;
+            int count = activeBroadcasts.Count;
+            float totalHeight = count * broadcastHeight + (count - 1) * broadcastSpacing;
+            float startY = (Screen.height - totalHeight) / 2f;
+            float bx = 16f;
+
+            for (int i = 0; i < count; i++)
+            {
+                float by = startY + i * (broadcastHeight + broadcastSpacing);
+                DrawBroadcastPanel(activeBroadcasts[i], bx, by, broadcastWidth, broadcastHeight);
+            }
+        }
+
         Facility fac = Facility.Instance;
         if (fac == null)
             return;
@@ -120,24 +164,6 @@ public class FacilityHUD : MonoBehaviour
         {
             float timeLeft = Mathf.Max(0f, fac.OverloadToleranceDuration - fac.OverloadTimer);
             DrawOverloadCountdown(timeLeft);
-        }
-
-        // Draw Broadcasts in the center left of the screen (larger size)
-        if (activeBroadcasts.Count > 0)
-        {
-            float broadcastWidth = 600f;
-            float broadcastHeight = 48f;
-            float broadcastSpacing = 8f;
-            int count = activeBroadcasts.Count;
-            float totalHeight = count * broadcastHeight + (count - 1) * broadcastSpacing;
-            float startY = (Screen.height - totalHeight) / 2f;
-            float bx = 12f;
-
-            for (int i = 0; i < count; i++)
-            {
-                float by = startY + i * (broadcastHeight + broadcastSpacing);
-                DrawBroadcastPanel(activeBroadcasts[i], bx, by, broadcastWidth, broadcastHeight);
-            }
         }
 
         // Draw Room Panels below top-left HUD (no offset needed as broadcasts are center-right)
@@ -451,16 +477,18 @@ public class FacilityHUD : MonoBehaviour
 
         broadcastSenderStyle = new GUIStyle(GUI.skin.label)
         {
-            fontSize = 14,
+            fontSize = broadcastSenderFontSize,
             fontStyle = FontStyle.Bold,
-            alignment = TextAnchor.MiddleCenter
+            alignment = TextAnchor.MiddleCenter,
+            wordWrap = true
         };
 
         broadcastMessageStyle = new GUIStyle(GUI.skin.label)
         {
-            fontSize = 14,
+            fontSize = broadcastMessageFontSize,
             fontStyle = FontStyle.Bold,
-            alignment = TextAnchor.MiddleLeft
+            alignment = TextAnchor.MiddleLeft,
+            wordWrap = true
         };
     }
 
@@ -479,12 +507,13 @@ public class FacilityHUD : MonoBehaviour
         // Dark frame background
         DrawRect(new Rect(x, y, w, h), new Color(0.06f, 0.04f, 0.04f, 0.95f));
         // Golden/Bronze outline
-        DrawThickOutline(new Rect(x, y, w, h), borderGoldColor, 2);
+        DrawThickOutline(new Rect(x, y, w, h), borderGoldColor, 3);
 
         // Draw Sender Badge
-        float badgeW = 120f;
-        float badgeH = h - 12f;
-        Rect badgeRect = new Rect(x + 6f, y + 6f, badgeW, badgeH);
+        float pad = 8f;
+        float badgeW = 160f;
+        float badgeH = h - (pad * 2f);
+        Rect badgeRect = new Rect(x + pad, y + pad, badgeW, badgeH);
         
         // Draw sender badge background
         DrawRect(badgeRect, new Color(0.04f, 0.03f, 0.03f, 0.95f));
@@ -500,14 +529,16 @@ public class FacilityHUD : MonoBehaviour
             badgeColor = new Color(0.3f, 0.8f, 1f, 1f); // Neon blue for others/custom
         }
         
-        DrawThickOutline(badgeRect, badgeColor, 1);
+        DrawThickOutline(badgeRect, badgeColor, 2);
 
         // Sender text
         broadcastSenderStyle.normal.textColor = badgeColor;
         GUI.Label(badgeRect, msg.Sender, broadcastSenderStyle);
 
         // Draw Message
-        Rect msgRect = new Rect(x + badgeW + 16f, y + 6f, w - badgeW - 24f, h - 12f);
+        float msgX = x + badgeW + (pad * 2f);
+        float msgW = w - badgeW - (pad * 3f);
+        Rect msgRect = new Rect(msgX, y + pad, msgW, badgeH);
         broadcastMessageStyle.normal.textColor = new Color(0.95f, 0.95f, 0.95f, 1f);
         GUI.Label(msgRect, msg.Message, broadcastMessageStyle);
 

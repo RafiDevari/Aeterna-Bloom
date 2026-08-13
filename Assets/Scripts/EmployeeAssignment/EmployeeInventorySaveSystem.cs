@@ -7,6 +7,7 @@ public class EmployeeInventoryItemSaveData
 {
     public string employeeName;
     public string employeePrefabName; // e.g. EmployeeBotanist, EmployeeResearcher, etc.
+    public EmployeeDivision division;
     public Color suitColor = Color.white;
     public Color hairColor = Color.white;
     public string suitPath = "";
@@ -14,10 +15,11 @@ public class EmployeeInventoryItemSaveData
 
     public EmployeeInventoryItemSaveData() { }
 
-    public EmployeeInventoryItemSaveData(string name, string prefabName, Color? suit = null, Color? hair = null, string sPath = "", string hPath = "")
+    public EmployeeInventoryItemSaveData(string name, string prefabName, EmployeeDivision div = EmployeeDivision.Researcher, Color? suit = null, Color? hair = null, string sPath = "", string hPath = "")
     {
         employeeName = name;
         employeePrefabName = prefabName;
+        division = div;
         suitColor = suit ?? Color.white;
         hairColor = hair ?? Color.white;
         suitPath = sPath;
@@ -155,11 +157,11 @@ public class EmployeeInventorySaveSystem : MonoBehaviour
         {
             employees = new List<EmployeeInventoryItemSaveData>
             {
-                new EmployeeInventoryItemSaveData("Bob", "EmployeeBotanist", new Color(0.4f, 0.8f, 0.4f, 1f), new Color(0.9f, 0.2f, 0.1f, 1f)),
-                new EmployeeInventoryItemSaveData("Alice", "EmployeeResearcher", new Color(0.4f, 0.6f, 0.9f, 1f), new Color(0.9f, 0.8f, 0.4f, 1f)),
-                new EmployeeInventoryItemSaveData("Charlie", "EmployeeSecurity", new Color(0.8f, 0.3f, 0.3f, 1f), new Color(0.1f, 0.1f, 0.1f, 1f)),
-                new EmployeeInventoryItemSaveData("Daniel", "EmployeeMedic", new Color(0.7f, 0.4f, 0.8f, 1f), new Color(0.5f, 0.3f, 0.2f, 1f)),
-                new EmployeeInventoryItemSaveData("Edward", "EmployeeEngineer", new Color(0.9f, 0.7f, 0.3f, 1f), new Color(0.4f, 0.4f, 0.4f, 1f))
+                new EmployeeInventoryItemSaveData("Bob", "EmployeeBotanist", EmployeeDivision.Botanist, new Color(0.4f, 0.8f, 0.4f, 1f), new Color(0.9f, 0.2f, 0.1f, 1f)),
+                new EmployeeInventoryItemSaveData("Alice", "EmployeeResearcher", EmployeeDivision.Researcher, new Color(0.4f, 0.6f, 0.9f, 1f), new Color(0.9f, 0.8f, 0.4f, 1f)),
+                new EmployeeInventoryItemSaveData("Charlie", "EmployeeSecurity", EmployeeDivision.Security, new Color(0.8f, 0.3f, 0.3f, 1f), new Color(0.1f, 0.1f, 0.1f, 1f)),
+                new EmployeeInventoryItemSaveData("Daniel", "EmployeeMedic", EmployeeDivision.Medic, new Color(0.7f, 0.4f, 0.8f, 1f), new Color(0.5f, 0.3f, 0.2f, 1f)),
+                new EmployeeInventoryItemSaveData("Edward", "EmployeeEngineer", EmployeeDivision.Engineer, new Color(0.9f, 0.7f, 0.3f, 1f), new Color(0.4f, 0.4f, 0.4f, 1f))
             }
         };
     }

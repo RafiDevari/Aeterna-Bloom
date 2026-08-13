@@ -30,6 +30,7 @@ public partial class MonsterBase
 
     public System.Action<FoodType> OnFed;
     public System.Action OnFeedFinished;
+    public static System.Action<MonsterBase> OnAnyMonsterFeedFinished;
 
     //────────────────────────────────────────────────────────
     // Properties
@@ -89,6 +90,7 @@ public partial class MonsterBase
         }
 
         OnFeedFinished?.Invoke();
+        OnAnyMonsterFeedFinished?.Invoke(this);
 
         Debug.Log($"[{MonsterName}] Selesai makan, cooldown mulai : {feedCooldown}s");
     }

@@ -329,6 +329,11 @@ public partial class MonsterBase
     // Public API
     //────────────────────────────────────────────────────────
 
+    public void SetGrowth(float value)
+    {
+        Growth = value;
+    }
+
     public void ModifyGrowth(float delta)
     {
         if (delta > 0 && Mood == 0 && CurrentGrowthState == GrowthState.Seed)

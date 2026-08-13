@@ -27,6 +27,9 @@ public abstract class DivisionRoom : Room
         [Tooltip("Prefab Employee (harus punya component Employee) yang mau di-spawn.")]
         public Employee employeePrefab;
 
+        [Tooltip("Keahlian/Divisi spesifik milik employee ini.")]
+        public EmployeeDivision division;
+
         [Tooltip("Warna baju/suit employee.")]
         public Color suitColor;
 
@@ -104,6 +107,9 @@ public abstract class DivisionRoom : Room
                         employee.Appearance.HairColor = data.hairColor;
                 }
             }
+
+            // Set division variable from JSON / spawn data
+            employee.SetDivision(data.division);
 
             // Maintain native EmployeeDivision from prefab (do not overwrite with room's division)
             employee.AssignDivision(this);

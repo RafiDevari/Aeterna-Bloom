@@ -48,6 +48,17 @@ public class ContainmentPopup : PopupBase
         Open(unit);
     }
 
+    public static event System.Action<ContainmentUnit> OnPopupOpened;
+    public static event System.Action OnInfoButtonClicked;
+    public static event System.Action OnResearchButtonClicked;
+    public static event System.Action OnNutrisiButtonClicked;
+    public static event System.Action OnHarvestButtonClicked;
+
+    public Button InfoButton => infoButton;
+    public Button ResearchButton => researchButton;
+    public Button NutrisiButton => nutrisiButton;
+    public Button HarvestButton => harvestButton;
+
     public void Open(ContainmentUnit unit)
     {
         targetUnit = unit;
@@ -57,12 +68,14 @@ public class ContainmentPopup : PopupBase
         bool showHarvest = unit != null && unit.HasMonster && unit.Monster.IsOvergrown;
         harvestButton.gameObject.SetActive(showHarvest);
 
+        OnPopupOpened?.Invoke(unit);
         base.Open();
     }
 
     private void OnNutrisiClicked()
     {
         Debug.Log($"[ContainmentUnitPopup] NutrisiPopup. ");
+        OnNutrisiButtonClicked?.Invoke();
 
         // Buka sub-popup Nutrisi. Tidak perlu panggil Close() di sini —
         // PopupManager otomatis menutup popup ini begitu NutrisiPopup dibuka.
@@ -78,6 +91,7 @@ public class ContainmentPopup : PopupBase
     private void OnResearchClicked()
     {
         Debug.Log($"[ContainmentUnitPopup] Research ditekan untuk unit: {targetUnit?.UnitName}");
+        OnResearchButtonClicked?.Invoke();
 
         // Sama seperti Nutrisi: tidak perlu panggil Close() di sini kalau PopupManager
         // otomatis menutup popup ini begitu EmployeeSelectPopup dibuka.
@@ -94,6 +108,7 @@ public class ContainmentPopup : PopupBase
     private void OnHarvestClicked()
     {
         Debug.Log($"[ContainmentUnitPopup] Harvest ditekan untuk unit: {targetUnit?.UnitName}");
+        OnHarvestButtonClicked?.Invoke();
 
         // Sama seperti Research/Nutrisi: tidak perlu panggil Close() di sini kalau PopupManager
         // otomatis menutup popup ini begitu EmployeeSelectPopup dibuka.
@@ -110,6 +125,7 @@ public class ContainmentPopup : PopupBase
     private void OnInfoClicked()
     {
         Debug.Log($"[ContainmentUnitPopup] Info ditekan untuk unit: {targetUnit?.UnitName}");
+        OnInfoButtonClicked?.Invoke();
 
         // Sama seperti Nutrisi: tidak perlu panggil Close() di sini kalau PopupManager
         // otomatis menutup popup ini begitu MonsterInfoPopup dibuka.
