@@ -110,6 +110,7 @@ public partial class MonsterBase
 
     /// <summary>Invoked begitu proses research Manual yang sedang berjalan selesai (durasi habis) -- mirror OnFeedFinished.</summary>
     public System.Action OnResearchFinished;
+    public static System.Action<MonsterBase> OnAnyMonsterResearchFinished;
 
     //────────────────────────────────────────────────────────
     // Properties
@@ -161,6 +162,7 @@ public partial class MonsterBase
             CompleteResearch(id);
 
         OnResearchFinished?.Invoke();
+        OnAnyMonsterResearchFinished?.Invoke(this);
 
         Debug.Log($"[{MonsterName}] Proses research selesai.");
     }

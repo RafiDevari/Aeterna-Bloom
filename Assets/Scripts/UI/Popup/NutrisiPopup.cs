@@ -35,9 +35,17 @@ public class NutrisiPopup : PopupBase
         base.Open();
     }
 
+    public static event System.Action<FoodType> OnNutritionSelected;
+
+    public Button KaliumButton => kaliumButton;
+    public Button NatriumButton => natriumButton;
+    public Button FosforButton => fosforButton;
+    public Button MagnesiumButton => magnesiumButton;
+
     private void SelectNutrition(FoodType food)
     {
         Debug.Log($"[NutrisiPopup] Nutrisi dipilih: {food} untuk unit: {targetUnit?.UnitName}");
+        OnNutritionSelected?.Invoke(food);
 
         if (EmployeeSelectPopup.Instance != null)
         {

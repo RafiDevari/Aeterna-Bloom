@@ -239,6 +239,8 @@ public class EmployeeSelectPopup : PopupBase
         spawnedButtons.Clear();
     }
 
+    public static event System.Action<Employee> OnAnyEmployeeSelectedFromPopup;
+
     private void OnEmployeeClicked(Employee employee)
     {
         // Simpan dulu & clear field sebelum invoke, biar OnClosed() (dipanggil
@@ -247,6 +249,7 @@ public class EmployeeSelectPopup : PopupBase
 
         Close();
 
+        OnAnyEmployeeSelectedFromPopup?.Invoke(employee);
         callback?.Invoke(employee);
     }
 

@@ -131,6 +131,22 @@ public class FacilityHUD : MonoBehaviour
     {
         InitStyles();
 
+        // Draw Broadcasts in the center left of the screen (larger size) - rendered even if Facility is null (e.g., in Tutorial scene)
+        if (activeBroadcasts.Count > 0)
+        {
+            float broadcastSpacing = 10f;
+            int count = activeBroadcasts.Count;
+            float totalHeight = count * broadcastHeight + (count - 1) * broadcastSpacing;
+            float startY = (Screen.height - totalHeight) / 2f;
+            float bx = 16f;
+
+            for (int i = 0; i < count; i++)
+            {
+                float by = startY + i * (broadcastHeight + broadcastSpacing);
+                DrawBroadcastPanel(activeBroadcasts[i], bx, by, broadcastWidth, broadcastHeight);
+            }
+        }
+
         Facility fac = Facility.Instance;
         if (fac == null)
             return;
@@ -148,22 +164,6 @@ public class FacilityHUD : MonoBehaviour
         {
             float timeLeft = Mathf.Max(0f, fac.OverloadToleranceDuration - fac.OverloadTimer);
             DrawOverloadCountdown(timeLeft);
-        }
-
-        // Draw Broadcasts in the center left of the screen (larger size)
-        if (activeBroadcasts.Count > 0)
-        {
-            float broadcastSpacing = 10f;
-            int count = activeBroadcasts.Count;
-            float totalHeight = count * broadcastHeight + (count - 1) * broadcastSpacing;
-            float startY = (Screen.height - totalHeight) / 2f;
-            float bx = 16f;
-
-            for (int i = 0; i < count; i++)
-            {
-                float by = startY + i * (broadcastHeight + broadcastSpacing);
-                DrawBroadcastPanel(activeBroadcasts[i], bx, by, broadcastWidth, broadcastHeight);
-            }
         }
 
         // Draw Room Panels below top-left HUD (no offset needed as broadcasts are center-right)

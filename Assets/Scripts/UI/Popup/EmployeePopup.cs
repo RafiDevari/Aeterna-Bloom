@@ -29,6 +29,12 @@ public class EmployeePopup : PopupBase
     [SerializeField] private Button takeCareButton;
     [SerializeField] private Button healSickButton;
 
+    public static event System.Action OnOrderToButtonClicked;
+    public static event System.Action OnReturnButtonClicked;
+
+    public Button OrderToButton => orderToButton;
+    public Button BackToDivisionButton => backToDivisionButton;
+
     [Header("Portrait (Muka)")]
     [Tooltip("Component yang menampilkan portrait kepala employee di popup.")]
     [SerializeField] private EmployeePortraitUI portraitUI;
@@ -224,6 +230,7 @@ public class EmployeePopup : PopupBase
     private void OnOrderToClicked()
     {
         Employee capturedTarget = targetEmployee;
+        OnOrderToButtonClicked?.Invoke();
         Close();
 
         if (capturedTarget != null)
@@ -240,6 +247,7 @@ public class EmployeePopup : PopupBase
     private void OnBackToDivisionClicked()
     {
         Employee capturedTarget = targetEmployee;
+        OnReturnButtonClicked?.Invoke();
         Close();
 
         if (capturedTarget != null)

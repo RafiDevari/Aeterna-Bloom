@@ -71,6 +71,8 @@ public class MonsterInfoPopup : PopupBase
             targetMonster.OnResearchCompleted -= HandleResearchCompleted;
     }
 
+    public static event System.Action<ContainmentUnit> OnMonsterInfoOpened;
+
     /// <summary>
     /// Buka info popup untuk unit tertentu. Dipanggil dari ContainmentPopup.OnInfoClicked,
     /// atau dari mana saja yang punya referensi ContainmentUnit.
@@ -97,6 +99,7 @@ public class MonsterInfoPopup : PopupBase
             killBeeButton.gameObject.SetActive(false); // Dinonaktifkan, diganti klik kanan langsung ke lebah
         }
 
+        OnMonsterInfoOpened?.Invoke(unit);
         base.Open();
     }
 

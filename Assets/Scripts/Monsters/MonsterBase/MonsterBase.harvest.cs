@@ -42,6 +42,7 @@ public partial class MonsterBase
 
     /// <summary>Invoked begitu proses harvest BENERAN selesai (durasi habis) -- mirror OnFeedFinished/OnResearchFinished.</summary>
     public System.Action OnHarvestFinished;
+    public static System.Action<MonsterBase> OnAnyMonsterHarvestFinished;
 
     //────────────────────────────────────────────────────────
     // Properties
@@ -105,6 +106,7 @@ public partial class MonsterBase
         ResetGrowthForHarvest();         // kembalikan growth persis ke growThreshold
 
         OnHarvestFinished?.Invoke();
+        OnAnyMonsterHarvestFinished?.Invoke(this);
         currentHarvester = null;
 
         Debug.Log($"[{MonsterName}] Harvest selesai. Growth {growthAtHarvest:0.##} -> {growThreshold:0.##}, " +

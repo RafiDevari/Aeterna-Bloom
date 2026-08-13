@@ -16,12 +16,12 @@ public class CameraDrag : MonoBehaviour
             Camera.main.orthographicSize -= scroll * 5f;
             Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize, 2f, 15f);
         }
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(1))
         {
             dragOrigin = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         }
 
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(1))
         {
             Vector3 difference = dragOrigin - Camera.main.ScreenToWorldPoint(Input.mousePosition);
             transform.position += difference;

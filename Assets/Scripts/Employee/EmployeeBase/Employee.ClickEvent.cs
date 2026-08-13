@@ -3,11 +3,12 @@ using UnityEngine.EventSystems;
 
 public partial class Employee
 {
+    public static event System.Action<Employee> OnAnyEmployeeClicked;
     public static event System.Action<Employee> OnAnyEmployeeRightClicked;
 
     private void OnMouseOver()
     {
-        if (Input.GetMouseButtonUp(1)) // 1 = right mouse button
+        if (Input.GetMouseButtonUp(0)) // 0 = left mouse button
         {
             if (EventSystem.current != null &&
                 EventSystem.current.IsPointerOverGameObject())
@@ -28,6 +29,7 @@ public partial class Employee
             SelectThisEmployee();
         }
 
+        OnAnyEmployeeClicked?.Invoke(this);
         OnAnyEmployeeRightClicked?.Invoke(this);
     }
 }

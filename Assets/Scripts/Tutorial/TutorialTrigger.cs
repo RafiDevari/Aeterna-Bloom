@@ -71,6 +71,84 @@ public class TutorialTrigger : MonoBehaviour
             FacilityHUD.ShowBroadcast(initialMessage, senderName, broadcastDuration);
         }
 
+        // Tahan urutan broadcast berikutnya jika Step 1 (Geser Kamera) belum selesai dilakukan user
+        CameraPanTutorialStep cameraStep = FindFirstObjectByType<CameraPanTutorialStep>();
+        if (cameraStep != null && !cameraStep.IsCompleted)
+        {
+            if (!cameraStep.IsActive)
+            {
+                cameraStep.StartStep();
+            }
+
+            while (!cameraStep.IsCompleted)
+            {
+                yield return null;
+            }
+
+            // Jeda singkat setelah user berhasil menggeser kamera
+            yield return new WaitForSeconds(1.0f);
+        }
+
+        // Tahan urutan broadcast berikutnya sampai Step 2 (Klik Containment Unit & Info) selesai
+        ContainmentUnitTutorialStep step2 = FindFirstObjectByType<ContainmentUnitTutorialStep>();
+        if (step2 != null && !step2.IsCompleted)
+        {
+            while (!step2.IsCompleted)
+            {
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(1.0f);
+        }
+
+        // Tahan urutan broadcast berikutnya sampai Step 3 (Pindahkan & Return Employee) selesai
+        EmployeeMoveTutorialStep step3 = FindFirstObjectByType<EmployeeMoveTutorialStep>();
+        if (step3 != null && !step3.IsCompleted)
+        {
+            while (!step3.IsCompleted)
+            {
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(1.0f);
+        }
+
+        // Tahan urutan broadcast berikutnya sampai Step 4 (Research Tanaman) selesai
+        ResearchTutorialStep step4 = FindFirstObjectByType<ResearchTutorialStep>();
+        if (step4 != null && !step4.IsCompleted)
+        {
+            while (!step4.IsCompleted)
+            {
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(1.0f);
+        }
+
+        // Tahan urutan broadcast berikutnya sampai Step 5 (Nutrisi Kalium) selesai
+        NutritionTutorialStep step5 = FindFirstObjectByType<NutritionTutorialStep>();
+        if (step5 != null && !step5.IsCompleted)
+        {
+            while (!step5.IsCompleted)
+            {
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(1.0f);
+        }
+
+        // Tahan urutan broadcast berikutnya sampai Step 6 (Harvest Monster Overgrowth) selesai
+        HarvestTutorialStep step6 = FindFirstObjectByType<HarvestTutorialStep>();
+        if (step6 != null && !step6.IsCompleted)
+        {
+            while (!step6.IsCompleted)
+            {
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(1.0f);
+        }
+
         // Tampilkan broadcast tambahan jika ada
         if (additionalMessages != null && additionalMessages.Count > 0)
         {

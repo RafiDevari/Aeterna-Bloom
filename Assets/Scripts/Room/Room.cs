@@ -437,8 +437,13 @@ public abstract class Room : MonoBehaviour
             return;
         }
 
-        if (Input.GetMouseButtonDown(1)) // Klik Kanan
+        if (Input.GetMouseButtonDown(0)) // Klik Kiri
         {
+            if (EmployeeOrderController.Instance != null && EmployeeOrderController.Instance.IsOrdering)
+            {
+                return;
+            }
+
             RoomPopup.EnsureInstance();
             if (RoomPopup.Instance != null)
             {

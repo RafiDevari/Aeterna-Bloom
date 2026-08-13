@@ -75,6 +75,8 @@ public class EmployeeOrderController : MonoBehaviour
         selectedEmployee = null;
     }
 
+    public static event System.Action<Employee, Room> OnOrderExecuted;
+
     private void Update()
     {
         if (!isOrdering || selectedEmployee == null)
@@ -121,6 +123,8 @@ public class EmployeeOrderController : MonoBehaviour
                 selectedEmployee.MoveTo(walkableDestination);
 
                 Debug.Log($"[EmployeeOrderController] Menugaskan {selectedEmployee.EmployeeName} pergi ke ruangan '{targetRoom.RoomName}' di posisi lantai {walkableDestination}");
+
+                OnOrderExecuted?.Invoke(selectedEmployee, targetRoom);
 
                 // Selesai memberi order
                 isOrdering = false;

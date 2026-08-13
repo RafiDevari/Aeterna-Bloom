@@ -4,51 +4,11 @@
     "maxEnergy": 100.0,
     "rooms": [
         {
-            "roomType": "MainRoom",
-            "roomName": "Room",
-            "position": {
-                "x": -0.4369480609893799,
-                "y": -2.039090156555176,
-                "z": 0.0
-            },
-            "scale": {
-                "x": -0.2566526234149933,
-                "y": 0.325924813747406,
-                "z": 1.0
-            },
-            "temperature": 20.0,
-            "isLocked": false,
-            "isPoisoned": false,
-            "isSterilizing": false,
-            "containmentUnits": [],
-            "employeesToSpawn": []
-        },
-        {
-            "roomType": "ContainmentRoom",
-            "roomName": "Room",
-            "position": {
-                "x": 18.968957901000978,
-                "y": -0.8378551006317139,
-                "z": 0.0
-            },
-            "scale": {
-                "x": 1.3061574697494507,
-                "y": 2.833073139190674,
-                "z": 1.0
-            },
-            "temperature": 0.0,
-            "isLocked": false,
-            "isPoisoned": false,
-            "isSterilizing": false,
-            "containmentUnits": [],
-            "employeesToSpawn": []
-        },
-        {
             "roomType": "DivisionBotanist",
             "roomName": "Botanist Room",
             "position": {
-                "x": -9.020097732543946,
-                "y": -1.944319248199463,
+                "x": -6.635233402252197,
+                "y": -4.061673164367676,
                 "z": 0.0
             },
             "scale": {
@@ -66,14 +26,14 @@
                     "employeeName": "Bob",
                     "employeePrefabName": "EmployeeBotanist",
                     "suitColor": {
-                        "r": 0.4000000059604645,
-                        "g": 0.800000011920929,
-                        "b": 0.4000000059604645,
+                        "r": 0.6000000238418579,
+                        "g": 0.30000001192092898,
+                        "b": 0.10000000149011612,
                         "a": 1.0
                     },
                     "hairColor": {
-                        "r": 0.8999999761581421,
-                        "g": 0.20000000298023225,
+                        "r": 0.6000000238418579,
+                        "g": 0.30000001192092898,
                         "b": 0.10000000149011612,
                         "a": 1.0
                     }
@@ -82,19 +42,110 @@
                     "employeeName": "Alice",
                     "employeePrefabName": "EmployeeBotanist",
                     "suitColor": {
-                        "r": 0.4000000059604645,
-                        "g": 0.699999988079071,
-                        "b": 0.5,
+                        "r": 0.8999999761581421,
+                        "g": 0.20000000298023225,
+                        "b": 0.20000000298023225,
                         "a": 1.0
                     },
                     "hairColor": {
-                        "r": 0.800000011920929,
-                        "g": 0.5,
+                        "r": 0.8999999761581421,
+                        "g": 0.20000000298023225,
                         "b": 0.20000000298023225,
                         "a": 1.0
                     }
                 }
             ]
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 4.164766788482666,
+                "y": -4.007673263549805,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "MainRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 14.964767456054688,
+                "y": -4.061673164367676,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 25.764766693115236,
+                "y": -4.007673263549805,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "ContainmentRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 47.38373565673828,
+                "y": -2.9202795028686525,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.3061574697494507,
+                "y": 2.833073139190674,
+                "z": 1.0
+            },
+            "temperature": 0.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [
+                {
+                    "unitName": "Containment Unit",
+                    "monsterPrefabName": "Sunny Flower",
+                    "localPosition": {
+                        "x": -9.270161628723145,
+                        "y": -0.23659466207027436,
+                        "z": 0.0
+                    },
+                    "plantInstanceId": "Room_Unit-A1"
+                }
+            ],
+            "employeesToSpawn": []
         }
     ]
 }
