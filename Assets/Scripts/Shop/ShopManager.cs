@@ -21,6 +21,8 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI pageIndicatorText;
 
     [Header("Item Card UI Elements (Title Above, Image Center, Price Under)")]
+    [SerializeField] private RectTransform itemCardFrame;
+    [SerializeField] private ShopCarouselSwipeHandler swipeHandler;
     [SerializeField] private TextMeshProUGUI itemTitleText;
     [SerializeField] private Image itemImage;
     [SerializeField] private TextMeshProUGUI itemPriceText;
@@ -41,6 +43,8 @@ public class ShopManager : MonoBehaviour
     private List<ShopItemData> currentCategoryItems = new List<ShopItemData>();
     private int currentItemIndex = 0;
     private Coroutine toastCoroutine;
+    private Coroutine cardTransitionCoroutine;
+    private bool isTransitioning = false;
 
     // Color theme for category selection
     private Color activeCategoryColor = new Color(0.2f, 0.6f, 1.0f, 1.0f);
@@ -48,13 +52,26 @@ public class ShopManager : MonoBehaviour
 
     private void Awake()
     {
-        // Subscribe to GameSaveSystem money events
+        // Subscribe to GameSaveSystem money & day events
         GameSaveSystem.OnMoneyChanged += UpdateMoneyDisplay;
+        GameSaveSystem.OnDayChanged += OnDayChangedHandler;
     }
 
     private void OnDestroy()
     {
         GameSaveSystem.OnMoneyChanged -= UpdateMoneyDisplay;
+        GameSaveSystem.OnDayChanged -= OnDayChangedHandler;
+
+        if (swipeHandler != null)
+        {
+            swipeHandler.OnSwipeLeft -= TriggerNextWithAnimation;
+            swipeHandler.OnSwipeRight -= TriggerPrevWithAnimation;
+        }
+    }
+
+    private void OnDayChangedHandler(int newDay)
+    {
+        RefreshCarouselDisplay();
     }
 
     private void Start()
@@ -73,6 +90,23 @@ public class ShopManager : MonoBehaviour
         if (buyButton != null) buyButton.onClick.AddListener(OnBuyItemClicked);
         if (addMoneyDebugButton != null) addMoneyDebugButton.onClick.AddListener(OnAddMoneyClicked);
 
+        // Auto-detect item card frame & swipe handler if needed
+        if (itemCardFrame == null && itemTitleText != null && itemTitleText.transform.parent != null)
+        {
+            itemCardFrame = itemTitleText.transform.parent.GetComponent<RectTransform>();
+        }
+
+        if (swipeHandler == null && itemCardFrame != null)
+        {
+            swipeHandler = itemCardFrame.GetComponent<ShopCarouselSwipeHandler>();
+        }
+
+        if (swipeHandler != null)
+        {
+            swipeHandler.OnSwipeLeft += TriggerNextWithAnimation;
+            swipeHandler.OnSwipeRight += TriggerPrevWithAnimation;
+        }
+
         // Load initial money
         UpdateMoneyDisplay(GameSaveSystem.Instance.Money);
 
@@ -88,6 +122,19 @@ public class ShopManager : MonoBehaviour
         currentCategory = category;
         currentCategoryItems = shopDatabase.GetItemsByCategory(currentCategory);
         currentItemIndex = 0;
+
+        if (cardTransitionCoroutine != null)
+        {
+            StopCoroutine(cardTransitionCoroutine);
+            cardTransitionCoroutine = null;
+        }
+        isTransitioning = false;
+
+        if (swipeHandler != null)
+        {
+            swipeHandler.ResetPositionInstant();
+            swipeHandler.CanDrag = true;
+        }
 
         UpdateCategoryButtonVisuals();
         RefreshCarouselDisplay();
@@ -171,13 +218,25 @@ public class ShopManager : MonoBehaviour
 
         bool isOneTime = IsOneTimePurchaseCategory(item.category);
         bool isAlreadyPurchased = isOneTime && GameSaveSystem.Instance.IsItemPurchased(item.id);
+        bool isDayLocked = item.day > 0 && GameSaveSystem.Instance.Day < item.day;
 
-        if (buyButton != null) buyButton.interactable = !isAlreadyPurchased;
+        if (buyButton != null) buyButton.interactable = !isAlreadyPurchased && !isDayLocked;
 
         TextMeshProUGUI btnText = buyButtonText != null ? buyButtonText : (buyButton != null ? buyButton.GetComponentInChildren<TextMeshProUGUI>() : null);
         if (btnText != null)
         {
-            btnText.text = isAlreadyPurchased ? "OWNED" : "BUY NOW";
+            if (isAlreadyPurchased)
+            {
+                btnText.text = "OWNED";
+            }
+            else if (isDayLocked)
+            {
+                btnText.text = $"LOCKED (DAY {item.day})";
+            }
+            else
+            {
+                btnText.text = "BUY NOW";
+            }
         }
     }
 
@@ -189,20 +248,99 @@ public class ShopManager : MonoBehaviour
 
     private void OnPrevItemClicked()
     {
-        if (currentItemIndex > 0)
-        {
-            currentItemIndex--;
-            RefreshCarouselDisplay();
-        }
+        TriggerPrevWithAnimation();
     }
 
     private void OnNextItemClicked()
     {
+        TriggerNextWithAnimation();
+    }
+
+    public void TriggerNextWithAnimation()
+    {
+        if (isTransitioning || currentCategoryItems == null) return;
+
         if (currentItemIndex < currentCategoryItems.Count - 1)
         {
-            currentItemIndex++;
+            if (cardTransitionCoroutine != null) StopCoroutine(cardTransitionCoroutine);
+            cardTransitionCoroutine = StartCoroutine(CardSlideTransitionRoutine(1));
+        }
+        else if (swipeHandler != null)
+        {
+            swipeHandler.ResetPositionSmooth();
+        }
+    }
+
+    public void TriggerPrevWithAnimation()
+    {
+        if (isTransitioning || currentCategoryItems == null) return;
+
+        if (currentItemIndex > 0)
+        {
+            if (cardTransitionCoroutine != null) StopCoroutine(cardTransitionCoroutine);
+            cardTransitionCoroutine = StartCoroutine(CardSlideTransitionRoutine(-1));
+        }
+        else if (swipeHandler != null)
+        {
+            swipeHandler.ResetPositionSmooth();
+        }
+    }
+
+    private IEnumerator CardSlideTransitionRoutine(int direction)
+    {
+        isTransitioning = true;
+        if (swipeHandler != null) swipeHandler.CanDrag = false;
+
+        float slideOutDuration = 0.12f;
+        float slideInDuration = 0.18f;
+
+        if (itemCardFrame != null)
+        {
+            Vector2 startPos = itemCardFrame.anchoredPosition;
+            float targetExitX = (direction == 1) ? -700f : 700f;
+            float startEntryX = (direction == 1) ? 700f : -700f;
+
+            // Slide out
+            float elapsed = 0f;
+            while (elapsed < slideOutDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / slideOutDuration;
+                itemCardFrame.anchoredPosition = Vector2.Lerp(startPos, new Vector2(targetExitX, 0f), t * t);
+                yield return null;
+            }
+
+            // Advance item index and update card contents
+            currentItemIndex += direction;
+            RefreshCarouselDisplay();
+
+            // Set offscreen entry position
+            itemCardFrame.anchoredPosition = new Vector2(startEntryX, 0f);
+            itemCardFrame.localRotation = Quaternion.identity;
+
+            // Slide in smoothly to center
+            elapsed = 0f;
+            while (elapsed < slideInDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / slideInDuration;
+                float smoothT = Mathf.Sin(t * Mathf.PI * 0.5f);
+                itemCardFrame.anchoredPosition = Vector2.Lerp(new Vector2(startEntryX, 0f), Vector2.zero, smoothT);
+                yield return null;
+            }
+
+            itemCardFrame.anchoredPosition = Vector2.zero;
+            itemCardFrame.localRotation = Quaternion.identity;
+        }
+        else
+        {
+            currentItemIndex += direction;
             RefreshCarouselDisplay();
         }
+
+        if (swipeHandler != null) swipeHandler.CanDrag = true;
+        isTransitioning = false;
+        cardTransitionCoroutine = null;
     }
 
     private void OnBuyItemClicked()
@@ -211,6 +349,13 @@ public class ShopManager : MonoBehaviour
             return;
 
         ShopItemData currentItem = currentCategoryItems[currentItemIndex];
+
+        if (currentItem.day > 0 && GameSaveSystem.Instance.Day < currentItem.day)
+        {
+            ShowToast($"<color=#FF5555>{currentItem.title} is locked! Unlocks at Day {currentItem.day}.</color>");
+            RefreshCarouselDisplay();
+            return;
+        }
 
         if (IsOneTimePurchaseCategory(currentItem.category) && GameSaveSystem.Instance.IsItemPurchased(currentItem.id))
         {
@@ -236,6 +381,13 @@ public class ShopManager : MonoBehaviour
     public bool ExecutePurchase(ShopItemData item)
     {
         if (item == null) return false;
+
+        if (item.day > 0 && GameSaveSystem.Instance.Day < item.day)
+        {
+            ShowToast($"<color=#FF5555>{item.title} is locked! Unlocks at Day {item.day}.</color>");
+            RefreshCarouselDisplay();
+            return false;
+        }
 
         if (IsOneTimePurchaseCategory(item.category) && GameSaveSystem.Instance.IsItemPurchased(item.id))
         {

@@ -11,6 +11,7 @@ public class ShopItemData
     public int price;
     public string description;
     public string spritePath;
+    public int day; // Minimum day required to unlock
 }
 
 [Serializable]

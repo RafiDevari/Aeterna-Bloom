@@ -439,29 +439,11 @@ public abstract class Room : MonoBehaviour
 
         if (Input.GetMouseButtonDown(1)) // Klik Kanan
         {
-            if (IsPoisoned)
+            RoomPopup.EnsureInstance();
+            if (RoomPopup.Instance != null)
             {
-                HandlePoisonClick();
+                RoomPopup.Instance.Open(this);
             }
-        }
-    }
-
-    protected void HandlePoisonClick()
-    {
-        Debug.Log($"[{RoomName}] Membuka EmployeeSelectPopup untuk menugaskan sterilisasi.");
-
-        if (EmployeeSelectPopup.Instance != null)
-        {
-            EmployeeSelectPopup.Instance.Open(
-                employee => {
-                    employee.GoSterilize(this);
-                },
-                typeof(DivisionSecurity) // Default ke divisi Security
-            );
-        }
-        else
-        {
-            Debug.LogError("[Room] EmployeeSelectPopup.Instance belum ada. Pastikan component EmployeeSelectPopup sudah ditambahkan ke scene.");
         }
     }
 
