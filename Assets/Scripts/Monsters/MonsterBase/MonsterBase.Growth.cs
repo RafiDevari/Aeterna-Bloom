@@ -139,8 +139,31 @@ public partial class MonsterBase
     // Tick
     //────────────────────────────────────────────────────────
 
+    [Header("External Growth Boost")]
+    private float externalGrowthBoostMultiplier = 1f;
+    private float externalGrowthBoostTimer = 0f;
+
+    /// <summary>
+    /// Terapkan multiplier growth speed tambahan untuk durasi tertentu (mis. dari efek tanaman lain/Kalium).
+    /// </summary>
+    public void ApplyGrowthBoost(float multiplier, float duration)
+    {
+        externalGrowthBoostMultiplier = multiplier;
+        externalGrowthBoostTimer = duration;
+        Debug.Log($"[{MonsterName}] Menerima external growth boost {multiplier}x selama {duration}s.");
+    }
+
     protected virtual void TickPassiveGrowth()
     {
+        if (externalGrowthBoostTimer > 0f)
+        {
+            externalGrowthBoostTimer -= Time.deltaTime;
+            if (externalGrowthBoostTimer <= 0f)
+            {
+                externalGrowthBoostMultiplier = 1f;
+            }
+        }
+
         if (IsMutated)
         {
             if (Every(ref passiveGrowthTimer, passiveGrowthInterval * 2f))
@@ -159,7 +182,7 @@ public partial class MonsterBase
 
     protected virtual float GetGrowthSpeedMultiplier()
     {
-        return 1f;
+        return externalGrowthBoostTimer > 0f ? externalGrowthBoostMultiplier : 1f;
     }
 
     //────────────────────────────────────────────────────────

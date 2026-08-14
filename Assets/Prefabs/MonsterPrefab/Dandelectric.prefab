@@ -1583,6 +1583,7 @@ MonoBehaviour:
   growthSpeedMultiplier: 1
   growthBoostTimer: 0
   mutatedShockInterval: 15
+  lightningRoomEffect: Effects/Dandelectric_effect
 --- !u!1 &6004408398070662847
 GameObject:
   m_ObjectHideFlags: 0
