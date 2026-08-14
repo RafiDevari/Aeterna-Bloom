@@ -65,7 +65,7 @@ public class BlightRoot : MonsterBase
         if (newMood == 0)
         {
             Debug.LogWarning($"[{MonsterName}] Mood mencapai 0! Spawning Virus dan mengembalikan Mood ke 5.");
-            SpawnVirusAtRandomLocation();
+            Virus.Spawn();
             SetMood(5);
         }
     }
@@ -168,28 +168,7 @@ public class BlightRoot : MonsterBase
         {
             mutatedVirusTimer = 0f;
             Debug.LogWarning($"[{MonsterName}] Mutated state: Spawns Virus di posisi acak setiap 1 menit.");
-            SpawnVirusAtRandomLocation();
+            Virus.Spawn();
         }
-    }
-
-    public void SpawnVirusAtRandomLocation()
-    {
-        Vector3 spawnPos = transform.position;
-
-        if (Context != null && Context.CurrentRoom != null)
-        {
-            Bounds b = Context.CurrentRoom.RoomBounds;
-            float randomX = Random.Range(b.min.x, b.max.x);
-            float randomY = Random.Range(b.min.y, b.max.y);
-            spawnPos = new Vector3(randomX, randomY, transform.position.z);
-        }
-        else
-        {
-            float offsetX = Random.Range(-2f, 2f);
-            float offsetY = Random.Range(-1f, 1f);
-            spawnPos = transform.position + new Vector3(offsetX, offsetY, 0f);
-        }
-
-        Virus.SpawnAt(spawnPos);
     }
 }

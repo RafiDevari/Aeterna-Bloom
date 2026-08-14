@@ -70,6 +70,11 @@ public class Virus : Pest
         }
     }
 
+    private void OnDestroy()
+    {
+        hasSpawned = false;
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (isDead) return;
@@ -162,6 +167,10 @@ public class Virus : Pest
 
                 SpawnAt(spawnPos);
             }
+        }
+        else
+        {
+            SpawnAt(Vector3.zero);
         }
     }
 }

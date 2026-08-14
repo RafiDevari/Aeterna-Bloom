@@ -287,10 +287,12 @@ MonoBehaviour:
   employeesToSpawn:
   - employeeName: Torqi
     employeePrefab: {fileID: 4021511664053678059, guid: 9c59289c26f5b054eab1ab34afb2bfc9, type: 3}
+    division: 0
     suitColor: {r: 0, g: 0, b: 0, a: 0}
     hairColor: {r: 0, g: 0, b: 0, a: 0}
   - employeeName: Yanuar
     employeePrefab: {fileID: 4021511664053678059, guid: 9c59289c26f5b054eab1ab34afb2bfc9, type: 3}
+    division: 0
     suitColor: {r: 0, g: 0, b: 0, a: 0}
     hairColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!61 &94497629
@@ -829,7 +831,7 @@ MonoBehaviour:
   autoFitCollider: 1
   unitSprite: {fileID: -2978890002145281910, guid: a4499c9eb68de58468a8786b072285a7, type: 3}
   unitRenderer: {fileID: 0}
-  monsterPrefab: {fileID: 5947585611737482222, guid: e3e57a74071b67b4c90faaeec837d3f2, type: 3}
+  monsterPrefab: {fileID: 4031353912890426941, guid: c62ca8f2530a7884190db23551878047, type: 3}
 --- !u!61 &208611285
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2954,6 +2956,7 @@ MonoBehaviour:
   employeesToSpawn:
   - employeeName: Said
     employeePrefab: {fileID: 4863661536096414419, guid: 40266e00bbc80e54fbaaea19f771401b, type: 3}
+    division: 0
     suitColor: {r: 0, g: 0, b: 0, a: 0}
     hairColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!61 &506970254
@@ -3199,6 +3202,7 @@ MonoBehaviour:
   employeesToSpawn:
   - employeeName: ibrairba
     employeePrefab: {fileID: 6871295272495438118, guid: a8018fa74fa2fae42a6999d5f13635ea, type: 3}
+    division: 0
     suitColor: {r: 0, g: 0, b: 0, a: 0}
     hairColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &567025708
@@ -6332,6 +6336,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1048547730}
   m_CullTransparentMesh: 1
+--- !u!1 &1051818558
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1051818560}
+  - component: {fileID: 1051818559}
+  m_Layer: 0
+  m_Name: GameSaveSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1051818559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1051818558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2830b8d5be2652449a0cd79b655cb2ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSaveSystem
+--- !u!4 &1051818560
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1051818558}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1063275278 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5831366806573048912, guid: 4085800ba213d7b438fdaf84d6faad92, type: 3}
@@ -6775,6 +6823,10 @@ MonoBehaviour:
   redTextColor: {r: 1, g: 0.45, b: 0.45, a: 1}
   dangerColor: {r: 1, g: 0.2, b: 0.2, a: 1}
   roomPanelBgColor: {r: 0.05, g: 0.05, b: 0.15, a: 0.85}
+  broadcastWidth: 850
+  broadcastHeight: 76
+  broadcastSenderFontSize: 22
+  broadcastMessageFontSize: 20
 --- !u!1 &1183708220
 GameObject:
   m_ObjectHideFlags: 0
@@ -11145,6 +11197,7 @@ MonoBehaviour:
   employeesToSpawn:
   - employeeName: Budi the Engineer
     employeePrefab: {fileID: -1247808099591183380, guid: 8a04dc67ae7b6614c853db19a01209ac, type: 3}
+    division: 0
     suitColor: {r: 0, g: 0, b: 0, a: 0}
     hairColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!61 &1945455732
@@ -12000,3 +12053,4 @@ SceneRoots:
   - {fileID: 1652701232}
   - {fileID: 127782589}
   - {fileID: 2103305203}
+  - {fileID: 1051818560}

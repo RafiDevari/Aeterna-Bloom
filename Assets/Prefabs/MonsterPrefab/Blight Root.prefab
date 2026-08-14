@@ -81,15 +81,15 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 8748072726004645912, guid: cacbb2d81e011cb4c9e82c673b415251, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 4.0204306, y: 5.27}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
 --- !u!1 &1939824463128595909
@@ -351,7 +351,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6104890215474709040
 Transform:
   m_ObjectHideFlags: 0
@@ -506,7 +506,15 @@ MonoBehaviour:
   currentGrowthState: 0
   passiveGrowthInterval: 4
   passiveGrowthAmount: 0.01
-  growthStateObjects: []
+  growthStateObjects:
+  - state: 0
+    visualObject: {fileID: 6272811387431917648}
+  - state: 1
+    visualObject: {fileID: 3860770079627245200}
+  - state: 2
+    visualObject: {fileID: 1939824463128595909}
+  - state: 3
+    visualObject: {fileID: 7148022272063844602}
   researchEntries: []
   researchDuration: 1
   monsterName: Blight Root
@@ -665,7 +673,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6494294371982927396
 Transform:
   m_ObjectHideFlags: 0
