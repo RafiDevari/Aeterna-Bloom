@@ -225,6 +225,7 @@ public partial class Employee : MonoBehaviour
     public System.Action<Employee, bool> OnSelectionChanged;
     public System.Action<Vector3> OnMoveCommandReceived;
     private System.Action onArriveCallback;
+    private System.Action onFailCallback;
 
     //==============================
     // Properties
@@ -287,11 +288,21 @@ public partial class Employee : MonoBehaviour
     private void OnEnable()
     {
         EmployeeInventorySaveSystem.OnInventoryChanged += RefreshAppearanceFromInventory;
+        Room.OnAnyRoomLockChanged += HandleRoomLockChanged;
     }
 
     private void OnDisable()
     {
         EmployeeInventorySaveSystem.OnInventoryChanged -= RefreshAppearanceFromInventory;
+        Room.OnAnyRoomLockChanged -= HandleRoomLockChanged;
+    }
+
+    private void HandleRoomLockChanged(Room room, bool locked)
+    {
+        if (isMoving)
+        {
+            ReevaluatePath();
+        }
     }
 
     /// <summary>
@@ -752,6 +763,7 @@ public partial class Employee : MonoBehaviour
         }
 
         onArriveCallback = onArrive;
+        onFailCallback = onFail;
         movementWaypoints.Clear();
 
         foreach (Vector3 point in path)
@@ -770,6 +782,44 @@ public partial class Employee : MonoBehaviour
 
         Debug.Log($"[Employee] {employeeName} bergerak ke {destination} lewat {movementWaypoints.Count} titik.");
         isSelected = false;
+    }
+
+    /// <summary>
+    /// Evaluasi ulang jalur saat status lockdown ruangan berubah di tengah jalan.
+    /// Jika ada rute alternatif (memutar), employee akan tetap berjalan lewat rute baru.
+    /// Jika tidak ada rute valid atau berada di dalam room lockdown, movement dibatalkan.
+    /// </summary>
+    public void ReevaluatePath()
+    {
+        if (!isMoving || (this is EmployeeSecurity))
+            return;
+
+        List<Vector3> newPath = RoomPathfinder.FindWaypointPath(transform.position, lastMoveDestination, false);
+
+        if (newPath != null && newPath.Count > 0)
+        {
+            movementWaypoints.Clear();
+            foreach (Vector3 pt in newPath)
+            {
+                movementWaypoints.Enqueue(pt);
+            }
+            StartNextWaypoint();
+            Debug.Log($"[Employee] {employeeName} menemukan jalur alternatif memutari lockdown!");
+        }
+        else
+        {
+            Debug.LogWarning($"[Employee] {employeeName} terhalang lockdown / terkunci di ruangan! Pergerakan dibatalkan.");
+            isMoving = false;
+            movementWaypoints.Clear();
+            if (currentState == EmployeeState.Moving)
+            {
+                SetState(EmployeeState.Idle);
+            }
+            var fail = onFailCallback;
+            onArriveCallback = null;
+            onFailCallback = null;
+            fail?.Invoke();
+        }
     }
 
     private void StartNextWaypoint()
@@ -802,6 +852,16 @@ public partial class Employee : MonoBehaviour
     {
         if (!isMoving)
             return;
+
+        if (!(this is EmployeeSecurity))
+        {
+            Room currentR = RoomPathfinder.FindRoomAt(transform.position);
+            if (currentR != null && currentR.IsLocked)
+            {
+                ReevaluatePath();
+                if (!isMoving) return;
+            }
+        }
 
         float currentSpeed = GetEffectiveMoveSpeed();
 
@@ -843,6 +903,7 @@ public partial class Employee : MonoBehaviour
         // Fire once, then clear, so it doesn't leak into the next MoveTo call
         var callback = onArriveCallback;
         onArriveCallback = null;
+        onFailCallback = null;
         callback?.Invoke();
     }
 

@@ -94,6 +94,11 @@ public class Slime : Pest
         }
     }
 
+    private float wanderTimer = 0f;
+    [SerializeField] private float wanderInterval = 3f;
+    private Vector3 wanderTarget;
+    private bool isWandering = false;
+
     private void HandleSmallSlimeBehavior()
     {
         // Cari target mayat (Employee yang sudah mati)
@@ -101,6 +106,7 @@ public class Slime : Pest
 
         if (targetCorpse != null)
         {
+            isWandering = false;
             // Menuju ke mayat
             MoveTowardsTarget(targetCorpse.transform.position);
 
@@ -116,6 +122,7 @@ public class Slime : Pest
             FindTargetAliveEmployee();
             if (targetAliveEmployee != null)
             {
+                isWandering = false;
                 MoveTowardsTarget(targetAliveEmployee.transform.position);
 
                 float distance = Vector3.Distance(transform.position, targetAliveEmployee.transform.position);
@@ -134,6 +141,11 @@ public class Slime : Pest
                     attackTimer = 0f;
                 }
             }
+            else
+            {
+                // Tidak ada target yang dapat dijangkau -> Wander sekitar ruangan
+                HandleWander();
+            }
         }
     }
 
@@ -144,6 +156,7 @@ public class Slime : Pest
 
         if (targetAliveEmployee != null)
         {
+            isWandering = false;
             MoveTowardsTarget(targetAliveEmployee.transform.position);
 
             float distance = Vector3.Distance(transform.position, targetAliveEmployee.transform.position);
@@ -162,6 +175,49 @@ public class Slime : Pest
                 attackTimer = 0f;
             }
         }
+        else
+        {
+            // Tidak ada target yang dapat dijangkau -> Wander sekitar ruangan
+            HandleWander();
+        }
+    }
+
+    private void HandleWander()
+    {
+        attackTimer = 0f;
+        wanderTimer += Time.deltaTime;
+
+        Room currentRoom = RoomPathfinder.FindRoomAt(transform.position);
+
+        if (wanderTimer >= wanderInterval || Vector3.Distance(transform.position, wanderTarget) < 0.1f || !isWandering || currentRoom == null)
+        {
+            wanderTimer = 0f;
+            isWandering = true;
+
+            if (currentRoom != null)
+            {
+                Bounds[] boundsList = currentRoom.CollisionBounds;
+                if (boundsList != null && boundsList.Length > 0)
+                {
+                    Bounds bounds = boundsList[Random.Range(0, boundsList.Length)];
+                    float randomX = Random.Range(bounds.min.x, bounds.max.x);
+                    wanderTarget = new Vector3(randomX, bounds.center.y, 0f);
+                }
+                else
+                {
+                    wanderTarget = transform.position + new Vector3(Random.Range(-2.5f, 2.5f), 0f, 0f);
+                }
+            }
+            else
+            {
+                wanderTarget = transform.position;
+            }
+        }
+
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            wanderTarget,
+            moveSpeed * 0.5f * Time.deltaTime);
     }
 
     private void FindTargetCorpse()
@@ -179,6 +235,15 @@ public class Slime : Pest
         {
             if (emp != null && emp.CurrentState == EmployeeState.Dead)
             {
+                Room empRoom = RoomPathfinder.FindRoomAt(emp.transform.position);
+                if (empRoom != null && empRoom.IsLocked)
+                    continue;
+
+                // Cek apakah ada jalur valid menuju target
+                var path = RoomPathfinder.FindWaypointPath(transform.position, emp.transform.position, false);
+                if (path == null || path.Count == 0)
+                    continue;
+
                 float dist = Vector3.Distance(transform.position, emp.transform.position);
                 if (dist < minDistance)
                 {
@@ -206,6 +271,15 @@ public class Slime : Pest
         {
             if (emp != null && emp.CurrentState != EmployeeState.Dead)
             {
+                Room empRoom = RoomPathfinder.FindRoomAt(emp.transform.position);
+                if (empRoom != null && empRoom.IsLocked)
+                    continue;
+
+                // Cek apakah ada jalur valid menuju target
+                var path = RoomPathfinder.FindWaypointPath(transform.position, emp.transform.position, false);
+                if (path == null || path.Count == 0)
+                    continue;
+
                 float dist = Vector3.Distance(transform.position, emp.transform.position);
                 if (dist < minDistance)
                 {
@@ -220,6 +294,14 @@ public class Slime : Pest
 
     private void MoveTowardsTarget(Vector3 targetPosition)
     {
+        Room currentRoom = RoomPathfinder.FindRoomAt(transform.position);
+        if (currentRoom != null && currentRoom.IsLocked)
+        {
+            // Slime terkunci di dalam ruangan lockdown, tidak bisa keluar
+            chasePath = null;
+            return;
+        }
+
         repathTimer += Time.deltaTime;
         if (chasePath == null || repathTimer >= repathInterval)
         {
@@ -227,17 +309,23 @@ public class Slime : Pest
             chasePath = RoomPathfinder.FindWaypointPath(transform.position, targetPosition, false);
         }
 
-        Vector3 nextTargetPos = targetPosition;
-        if (chasePath != null && chasePath.Count > 0)
+        if (chasePath == null || chasePath.Count == 0)
         {
-            nextTargetPos = chasePath[0];
-            if (Vector3.Distance(transform.position, nextTargetPos) < 0.1f)
+            // Tidak ada jalur valid (terhalang lockdown atau tidak terjangkau)
+            return;
+        }
+
+        Vector3 nextTargetPos = chasePath[0];
+        if (Vector3.Distance(transform.position, nextTargetPos) < 0.1f)
+        {
+            chasePath.RemoveAt(0);
+            if (chasePath.Count > 0)
             {
-                chasePath.RemoveAt(0);
-                if (chasePath.Count > 0)
-                {
-                    nextTargetPos = chasePath[0];
-                }
+                nextTargetPos = chasePath[0];
+            }
+            else
+            {
+                return;
             }
         }
 
