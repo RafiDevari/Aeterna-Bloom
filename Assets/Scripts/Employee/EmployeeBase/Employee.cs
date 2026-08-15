@@ -57,6 +57,7 @@ public partial class Employee : MonoBehaviour
 
     public System.Action<int> OnHpChanged;
     public System.Action<int> OnMoodChanged;
+    public static event System.Action<Employee> OnEmployeeDied;
 
     [Header("Poison Mechanics")]
     [SerializeField] private float poisonInterval = 1.0f;
@@ -952,6 +953,8 @@ public partial class Employee : MonoBehaviour
         }
 
         Debug.LogWarning($"[Employee] {EmployeeName} HAS DIED.");
+
+        OnEmployeeDied?.Invoke(this);
 
         // Notifikasi ke semua rekan satu divisi
         if (Facility.Instance != null && assignedDivision != null)
