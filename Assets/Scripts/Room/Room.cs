@@ -34,6 +34,7 @@ public abstract class Room : MonoBehaviour
     [SerializeField] private bool isPoisoned = false;
     [SerializeField] private bool isSterilizing = false;
 
+    public static event System.Action<Room, bool> OnAnyRoomLockChanged;
     public System.Action<float> OnTemperatureChanged;
     public System.Action<bool> OnLockChanged;
     public System.Action<float> OnElectricityCostChanged;
@@ -156,6 +157,7 @@ public abstract class Room : MonoBehaviour
 
             isLocked = value;
             OnLockChanged?.Invoke(isLocked);
+            OnAnyRoomLockChanged?.Invoke(this, isLocked);
 
             Debug.Log($"[{roomName}] Lockdown : {(isLocked ? "AKTIF" : "nonaktif")}");
         }

@@ -51,7 +51,7 @@ public partial class Employee
 
         float finalFeedDuration = CalculateFeedDuration(target);
 
-        if (!target.Feed(carriedFood, finalFeedDuration))
+        if (!target.Feed(carriedFood, finalFeedDuration, this))
             return false;
 
         // Simpan durasi final ke progress bar (Employee.ProgressBar.cs) -- start time-nya

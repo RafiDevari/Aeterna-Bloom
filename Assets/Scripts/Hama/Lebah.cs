@@ -86,9 +86,31 @@ public class Lebah : Pest
 
     private void FindTargetMonster()
     {
-        // Jika sudah ada target valid yang memiliki monster aktif, tidak perlu cari lagi
+        // Cek jika target saat ini masih valid dan terjangkau
         if (currentTargetMonster != null && currentTargetUnit != null && currentTargetUnit.HasMonster && currentTargetMonster.Mood > 0)
-            return;
+        {
+            Room targetR = RoomPathfinder.FindRoomAt(currentTargetUnit.transform.position);
+            if (targetR != null && !targetR.IsLocked)
+            {
+                Vector3 dest = currentTargetUnit.transform.position;
+                if (targetR.CollisionBounds != null && targetR.CollisionBounds.Length > 0)
+                {
+                    dest.y = targetR.CollisionBounds[0].center.y;
+                }
+                dest.z = 0f;
+
+                var checkPath = RoomPathfinder.FindWaypointPath(transform.position, dest, false);
+                if (checkPath != null && checkPath.Count > 0)
+                    return; // Target masih valid dan ada jalan
+            }
+
+            // Target terhalang/lockdown, reset target agar lebah mencari target lain
+            currentTargetUnit = null;
+            currentTargetMonster = null;
+            hasArrivedAtTarget = false;
+            isMoving = false;
+            movementWaypoints.Clear();
+        }
 
         if (Facility.Instance == null)
         {
@@ -105,12 +127,24 @@ public class Lebah : Pest
 
         foreach (var room in Facility.Instance.Rooms)
         {
-            if (room is ContainmentRoom cr)
+            if (room is ContainmentRoom cr && !cr.IsLocked)
             {
                 foreach (var unit in cr.ContainmentUnits)
                 {
                     if (unit != null && unit.HasMonster && unit.Monster.Mood > 0)
                     {
+                        Vector3 unitDest = unit.transform.position;
+                        if (cr.CollisionBounds != null && cr.CollisionBounds.Length > 0)
+                        {
+                            unitDest.y = cr.CollisionBounds[0].center.y;
+                        }
+                        unitDest.z = 0f;
+
+                        // Cek jalur valid ke unit tersebut
+                        var path = RoomPathfinder.FindWaypointPath(transform.position, unitDest, false);
+                        if (path == null || path.Count == 0)
+                            continue;
+
                         float dist = Vector3.Distance(transform.position, unit.transform.position);
                         if (dist < minDistance)
                         {
@@ -145,6 +179,12 @@ public class Lebah : Pest
         if (currentTargetUnit == null) return;
 
         Room targetRoom = RoomPathfinder.FindRoomAt(currentTargetUnit.transform.position);
+        if (targetRoom != null && targetRoom.IsLocked)
+        {
+            currentTargetUnit = null;
+            return;
+        }
+
         Vector3 dest = currentTargetUnit.transform.position;
         if (targetRoom != null && targetRoom.CollisionBounds.Length > 0)
         {
@@ -166,11 +206,9 @@ public class Lebah : Pest
         }
         else
         {
-            // Fallback garis lurus jika pathfinding gagal, tapi tetap kunci Y
-            dest.y = transform.position.y;
-            movementWaypoints.Enqueue(dest);
-            isMoving = true;
-            StartNextWaypoint();
+            // Tidak ada jalur valid ke target (terhalang lockdown) -- batal ke target
+            isMoving = false;
+            currentTargetUnit = null;
         }
     }
 
@@ -187,6 +225,16 @@ public class Lebah : Pest
     private void HandleMovement()
     {
         if (!isMoving) return;
+
+        Room currentRoom = RoomPathfinder.FindRoomAt(transform.position);
+        if (currentRoom != null && currentRoom.IsLocked)
+        {
+            // Terkunci di dalam room lockdown, tidak bisa jalan keluar
+            isMoving = false;
+            movementWaypoints.Clear();
+            currentTargetUnit = null;
+            return;
+        }
 
         transform.position = Vector3.MoveTowards(
             transform.position,
@@ -317,7 +365,7 @@ public class Lebah : Pest
         float minDist = float.MaxValue;
         foreach (var room in Facility.Instance.Rooms)
         {
-            if (room == null) continue;
+            if (room == null || room.IsLocked) continue;
             float dist = Vector3.Distance(transform.position, room.transform.position);
             if (dist < minDist)
             {
