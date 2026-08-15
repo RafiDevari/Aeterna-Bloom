@@ -328,6 +328,7 @@ public class Slime : Pest
 
     public static Slime SpawnAt(Vector3 spawnPos, bool isBig = false)
     {
+        spawnPos.z = 0f;
 #if UNITY_EDITOR
         GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/PestPrefabs/Slime.prefab");
         if (prefab == null)

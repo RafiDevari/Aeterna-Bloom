@@ -73,7 +73,9 @@ public class BlackCorpse : MonsterBase
         if (newMood == 0)
         {
             Debug.LogWarning($"[{MonsterName}] Mood mencapai 0! Spawning Slime di lokasi ini dan mengembalikan Mood ke 5.");
-            Slime.SpawnAt(transform.position);
+            Vector3 spawnPos = transform.position;
+            spawnPos.z = 0f;
+            Slime.SpawnAt(spawnPos);
             SetMood(5);
         }
     }
@@ -131,7 +133,9 @@ public class BlackCorpse : MonsterBase
         {
             Debug.LogWarning($"[{MonsterName}] Employee {feeder.EmployeeName} memberi makan dengan Mood < 3 ({feeder.Mood})! Employee dibunuh dan Slime di-spawn.");
             feeder.Die();
-            Slime.SpawnAt(transform.position);
+            Vector3 spawnPos = transform.position;
+            spawnPos.z = 0f;
+            Slime.SpawnAt(spawnPos);
         }
     }
 

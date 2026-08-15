@@ -161,7 +161,7 @@ MonoBehaviour:
   isBigSlime: 0
   smallScale: {x: 0.6, y: 0.6, z: 1}
   bigScale: {x: 1.2, y: 1.2, z: 1}
-  moveSpeed: 0
+  moveSpeed: 2.2
   eatDistance: 0.8
   attackDistance: 0.8
   smallAttackDamage: 5
