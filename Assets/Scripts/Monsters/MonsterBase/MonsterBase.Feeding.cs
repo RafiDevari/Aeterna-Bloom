@@ -21,6 +21,7 @@ public partial class MonsterBase
     protected float feedCooldownTimer = 0f;
 
     private FoodType pendingFeedFood;
+    private Employee pendingFeeder;
     private bool pendingFeedWasOnCooldown;
     private bool hasPendingFeedEffect;
 
@@ -84,9 +85,9 @@ public partial class MonsterBase
             hasPendingFeedEffect = false;
 
             if (pendingFeedWasOnCooldown)
-                OnFedDuringCooldown(pendingFeedFood);
+                OnFedDuringCooldown(pendingFeedFood, pendingFeeder);
             else
-                OnMonsterFed(pendingFeedFood);
+                OnMonsterFed(pendingFeedFood, pendingFeeder);
         }
 
         OnFeedFinished?.Invoke();
@@ -106,7 +107,10 @@ public partial class MonsterBase
     //────────────────────────────────────────────────────────
 
     protected virtual void OnMonsterFed(FoodType food) { }
+    protected virtual void OnMonsterFed(FoodType food, Employee feeder) { OnMonsterFed(food); }
     protected virtual void OnFedDuringCooldown(FoodType food) { }
+    protected virtual void OnFedDuringCooldown(FoodType food, Employee feeder) { OnFedDuringCooldown(food); }
+    protected virtual void OnFeedStarted(FoodType food, Employee feeder) { }
 
     //────────────────────────────────────────────────────────
     // Public API
@@ -124,7 +128,8 @@ public partial class MonsterBase
     /// supaya Feed() tetap aman dipanggil langsung tanpa lewat Employee
     /// (misal dari testing atau sistem lain).
     /// </param>
-    public virtual bool Feed(FoodType food, float? feedDurationOverride = null)
+    /// <param name="feeder">Employee yang memberi makan (opsional).</param>
+    public virtual bool Feed(FoodType food, float? feedDurationOverride = null, Employee feeder = null)
     {
         if (IsFeeding)
         {
@@ -133,12 +138,14 @@ public partial class MonsterBase
         }
 
         pendingFeedFood = food;
+        pendingFeeder = feeder;
         pendingFeedWasOnCooldown = feedCooldownTimer > 0f;
         hasPendingFeedEffect = true;
 
         feedDurationTimer = Mathf.Max(0f, feedDurationOverride ?? feedDuration);
 
         OnFed?.Invoke(food);
+        OnFeedStarted(food, feeder);
 
         Debug.Log($"[{MonsterName}] Mulai makan : {food}, durasi makan : {feedDurationTimer}s" +
             (pendingFeedWasOnCooldown ? " (masih dalam cooldown)" : ""));

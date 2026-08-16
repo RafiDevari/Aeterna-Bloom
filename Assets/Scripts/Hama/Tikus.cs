@@ -62,6 +62,24 @@ public class Tikus : Pest
             return;
         }
 
+        // Jika target saat ini sudah terhalang/tidak terjangkau, reset
+        if (currentTargetEmployee != null)
+        {
+            Room curTargetRoom = RoomPathfinder.FindRoomAt(currentTargetEmployee.transform.position);
+            if (curTargetRoom != null && curTargetRoom.IsLocked)
+            {
+                currentTargetEmployee = null;
+            }
+            else
+            {
+                var curPath = RoomPathfinder.FindWaypointPath(transform.position, currentTargetEmployee.transform.position, false);
+                if (curPath == null || curPath.Count == 0)
+                {
+                    currentTargetEmployee = null;
+                }
+            }
+        }
+
         Employee closest = null;
         float minDistance = detectionRadius;
 
@@ -69,6 +87,15 @@ public class Tikus : Pest
         {
             if (emp != null && emp.CurrentState != EmployeeState.Dead)
             {
+                Room empRoom = RoomPathfinder.FindRoomAt(emp.transform.position);
+                if (empRoom != null && empRoom.IsLocked)
+                    continue;
+
+                // Cek apakah ada jalur valid ke employee tersebut
+                var path = RoomPathfinder.FindWaypointPath(transform.position, emp.transform.position, false);
+                if (path == null || path.Count == 0)
+                    continue;
+
                 float dist = Vector3.Distance(transform.position, emp.transform.position);
                 if (dist <= minDistance)
                 {
@@ -84,6 +111,14 @@ public class Tikus : Pest
     private void HandleChaseAndAttack()
     {
         isWandering = false;
+
+        Room currentRoom = RoomPathfinder.FindRoomAt(transform.position);
+        if (currentRoom != null && currentRoom.IsLocked)
+        {
+            // Tikus terkunci di dalam ruangan lockdown, fallback ke wander dalam ruangan saja
+            HandleWander();
+            return;
+        }
 
         repathTimer += Time.deltaTime;
         if (chasePath == null || repathTimer >= repathInterval)
@@ -201,7 +236,7 @@ public class Tikus : Pest
         float minDist = float.MaxValue;
         foreach (var room in Facility.Instance.Rooms)
         {
-            if (room == null) continue;
+            if (room == null || room.IsLocked) continue;
             float dist = Vector3.Distance(transform.position, room.transform.position);
             if (dist < minDist)
             {
