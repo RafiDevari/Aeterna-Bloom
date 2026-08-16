@@ -181,6 +181,11 @@ public class FacilityHUD : MonoBehaviour
         }
 
         DrawSelectionHint();
+
+        if (fac.Energy >= fac.MaxEnergy && fac.MaxEnergy > 0)
+        {
+            DrawDayCompletePopup();
+        }
     }
 
     private void DrawLobotomyTopLeftHUD(Facility fac, float x, float y, float width, float height)
@@ -432,6 +437,42 @@ public class FacilityHUD : MonoBehaviour
             new Rect(8, Screen.height - h + 6, Screen.width, 20),
             "Right Click : Select Employee   |   Left Click : Move Employee   |   Click Containment : Inspect Monster",
             labelStyle);
+    }
+
+    private void DrawDayCompletePopup()
+    {
+        float w = 350f;
+        float h = 180f;
+        float x = (Screen.width - w) / 2f;
+        float y = (Screen.height - h) / 2f;
+
+        Rect popupRect = new Rect(x, y, w, h);
+        
+        DrawRect(popupRect, new Color(0.08f, 0.08f, 0.1f, 0.95f));
+        DrawThickOutline(popupRect, borderGoldColor, 3);
+
+        GUIStyle popupTitleStyle = new GUIStyle(digitalValueStyle)
+        {
+            fontSize = 20,
+            normal = { textColor = new Color(0.9f, 0.9f, 0.9f, 1f) }
+        };
+        GUI.Label(new Rect(x, y + 40f, w, 30f), "Energi sudah penuh", popupTitleStyle);
+
+        GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 16,
+            fontStyle = FontStyle.Bold
+        };
+        
+        float btnW = 200f;
+        float btnH = 45f;
+        float btnX = x + (w - btnW) / 2f;
+        float btnY = y + 100f;
+
+        if (GUI.Button(new Rect(btnX, btnY, btnW, btnH), "Selesaikan Hari", buttonStyle))
+        {
+            Debug.Log("Tombol 'Selesaikan Hari' ditekan.");
+        }
     }
 
     private void InitStyles()
