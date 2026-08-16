@@ -3,12 +3,14 @@
     {
       "plantId": "Sunny Flower",
       "isUnlocked": true,
-      "isMutated": false
+      "isMutated": false,
+      "plantDescription": "A cheerful flower that thrives in sunlight. It has a bright yellow bloom and is known for its ability to lift spirits."
     },
     {
       "plantId": "Dandelectric",
       "isUnlocked": false,
-      "isMutated": false
+      "isMutated": false,
+      "plantDescription": "A mysterious plant that glows with electric energy. It thrives in dark environments and can shock its enemies."
     },
     {
       "plantId": "Monster AB",
