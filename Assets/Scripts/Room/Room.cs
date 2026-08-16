@@ -159,6 +159,8 @@ public abstract class Room : MonoBehaviour
             OnLockChanged?.Invoke(isLocked);
             OnAnyRoomLockChanged?.Invoke(this, isLocked);
 
+            UpdateLockdownVisuals();
+
             Debug.Log($"[{roomName}] Lockdown : {(isLocked ? "AKTIF" : "nonaktif")}");
         }
     }
@@ -224,6 +226,54 @@ public abstract class Room : MonoBehaviour
             else
             {
                 spriteRenderer.color = originalColor;
+            }
+        }
+    }
+
+    private GameObject lockdownBorderObj;
+
+    private void UpdateLockdownVisuals()
+    {
+        if (isLocked)
+        {
+            if (lockdownBorderObj == null)
+            {
+                lockdownBorderObj = new GameObject("LockdownBorder");
+                lockdownBorderObj.transform.SetParent(this.transform);
+                lockdownBorderObj.transform.localPosition = Vector3.zero;
+
+                LineRenderer lr = lockdownBorderObj.AddComponent<LineRenderer>();
+                lr.material = new Material(Shader.Find("Sprites/Default"));
+                lr.startColor = Color.red;
+                lr.endColor = Color.red;
+                lr.startWidth = 0.15f;
+                lr.endWidth = 0.15f;
+                lr.positionCount = 5;
+                lr.useWorldSpace = false;
+                lr.sortingOrder = (spriteRenderer != null ? spriteRenderer.sortingOrder : 0) + 20;
+
+                BoxCollider2D col = GetComponent<BoxCollider2D>();
+                if (col != null)
+                {
+                    Vector2 extents = col.size / 2f;
+                    Vector2 offset = col.offset;
+                    Vector3[] positions = new Vector3[5];
+                    positions[0] = new Vector3(offset.x - extents.x, offset.y - extents.y, 0); // Bottom-left
+                    positions[1] = new Vector3(offset.x - extents.x, offset.y + extents.y, 0); // Top-left
+                    positions[2] = new Vector3(offset.x + extents.x, offset.y + extents.y, 0); // Top-right
+                    positions[3] = new Vector3(offset.x + extents.x, offset.y - extents.y, 0); // Bottom-right
+                    positions[4] = positions[0]; // Back to start
+                    
+                    lr.SetPositions(positions);
+                }
+            }
+            lockdownBorderObj.SetActive(true);
+        }
+        else
+        {
+            if (lockdownBorderObj != null)
+            {
+                lockdownBorderObj.SetActive(false);
             }
         }
     }
@@ -400,6 +450,7 @@ public abstract class Room : MonoBehaviour
     protected virtual void Start()
     {
         UpdatePoisonVisuals();
+        UpdateLockdownVisuals();
 
         // Configure BoxCollider2D
         BoxCollider2D col = GetComponent<BoxCollider2D>();
