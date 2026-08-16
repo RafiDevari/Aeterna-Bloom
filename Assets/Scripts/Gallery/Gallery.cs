@@ -5,16 +5,19 @@ public class Gallery : MonoBehaviour
     public PlantSlot plantSlotPrefab;
     public Transform galleryGrid;
 
+    public PlantDetails plantDetails;
+
     public PlantVisual[] plantVisuals;
 
     private void Start()
     {
         LoadGallery();
+
+        plantDetails.gameObject.SetActive(false);
     }
 
     private void LoadGallery()
     {
-        // Load JSON
         TextAsset jsonFile = Resources.Load<TextAsset>("plant_list");
 
         if (jsonFile == null)
@@ -23,32 +26,77 @@ public class Gallery : MonoBehaviour
             return;
         }
 
-        PlantList plantList = JsonUtility.FromJson<PlantList>(jsonFile.text);
+        PlantList plantList =
+            JsonUtility.FromJson<PlantList>(jsonFile.text);
 
-        // Create one slot for every plant
         foreach (PlantData plantData in plantList.plants)
         {
-            PlantSlot slot = Instantiate(plantSlotPrefab, galleryGrid);
+            PlantSlot slot =
+                Instantiate(plantSlotPrefab, galleryGrid);
 
-            Sprite sprite = GetPlantSprite(plantData.plantId);
+            PlantVisual visual =
+                GetPlantVisual(plantData.plantId);
 
-            slot.Setup(plantData, sprite);
+            if (visual == null)
+            {
+                Debug.LogWarning(
+                    "No visual found for plant: " +
+                    plantData.plantId
+                );
+
+                continue;
+            }
+
+            slot.gallery = this;
+
+            slot.Setup(
+                plantData,
+                visual.growingSprite
+            );
         }
     }
 
-    private Sprite GetPlantSprite(string plantId)
+    private PlantVisual GetPlantVisual(string plantId)
     {
         foreach (PlantVisual plantVisual in plantVisuals)
         {
             if (plantVisual.plantId == plantId)
             {
-                return plantVisual.sprite;
+                return plantVisual;
             }
         }
 
-        Debug.LogWarning("No sprite found for plant: " + plantId);
+        Debug.LogWarning(
+            "No visual found for plant: " + plantId
+        );
 
         return null;
+    }
+
+    public void OpenPlantDetails(PlantData plantData)
+    {
+        PlantVisual plantVisual =
+            GetPlantVisual(plantData.plantId);
+
+        if (plantVisual == null)
+        {
+            Debug.LogWarning(
+                "No visual found for plant: " +
+                plantData.plantId
+            );
+
+            return;
+        }
+
+        plantDetails.Open(
+            plantData,
+            plantVisual
+        );
+    }
+
+    public void ClosePlantDetails()
+    {
+        plantDetails.Close();
     }
 }
 
@@ -56,5 +104,8 @@ public class Gallery : MonoBehaviour
 public class PlantVisual
 {
     public string plantId;
-    public Sprite sprite;
+
+    public Sprite growingSprite;
+    public Sprite overgrowthSprite;
+    public Sprite mutatedSprite;
 }
