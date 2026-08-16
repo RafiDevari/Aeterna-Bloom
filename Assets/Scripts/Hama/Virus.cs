@@ -70,10 +70,7 @@ public class Virus : Pest
         }
     }
 
-    private void OnDestroy()
-    {
-        hasSpawned = false;
-    }
+
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -99,7 +96,6 @@ public class Virus : Pest
         }
     }
 
-    private static bool hasSpawned = false;
 
     public static void SpawnAt(Vector3 spawnPos)
     {
@@ -134,8 +130,6 @@ public class Virus : Pest
 
     public static new void Spawn()
     {
-        if (hasSpawned) return;
-        hasSpawned = true;
 
 #if UNITY_EDITOR
         GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/PestPrefabs/Virus.prefab");

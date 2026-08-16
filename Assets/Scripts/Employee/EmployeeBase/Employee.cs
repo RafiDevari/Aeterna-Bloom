@@ -73,6 +73,7 @@ public partial class Employee : MonoBehaviour
 
     private float sickHpTimer = 0f;
     private float coughTimer = 0f;
+    private bool hasCoughedFirstTime = false;
     private float virusImmunityTimer = 0f;
     private float postCureSleepTimer = 0f;
 
@@ -538,6 +539,7 @@ public partial class Employee : MonoBehaviour
         isSick = true;
         sickHpTimer = 0f;
         coughTimer = 0f;
+        hasCoughedFirstTime = false;
         OnSickStatusChanged?.Invoke(true);
         Debug.LogWarning($"[{EmployeeName}] TERINFEKSI VIRUS! Memasuki status SICK (-3 HP / 20s, -30% Speed, batuk / 30s).");
     }
@@ -549,6 +551,7 @@ public partial class Employee : MonoBehaviour
         isSick = false;
         sickHpTimer = 0f;
         coughTimer = 0f;
+        hasCoughedFirstTime = false;
         OnSickStatusChanged?.Invoke(false);
         Debug.Log($"[{EmployeeName}] Sembuh dari Virus!");
 
@@ -585,6 +588,12 @@ public partial class Employee : MonoBehaviour
     private void Cough()
     {
         Debug.LogWarning($"[{EmployeeName}] *UHUK UHUK* (Batuk akibat virus!)");
+
+        if (!hasCoughedFirstTime)
+        {
+            hasCoughedFirstTime = true;
+            FacilityHUD.ShowBroadcast($"Employee {EmployeeName} Sakit", "System");
+        }
 
         if (Facility.Instance == null) return;
 

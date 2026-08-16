@@ -58,15 +58,34 @@ public class BlightRoot : MonsterBase
         return ownBoost * base.GetGrowthSpeedMultiplier();
     }
 
+    /// <summary>
+    /// Memunculkan Virus di fasilitas dan memicu animasi khusus jika animator tersedia.
+    /// Mirip dengan pola ElectricShock pada Dandelectric.
+    /// </summary>
+    public void SpawnVirus(bool resetMood = false)
+    {
+        if (monsterAnimator != null)
+        {
+            monsterAnimator.SetTrigger("Virus");
+        }
+
+        Debug.Log($"[{MonsterName}] Spawning Virus...");
+        Virus.Spawn();
+
+        if (resetMood)
+        {
+            SetMood(5);
+        }
+    }
+
     protected override void OnMoodChange(int oldMood, int newMood)
     {
         base.OnMoodChange(oldMood, newMood);
 
-        if (newMood == 0)
+        if (newMood == 0 && CurrentGrowthState != GrowthState.Seed)
         {
             Debug.LogWarning($"[{MonsterName}] Mood mencapai 0! Spawning Virus dan mengembalikan Mood ke 5.");
-            Virus.Spawn();
-            SetMood(5);
+            SpawnVirus(resetMood: true);
         }
     }
 
@@ -168,7 +187,7 @@ public class BlightRoot : MonsterBase
         {
             mutatedVirusTimer = 0f;
             Debug.LogWarning($"[{MonsterName}] Mutated state: Spawns Virus di posisi acak setiap 1 menit.");
-            Virus.Spawn();
+            SpawnVirus();
         }
     }
 }
