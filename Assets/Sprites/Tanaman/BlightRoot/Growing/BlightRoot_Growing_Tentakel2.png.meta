@@ -1,19 +1,10 @@
 fileFormatVersion: 2
-guid: 077f70ba3b5cb9d4abed9635cc264c98
+guid: a25e9a45ad2d5ae4183db914b2075f04
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7886259632098980232
-    second: BlightRoot_Growing_TentakelBunga_0
-  - first:
-      213: 2089752599048472970
-    second: BlightRoot_Growing_TentakelBunga_1
-  - first:
-      213: -3494443069438297499
-    second: BlightRoot_Growing_TentakelBunga_2
-  - first:
-      213: 698725634447199250
-    second: BlightRoot_Growing_TentakelBunga_3
+      213: 3424984847184811860
+    second: BlightRoot_Growing_Tentakel2_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -122,45 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BlightRoot_Growing_TentakelBunga_0
+      name: BlightRoot_Growing_Tentakel2_0
       rect:
         serializedVersion: 2
-        x: 261
-        y: 132
-        width: 256
-        height: 256
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        x: 442
+        y: 149
+        width: 62
+        height: 144
+      alignment: 9
+      pivot: {x: 0.67, y: 0.94}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 87ecc36d5a06e8290800000000000000
-      internalID: -7886259632098980232
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BlightRoot_Growing_TentakelBunga_1
-      rect:
-        serializedVersion: 2
-        x: 517
-        y: 132
-        width: 256
-        height: 256
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a89cbb6baea400d10800000000000000
-      internalID: 2089752599048472970
+      spriteID: 457db89729df78f20800000000000000
+      internalID: 3424984847184811860
       vertices: []
       indices: 
       edges: []
@@ -169,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 6c48a1f75d681e84a812d8221708e61b
+    spriteID: e92cf0708e7ecab41918d071f6470db8
     internalID: 0
     vertices: []
     indices: 
@@ -177,12 +146,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":256.0,"y":256.0},"gridSpriteOffset":{"x":5.0,"y":100.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+      entries: []
     nameFileIdTable:
-      BlightRoot_Growing_TentakelBunga_0: -7886259632098980232
-      BlightRoot_Growing_TentakelBunga_1: 2089752599048472970
+      BlightRoot_Growing_Tentakel2_0: 3424984847184811860
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

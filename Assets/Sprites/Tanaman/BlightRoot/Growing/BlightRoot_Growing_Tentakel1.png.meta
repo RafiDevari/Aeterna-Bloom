@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: 1e0314febc3e9a141a9845bcf2c516fb
+guid: 19a2b2cd44f930f4e8d0117f165b6755
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6594862873106826928
-    second: BlightRoot_Mutated_DaunBunga_0
+      213: 3278230615109108044
+    second: BlightRoot_Growing_Tentakel1_0
+  - first:
+      213: 7808653622532944046
+    second: BlightRoot_Growing_Tentakel1_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,23 +116,45 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BlightRoot_Mutated_DaunBunga_0
+      name: BlightRoot_Growing_Tentakel1_0
       rect:
         serializedVersion: 2
-        x: 325
-        y: 339
-        width: 379
-        height: 136
+        x: 316
+        y: 254
+        width: 157
+        height: 70
       alignment: 9
-      pivot: {x: 0.5, y: 0.19086704}
+      pivot: {x: 0.92, y: 0.87}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 0593e0278275a74a0800000000000000
-      internalID: -6594862873106826928
+      spriteID: c418369206d9e7d20800000000000000
+      internalID: 3278230615109108044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BlightRoot_Growing_Tentakel1_1
+      rect:
+        serializedVersion: 2
+        x: 553
+        y: 242
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea0b4210919ed5c60800000000000000
+      internalID: 7808653622532944046
       vertices: []
       indices: 
       edges: []
@@ -138,7 +163,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 2acc782cb6936b748813b74b82b6e440
+    spriteID: 8edb29f4021a8384695ca146b314161b
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +173,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BlightRoot_Mutated_DaunBunga_0: -6594862873106826928
+      BlightRoot_Growing_Tentakel1_0: 3278230615109108044
+      BlightRoot_Growing_Tentakel1_1: 7808653622532944046
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
