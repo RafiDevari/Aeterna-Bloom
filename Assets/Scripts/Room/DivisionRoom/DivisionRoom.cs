@@ -43,6 +43,10 @@ public abstract class DivisionRoom : Room
              "di-assign stasiun kerjanya ke divisi ini.")]
     [SerializeField] private List<EmployeeSpawnData> employeesToSpawn = new List<EmployeeSpawnData>();
 
+    [Header("Division Add Objects")]
+    [Tooltip("Daftar 5 objek dekorasi yang disembunyikan secara default. Untuk setiap 1 employee yang diassign, 1 objek akan ditampilkan.")]
+    [SerializeField] private List<GameObject> addObjects = new List<GameObject>();
+
     private readonly List<Employee> assignedEmployees = new List<Employee>();
 
     /// <summary>Semua employee yang sedang ditugaskan ke divisi ini (lihat Employee.AssignedDivision).</summary>
@@ -60,6 +64,9 @@ public abstract class DivisionRoom : Room
     {
         base.Start();
 
+        AutoFindAddObjectsIfEmpty();
+        UpdateAddVisuals();
+
         // Don't auto-spawn employees in RoomCreator or EmployeeAssignment scenes
         string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         if (sceneName == "RoomCreator" || sceneName == "EmployeeAssignment")
@@ -68,6 +75,58 @@ public abstract class DivisionRoom : Room
         }
 
         SpawnEmployees();
+    }
+
+    private void AutoFindAddObjectsIfEmpty()
+    {
+        if (addObjects == null)
+            addObjects = new List<GameObject>();
+
+        if (addObjects.Count == 0)
+        {
+            for (int i = 1; i <= 5; i++)
+            {
+                Transform child = transform.Find($"Adds ({i})");
+                if (child != null)
+                {
+                    addObjects.Add(child.gameObject);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Update visibilitas objek dekorasi divisi berdasarkan jumlah employee yang diassign.
+    /// </summary>
+    public void UpdateAddVisuals()
+    {
+        AutoFindAddObjectsIfEmpty();
+
+        int assignedCount = GetAssignedCount();
+
+        for (int i = 0; i < addObjects.Count; i++)
+        {
+            if (addObjects[i] != null)
+            {
+                addObjects[i].SetActive(i < assignedCount);
+            }
+        }
+    }
+
+    public int GetAssignedCount()
+    {
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        if (sceneName == "RoomCreator" || sceneName == "EmployeeAssignment")
+        {
+            return GetEmployeesToSpawnCount();
+        }
+
+        if (assignedEmployees != null && assignedEmployees.Count > 0)
+        {
+            return assignedEmployees.Count;
+        }
+
+        return GetEmployeesToSpawnCount();
     }
 
     private bool hasSpawnedEmployees = false;
@@ -126,17 +185,26 @@ public abstract class DivisionRoom : Room
     /// <summary>
     /// Hook virtual yang dipanggil ketika employee berhasil di-assign ke divisi ini.
     /// </summary>
-    protected virtual void OnEmployeeAssigned(Employee employee) { }
+    protected virtual void OnEmployeeAssigned(Employee employee)
+    {
+        UpdateAddVisuals();
+    }
 
     /// <summary>
     /// Hook virtual yang dipanggil ketika employee keluar/di-unassign dari divisi ini.
     /// </summary>
-    protected virtual void OnEmployeeUnassigned(Employee employee) { }
+    protected virtual void OnEmployeeUnassigned(Employee employee)
+    {
+        UpdateAddVisuals();
+    }
 
     /// <summary>
     /// Virtual method untuk meng-update tampilan visual room yang bergantung pada state/assignment.
     /// </summary>
-    public virtual void UpdateVisuals() { }
+    public virtual void UpdateVisuals()
+    {
+        UpdateAddVisuals();
+    }
 
     /// <summary>
     /// Dipanggil dari Employee.AssignDivision() -- jangan panggil ini langsung dari luar,
