@@ -246,7 +246,11 @@ AnimatorState:
   m_Name: Employee_Conversing3
   m_Speed: 1
   m_CycleOffset: 0
-  m_Transitions: []
+  m_Transitions:
+  - {fileID: 6012266781030610017}
+  - {fileID: 4859934548437458022}
+  - {fileID: 2048138846672046404}
+  - {fileID: -7972744954671421447}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -887,7 +891,11 @@ AnimatorState:
   m_Name: Employee_Conversing2
   m_Speed: 1
   m_CycleOffset: 0
-  m_Transitions: []
+  m_Transitions:
+  - {fileID: 6012266781030610017}
+  - {fileID: 4859934548437458022}
+  - {fileID: 2048138846672046404}
+  - {fileID: -7972744954671421447}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -988,7 +996,11 @@ AnimatorState:
   m_Name: Employee_Conversing
   m_Speed: 1
   m_CycleOffset: 0
-  m_Transitions: []
+  m_Transitions:
+  - {fileID: 6012266781030610017}
+  - {fileID: 4859934548437458022}
+  - {fileID: 2048138846672046404}
+  - {fileID: -7972744954671421447}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0

@@ -31,6 +31,21 @@ public class EmployeeAnimator : MonoBehaviour
     private static readonly int IsConversationHash = Animator.StringToHash("IsConversation");
     private static readonly int IsHypnotizedHash = Animator.StringToHash("IsHypnotized");
 
+    // Conversing animation variation hashes
+    private static readonly int Conversing1Hash = Animator.StringToHash("Converse");
+    private static readonly int Conversing2Hash = Animator.StringToHash("Employee_Conversing2");
+    private static readonly int Conversing3Hash = Animator.StringToHash("Employee_Conversing3");
+
+    private static readonly int[] ConversingStateHashes = new int[]
+    {
+        Conversing1Hash,
+        Conversing2Hash,
+        Conversing3Hash
+    };
+
+    private float conversingTimer = 0f;
+    private float nextConversingSwitchTime = 0f;
+
     private void Awake()
     {
         employee = GetComponent<Employee>();
@@ -82,9 +97,45 @@ public class EmployeeAnimator : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        HandleConversingAnimationSwitching();
+    }
+
     private void LateUpdate()
     {
         HandleFlippingAndElevatorMovement();
+    }
+
+    /// <summary>
+    /// Periodically switches between random conversing animation variations while in Conversing state.
+    /// </summary>
+    private void HandleConversingAnimationSwitching()
+    {
+        if (employee == null || employee.CurrentState != EmployeeState.Conversing)
+        {
+            conversingTimer = 0f;
+            return;
+        }
+
+        conversingTimer += Time.deltaTime;
+        if (conversingTimer >= nextConversingSwitchTime)
+        {
+            conversingTimer = 0f;
+            nextConversingSwitchTime = Random.Range(2.5f, 4.5f);
+            PlayRandomConversingAnimation();
+        }
+    }
+
+    /// <summary>
+    /// Randomly plays one of the 3 conversing animation states.
+    /// </summary>
+    private void PlayRandomConversingAnimation()
+    {
+        if (animator == null || !animator.enabled) return;
+
+        int randomIndex = Random.Range(0, ConversingStateHashes.Length);
+        animator.CrossFade(ConversingStateHashes[randomIndex], 0.15f);
     }
 
     /// <summary>
@@ -164,6 +215,13 @@ public class EmployeeAnimator : MonoBehaviour
         // Set State (int)
         animator.SetInteger(StateHash, (int)state);
 
+        if (state == EmployeeState.Conversing)
+        {
+            conversingTimer = 0f;
+            nextConversingSwitchTime = Random.Range(2.5f, 4.5f);
+            PlayRandomConversingAnimation();
+        }
+
         // Set Boolean Flags (if they exist in the Animator Controller)
         SetBoolIfExists(IsMovingHash, state == EmployeeState.Moving);
         SetBoolIfExists(IsFeedingHash, state == EmployeeState.Feeding);
@@ -196,3 +254,4 @@ public class EmployeeAnimator : MonoBehaviour
         return false;
     }
 }
+
