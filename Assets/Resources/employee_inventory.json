@@ -3,6 +3,7 @@
         {
             "employeeName": "Bob",
             "employeePrefabName": "EmployeeBotanist",
+            "division": 0,
             "suitColor": {
                 "r": 0.6000000238418579,
                 "g": 0.30000001192092898,
@@ -21,6 +22,7 @@
         {
             "employeeName": "Alice",
             "employeePrefabName": "EmployeeBotanist",
+            "division": 0,
             "suitColor": {
                 "r": 0.8999999761581421,
                 "g": 0.20000000298023225,
@@ -33,12 +35,13 @@
                 "b": 0.20000000298023225,
                 "a": 1.0
             },
-            "suitPath": "Sprites/Employee/Suit/Suit_2",
-            "hairPath": ""
+            "suitPath": "Sprites/Employee/Suit/Suit_1",
+            "hairPath": "Sprites/Employee/Hair/Hair_2"
         },
         {
             "employeeName": "Charlie",
             "employeePrefabName": "EmployeeSecurity",
+            "division": 0,
             "suitColor": {
                 "r": 0.800000011920929,
                 "g": 0.30000001192092898,
@@ -57,6 +60,7 @@
         {
             "employeeName": "Daniel",
             "employeePrefabName": "EmployeeMedic",
+            "division": 0,
             "suitColor": {
                 "r": 0.699999988079071,
                 "g": 0.4000000059604645,
@@ -75,6 +79,7 @@
         {
             "employeeName": "Edward",
             "employeePrefabName": "EmployeeEngineer",
+            "division": 0,
             "suitColor": {
                 "r": 0.8999999761581421,
                 "g": 0.699999988079071,
@@ -93,6 +98,7 @@
         {
             "employeeName": "Faelantern",
             "employeePrefabName": "EmployeeResearcher",
+            "division": 0,
             "suitColor": {
                 "r": 0.20000000298023225,
                 "g": 0.4000000059604645,
@@ -111,6 +117,7 @@
         {
             "employeeName": "Garion",
             "employeePrefabName": "EmployeeEngineer",
+            "division": 0,
             "suitColor": {
                 "r": 0.8500000238418579,
                 "g": 0.6000000238418579,
@@ -129,6 +136,7 @@
         {
             "employeeName": "Harrold",
             "employeePrefabName": "EmployeeEngineer",
+            "division": 0,
             "suitColor": {
                 "r": 0.949999988079071,
                 "g": 0.75,
@@ -147,6 +155,7 @@
         {
             "employeeName": "Ina",
             "employeePrefabName": "EmployeeEngineer",
+            "division": 0,
             "suitColor": {
                 "r": 0.800000011920929,
                 "g": 0.6499999761581421,
