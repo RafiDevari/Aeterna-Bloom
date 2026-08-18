@@ -169,13 +169,12 @@ public class RoomPopup : PopupBase
         // 4. Fix Electricity (If ElectricityRoom and Facility is Blackout)
         if (targetRoom is ElectricityRoom er && Facility.Instance != null && Facility.Instance.IsBlackout && !er.IsFixing)
         {
-            CreateButton("Fix Electricity (Engineer)", () =>
+            CreateButton("Fix Electricity", () =>
             {
                 if (EmployeeSelectPopup.Instance != null)
                 {
                     EmployeeSelectPopup.Instance.Open(
-                        employee => employee.GoFixElectricity(er),
-                        typeof(DivisionEngineer)
+                        employee => employee.GoFixElectricity(er)
                     );
                 }
                 Close();

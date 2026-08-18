@@ -33,7 +33,7 @@ public partial class Employee
         ClearTasksAndInterrupt();
 
         EnqueueTask(new MoveToTask(
-            () => targetRoom.transform.position,
+            () => targetRoom.GetNearestWalkablePosition(targetRoom.transform.position),
             () => targetRoom != null && Facility.Instance.IsBlackout));
 
         EnqueueTask(new FixElectricityTask(targetRoom));

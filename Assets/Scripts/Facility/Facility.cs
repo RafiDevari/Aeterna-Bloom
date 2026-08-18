@@ -312,6 +312,15 @@ public class Facility : MonoBehaviour
         isBlackout = true;
         blackoutTimer = 0f;
         hasBroadcastedCountdown = false;
+
+        foreach (var room in rooms.OfType<ElectricityRoom>())
+        {
+            if (room != null)
+            {
+                room.TriggerShock();
+            }
+        }
+
         OnElectricityChanged?.Invoke(Electricity); // Will trigger with 0f
         Debug.LogWarning("[Facility] MATI LAMPU! Penggunaan listrik melebihi 100%.");
         FacilityHUD.ShowBroadcast("MATI LAMPU! Penggunaan listrik melebihi 100%.", "System");
@@ -321,6 +330,15 @@ public class Facility : MonoBehaviour
     {
         isBlackout = false;
         blackoutTimer = 0f;
+
+        foreach (var room in rooms.OfType<ElectricityRoom>())
+        {
+            if (room != null)
+            {
+                room.ResetPower();
+            }
+        }
+
         OnElectricityChanged?.Invoke(Electricity); // Will trigger with actual usage
         Debug.Log("[Facility] Listrik telah diperbaiki.");
     }
