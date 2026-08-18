@@ -271,8 +271,9 @@ public class EmployeeAssignmentManager : MonoBehaviour
                                 cuPrefab.SetActive(originalActive);
 
                                 cuObj.name = $"ContainmentUnit:{unitData.plantInstanceId}:{unitData.monsterPrefabName}";
-                                cuObj.transform.localPosition = unitData.localPosition;
-                                cuObj.transform.localScale = new Vector3(0.35f, 0.35f, 1f);
+                                Vector3 locPos = unitData.localPosition;
+                                if (Mathf.Approximately(locPos.z, 0f)) locPos.z = -1f;
+                                cuObj.transform.localPosition = locPos;
 
                                 ContainmentUnit unit = cuObj.GetComponent<ContainmentUnit>();
                                 if (unit != null)
@@ -309,7 +310,6 @@ public class EmployeeAssignmentManager : MonoBehaviour
                                     SpriteRenderer cuRenderer = cuObj.GetComponent<SpriteRenderer>();
                                     if (cuRenderer != null)
                                     {
-                                        cuRenderer.sortingOrder = 5;
                                         if (monsterInstance != null)
                                         {
                                             SpriteRenderer[] monsterRenderers = monsterInstance.GetComponentsInChildren<SpriteRenderer>(true);

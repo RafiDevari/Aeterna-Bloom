@@ -4,11 +4,71 @@
     "maxEnergy": 100.0,
     "rooms": [
         {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -9.92316722869873,
+                "y": -20.134197235107423,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "MainRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -20.723167419433595,
+                "y": -20.188196182250978,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -31.52316665649414,
+                "y": -20.13419532775879,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
             "roomType": "DivisionBotanist",
             "roomName": "Botanist Room",
             "position": {
-                "x": -6.635233402252197,
-                "y": -4.061673164367676,
+                "x": -42.32316970825195,
+                "y": -20.188196182250978,
                 "z": 0.0
             },
             "scale": {
@@ -55,97 +115,20 @@
                         "b": 0.20000000298023225,
                         "a": 1.0
                     }
-                },
-                {
-                    "employeeName": "Faelantern",
-                    "employeePrefabName": "EmployeeResearcher",
-                    "division": 0,
-                    "suitColor": {
-                        "r": 0.20000000298023225,
-                        "g": 0.4000000059604645,
-                        "b": 0.8999999761581421,
-                        "a": 1.0
-                    },
-                    "hairColor": {
-                        "r": 0.8999999761581421,
-                        "g": 0.800000011920929,
-                        "b": 0.20000000298023225,
-                        "a": 1.0
-                    }
                 }
             ]
-        },
-        {
-            "roomType": "HallRoom",
-            "roomName": "Room",
-            "position": {
-                "x": 4.164766788482666,
-                "y": -4.007673263549805,
-                "z": 0.0
-            },
-            "scale": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "temperature": 20.0,
-            "isLocked": false,
-            "isPoisoned": false,
-            "isSterilizing": false,
-            "containmentUnits": [],
-            "employeesToSpawn": []
-        },
-        {
-            "roomType": "MainRoom",
-            "roomName": "Room",
-            "position": {
-                "x": 14.964767456054688,
-                "y": -4.061673164367676,
-                "z": 0.0
-            },
-            "scale": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "temperature": 20.0,
-            "isLocked": false,
-            "isPoisoned": false,
-            "isSterilizing": false,
-            "containmentUnits": [],
-            "employeesToSpawn": []
-        },
-        {
-            "roomType": "HallRoom",
-            "roomName": "Room",
-            "position": {
-                "x": 25.764766693115236,
-                "y": -4.007673263549805,
-                "z": 0.0
-            },
-            "scale": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "temperature": 20.0,
-            "isLocked": false,
-            "isPoisoned": false,
-            "isSterilizing": false,
-            "containmentUnits": [],
-            "employeesToSpawn": []
         },
         {
             "roomType": "ContainmentRoom",
             "roomName": "Room",
             "position": {
-                "x": 47.38373565673828,
-                "y": -2.9202795028686525,
+                "x": 11.676831245422364,
+                "y": -11.402440071105957,
                 "z": 0.0
             },
             "scale": {
-                "x": 1.3061574697494507,
-                "y": 2.833073139190674,
+                "x": 1.0,
+                "y": 1.0,
                 "z": 1.0
             },
             "temperature": 0.0,
@@ -157,11 +140,11 @@
                     "unitName": "Containment Unit",
                     "monsterPrefabName": "Sunny Flower",
                     "localPosition": {
-                        "x": -9.270161628723145,
-                        "y": -0.23659466207027436,
+                        "x": -7.219513893127441,
+                        "y": -8.268290519714356,
                         "z": 0.0
                     },
-                    "plantInstanceId": "Room_Unit-A1"
+                    "plantInstanceId": "Room_Unit-A2"
                 }
             ],
             "employeesToSpawn": []

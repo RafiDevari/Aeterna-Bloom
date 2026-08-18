@@ -509,7 +509,6 @@ public class RoomCreatorManager : MonoBehaviour
         SpriteRenderer cuRenderer = previewObj.GetComponent<SpriteRenderer>();
         if (cuRenderer != null)
         {
-            cuRenderer.sortingOrder = 5;
             if (monsterInstance != null)
             {
                 SpriteRenderer[] monsterRenderers = monsterInstance.GetComponentsInChildren<SpriteRenderer>(true);
@@ -1094,8 +1093,9 @@ public class RoomCreatorManager : MonoBehaviour
                             cuPrefab.SetActive(originalActive);
 
                             cuObj.name = $"ContainmentUnit:{unitData.plantInstanceId}:{unitData.monsterPrefabName}";
-                            cuObj.transform.localPosition = unitData.localPosition;
-                            cuObj.transform.localScale = new Vector3(0.35f, 0.35f, 1f);
+                            Vector3 locPos = unitData.localPosition;
+                            if (Mathf.Approximately(locPos.z, 0f)) locPos.z = -1f;
+                            cuObj.transform.localPosition = locPos;
 
                             // Load the monster prefab
                             GameObject monsterPrefab = LoadPrefabDynamic(unitData.monsterPrefabName);
@@ -1123,7 +1123,6 @@ public class RoomCreatorManager : MonoBehaviour
                             SpriteRenderer cuRenderer = cuObj.GetComponent<SpriteRenderer>();
                             if (cuRenderer != null)
                             {
-                                cuRenderer.sortingOrder = 5;
                                 if (monsterInstance != null)
                                 {
                                     SpriteRenderer[] monsterRenderers = monsterInstance.GetComponentsInChildren<SpriteRenderer>(true);

@@ -86,11 +86,23 @@ public class ContainmentUnit : MonoBehaviour
         {
             gameObject.AddComponent<ContainmentUnitOverlay>();
         }
+
+        EnsureFrontDepth();
     }
 
+    private void EnsureFrontDepth()
+    {
+        Vector3 pos = transform.localPosition;
+        if (Mathf.Approximately(pos.z, 0f))
+        {
+            transform.localPosition = new Vector3(pos.x, pos.y, -1f);
+        }
+    }
 
     private void Start()
     {
+        EnsureFrontDepth();
+
         // Spawn monster dari prefab yang di-assign di Inspector
         if (monsterPrefab != null)
             SpawnMonsterFromPrefab(monsterPrefab);

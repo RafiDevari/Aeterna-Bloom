@@ -300,8 +300,9 @@ public class RoomSaveSystem : MonoBehaviour
                             if (cuPrefab != null)
                             {
                                 GameObject cuObj = Instantiate(cuPrefab, containmentRoom.transform);
-                                cuObj.transform.localPosition = unitData.localPosition;
-                                cuObj.transform.localScale = new Vector3(0.35f, 0.35f, 1f);
+                                Vector3 locPos = unitData.localPosition;
+                                if (Mathf.Approximately(locPos.z, 0f)) locPos.z = -1f;
+                                cuObj.transform.localPosition = locPos;
                                 cuObj.name = unitData.unitName;
 
                                 ContainmentUnit unit = cuObj.GetComponent<ContainmentUnit>();

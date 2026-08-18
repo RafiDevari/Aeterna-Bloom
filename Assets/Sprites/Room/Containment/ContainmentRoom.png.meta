@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: a4499c9eb68de58468a8786b072285a7
+guid: 3c0a51a7f0e1dd14da567935138321ed
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2978890002145281910
-    second: bg containment unit_0
+      213: -4322229095507773005
+    second: ContainmentRoom_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bg containment unit_0
+      name: ContainmentRoom_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1080
-        height: 720
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        width: 3240
+        height: 1800
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a88fa2d635bd8a6d0800000000000000
-      internalID: -2978890002145281910
+      spriteID: 3b9b66ca98b5404c0800000000000000
+      internalID: -4322229095507773005
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 1a6ddc43c22700e419d714e8290648a6
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      bg containment unit_0: -2978890002145281910
+      ContainmentRoom_0: -4322229095507773005
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
