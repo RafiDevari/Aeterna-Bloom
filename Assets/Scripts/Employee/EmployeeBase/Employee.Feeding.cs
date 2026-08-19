@@ -134,7 +134,7 @@ public partial class Employee
         ClearTasksAndInterrupt();
 
         EnqueueTask(new MoveToTask(
-            () => stockRoom.transform.position,
+            () => stockRoom.GetNearestWalkablePosition(stockRoom.transform.position),
             () => stockRoom != null));
 
         EnqueueTask(new TakeStockAndPickupTask(stockRoom, food, amount));

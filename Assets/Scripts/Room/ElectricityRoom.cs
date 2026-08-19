@@ -83,4 +83,4 @@ public class ElectricityRoom : Room
         }
         return "Power Status: OK";
     }
-}
+}   
