@@ -874,6 +874,32 @@ public class RoomCreatorManager : MonoBehaviour
         string roomName = roomComp != null ? roomComp.RoomName : "";
         string typeName = roomComp != null ? roomComp.GetType().Name : "";
 
+        // Pass 1: Match by C# Component Type Name (e.g. ElectricityRoom, StockRoom, DivisionBotanist)
+        if (!string.IsNullOrEmpty(typeName))
+        {
+            foreach (var item in inventoryItems)
+            {
+                if (item == null) continue;
+
+                if (item.roomPrefab != null)
+                {
+                    Room pComp = item.roomPrefab.GetComponent<Room>();
+                    if (pComp != null && pComp.GetType().Name.Equals(typeName, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        return item;
+                    }
+                }
+
+                string itemCleanName = item.displayName.Replace(" ", "");
+                if (typeName.Equals(itemCleanName, System.StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrEmpty(item.displayName) && typeName.IndexOf(item.displayName.Replace(" ", "").Replace("Room", ""), System.StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    return item;
+                }
+            }
+        }
+
+        // Pass 2: Match by Object Name or Prefab Name
         foreach (var item in inventoryItems)
         {
             if (item == null) continue;
@@ -886,15 +912,6 @@ public class RoomCreatorManager : MonoBehaviour
                 {
                     return item;
                 }
-
-                Room pComp = item.roomPrefab.GetComponent<Room>();
-                if (pComp != null)
-                {
-                    if (!string.IsNullOrEmpty(typeName) && pComp.GetType().Name.Equals(typeName, System.StringComparison.OrdinalIgnoreCase))
-                        return item;
-                    if (!string.IsNullOrEmpty(roomName) && pComp.RoomName.Equals(roomName, System.StringComparison.OrdinalIgnoreCase))
-                        return item;
-                }
             }
 
             if (!string.IsNullOrEmpty(item.displayName))
@@ -904,8 +921,26 @@ public class RoomCreatorManager : MonoBehaviour
                 {
                     return item;
                 }
+            }
+        }
 
-                if (!string.IsNullOrEmpty(roomName) &&
+        // Pass 3: Match by specific RoomName (ONLY if roomName is non-empty and NOT generic "Room")
+        if (!string.IsNullOrEmpty(roomName) && !roomName.Equals("Room", System.StringComparison.OrdinalIgnoreCase))
+        {
+            foreach (var item in inventoryItems)
+            {
+                if (item == null) continue;
+
+                if (item.roomPrefab != null)
+                {
+                    Room pComp = item.roomPrefab.GetComponent<Room>();
+                    if (pComp != null && pComp.RoomName.Equals(roomName, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        return item;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(item.displayName) &&
                     (roomName.IndexOf(item.displayName, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
                      item.displayName.IndexOf(roomName, System.StringComparison.OrdinalIgnoreCase) >= 0))
                 {
@@ -1507,35 +1542,7 @@ public class RoomCreatorManager : MonoBehaviour
 
     private RoomInventoryItemData FindMatchingInventoryItem(GameObject roomObj)
     {
-        if (roomObj == null) return null;
-        Room roomComp = roomObj.GetComponent<Room>();
-        if (roomComp == null) return null;
-
-        string componentTypeName = roomComp.GetType().Name;
-
-        foreach (var item in inventoryItems)
-        {
-            if (item == null) continue;
-
-            // Match via associated room prefab's Room component type
-            if (item.roomPrefab != null)
-            {
-                Room prefabRoomComp = item.roomPrefab.GetComponent<Room>();
-                if (prefabRoomComp != null && prefabRoomComp.GetType().Name == componentTypeName)
-                {
-                    return item;
-                }
-            }
-
-            // Fallback string matching on component type name vs display name
-            string typeNameLower = componentTypeName.ToLower();
-            string itemLower = item.displayName.ToLower();
-            if (itemLower.Contains(typeNameLower) || typeNameLower.Contains(itemLower))
-            {
-                return item;
-            }
-        }
-        return null;
+        return FindInventoryItemForRoom(roomObj);
     }
 
 #if UNITY_EDITOR
