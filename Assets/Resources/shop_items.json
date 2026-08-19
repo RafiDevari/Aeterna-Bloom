@@ -50,6 +50,54 @@
       "spritePath": "Sprites/bg containment unit"
     },
     {
+      "id": "DivisionEngineer",
+      "title": "Engineer Room",
+      "category": "Room",
+      "price": 350,
+      "description": "Specialized division room for engineering.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
+      "id": "DivisionMedic",
+      "title": "Medic Room",
+      "category": "Room",
+      "price": 350,
+      "description": "Specialized division room for medical staff.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
+      "id": "DivisionResearcher",
+      "title": "Researcher Room",
+      "category": "Room",
+      "price": 350,
+      "description": "Specialized division room for researchers.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
+      "id": "DivisionSecurity",
+      "title": "Security Room",
+      "category": "Room",
+      "price": 350,
+      "description": "Specialized division room for security personnel.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
+      "id": "ElectricityRoom",
+      "title": "Electricity Room",
+      "category": "Room",
+      "price": 300,
+      "description": "Room dedicated to power management.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
+      "id": "StockRoom",
+      "title": "Stock Room",
+      "category": "Room",
+      "price": 250,
+      "description": "Storage room for various supplies.",
+      "spritePath": "Sprites/bg room"
+    },
+    {
       "id": "Suit_3",
       "title": "Worker Suit v3",
       "category": "Accessory",
