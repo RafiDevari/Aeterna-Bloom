@@ -22,6 +22,7 @@ public class EmployeeAssignmentManager : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Transform cardContainer;
     [SerializeField] private GameObject cardPrefab;
+    [SerializeField] private Button viewerButton;
     [SerializeField] private Button saveButton;
     [SerializeField] private Button playTestButton;
     [SerializeField] private Button resetButton;
@@ -120,6 +121,14 @@ public class EmployeeAssignmentManager : MonoBehaviour
 
     private void InitializeButtons()
     {
+        EnsureViewerButton();
+
+        if (viewerButton != null)
+        {
+            viewerButton.onClick.RemoveAllListeners();
+            viewerButton.onClick.AddListener(OpenEmployeeViewer);
+        }
+
         if (saveButton != null)
         {
             saveButton.onClick.RemoveAllListeners();
@@ -136,6 +145,66 @@ public class EmployeeAssignmentManager : MonoBehaviour
         {
             resetButton.onClick.RemoveAllListeners();
             resetButton.onClick.AddListener(ResetAllAssignments);
+        }
+    }
+
+    private void EnsureViewerButton()
+    {
+        if (viewerButton != null) return;
+
+        Canvas canvas = FindFirstObjectByType<Canvas>();
+        if (canvas == null) return;
+
+        Transform existingViewer = canvas.transform.Find("ViewerBtn");
+        if (existingViewer != null)
+        {
+            viewerButton = existingViewer.GetComponent<Button>();
+            return;
+        }
+
+        // Dynamically instantiate ViewerBtn if missing from scene hierarchy
+        GameObject viewerBtnObj = new GameObject("ViewerBtn", typeof(RectTransform), typeof(Image), typeof(Button));
+        viewerBtnObj.transform.SetParent(canvas.transform, false);
+
+        RectTransform viewerRt = viewerBtnObj.GetComponent<RectTransform>();
+        viewerRt.anchorMin = new Vector2(1f, 1f);
+        viewerRt.anchorMax = new Vector2(1f, 1f);
+        viewerRt.pivot = new Vector2(1f, 1f);
+        viewerRt.anchoredPosition = new Vector2(-480, -20);
+        viewerRt.sizeDelta = new Vector2(200, 50);
+
+        Image viewerImg = viewerBtnObj.GetComponent<Image>();
+        viewerImg.color = new Color(0.48f, 0.22f, 0.72f, 0.95f);
+
+        GameObject txtObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        txtObj.transform.SetParent(viewerBtnObj.transform, false);
+        RectTransform txtRt = txtObj.GetComponent<RectTransform>();
+        txtRt.anchorMin = Vector2.zero;
+        txtRt.anchorMax = Vector2.one;
+        txtRt.sizeDelta = Vector2.zero;
+
+        TextMeshProUGUI tmp = txtObj.GetComponent<TextMeshProUGUI>();
+        tmp.text = "👔 Employee Viewer";
+        tmp.fontSize = 18;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.color = Color.white;
+        tmp.fontStyle = FontStyles.Bold;
+
+        viewerButton = viewerBtnObj.GetComponent<Button>();
+
+        // Adjust positions of existing Reset and Save buttons to fit
+        Transform resetObj = canvas.transform.Find("ResetBtn");
+        if (resetObj != null)
+        {
+            RectTransform rRt = resetObj.GetComponent<RectTransform>();
+            rRt.anchoredPosition = new Vector2(-340, -20);
+        }
+        Transform saveObj = canvas.transform.Find("SaveLayoutBtn");
+        if (saveObj != null)
+        {
+            RectTransform sRt = saveObj.GetComponent<RectTransform>();
+            sRt.anchoredPosition = new Vector2(-190, -20);
+            sRt.sizeDelta = new Vector2(140, 50);
         }
     }
 
@@ -886,6 +955,28 @@ public class EmployeeAssignmentManager : MonoBehaviour
         SetStatusMessage($"Layout and assignments saved to {fileName}!");
     }
 
+    public void OpenEmployeeViewer()
+    {
+        SaveLayout("room_layout_1.json");
+
+        Debug.Log("[EmployeeAssignmentManager] Opening Employee Viewer scene...");
+
+#if UNITY_EDITOR
+        EnsureBuildSettingsInEditor();
+        string scenePath = "Assets/Scenes/EmployeeViewer.unity";
+        if (File.Exists(scenePath))
+        {
+            UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(
+                scenePath,
+                new UnityEngine.SceneManagement.LoadSceneParameters(UnityEngine.SceneManagement.LoadSceneMode.Single)
+            );
+            return;
+        }
+#endif
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("EmployeeViewer");
+    }
+
     public void SaveAndPlayTest()
     {
         SaveLayout("room_layout_1.json");
@@ -1063,6 +1154,7 @@ public class EmployeeAssignmentManager : MonoBehaviour
         bool modified = false;
 
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/EmployeeAssignment.unity");
+        modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/EmployeeViewer.unity");
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/GameplaySaveLoad.unity");
         modified |= AddBuildSceneIfMissing(scenes, "Assets/Scenes/Tutorial.unity");
 

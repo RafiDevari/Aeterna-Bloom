@@ -17,6 +17,7 @@ public class EmployeeViewerManager : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Transform cardContainer;
     [SerializeField] private GameObject cardPrefab;
+    [SerializeField] private Button backButton;
     [SerializeField] private TextMeshProUGUI selectedNameText;
     [SerializeField] private TextMeshProUGUI selectedRoleText;
     [SerializeField] private TextMeshProUGUI selectedDetailsText;
@@ -68,7 +69,54 @@ public class EmployeeViewerManager : MonoBehaviour
         InitializePrefabMap();
         LoadAccessoryData();
         InitializeCustomizationUI();
+        EnsureBackButton();
+        if (backButton != null)
+        {
+            backButton.onClick.RemoveAllListeners();
+            backButton.onClick.AddListener(BackToAssignment);
+        }
         LoadAndDisplayEmployeeList();
+    }
+
+    private void EnsureBackButton()
+    {
+        if (backButton != null) return;
+
+        Canvas canvas = FindFirstObjectByType<Canvas>();
+        if (canvas == null) return;
+
+        Transform existingBack = canvas.transform.Find("BackBtn");
+        if (existingBack != null)
+        {
+            backButton = existingBack.GetComponent<Button>();
+            return;
+        }
+
+        GameObject backBtnObj = new GameObject("BackBtn", typeof(RectTransform), typeof(Image), typeof(Button));
+        backBtnObj.transform.SetParent(canvas.transform, false);
+        RectTransform backRt = backBtnObj.GetComponent<RectTransform>();
+        backRt.anchorMin = new Vector2(1f, 1f);
+        backRt.anchorMax = new Vector2(1f, 1f);
+        backRt.pivot = new Vector2(1f, 1f);
+        backRt.anchoredPosition = new Vector2(-25, -25);
+        backRt.sizeDelta = new Vector2(230, 50);
+
+        Image backImg = backBtnObj.GetComponent<Image>();
+        backImg.color = new Color(0.18f, 0.45f, 0.85f, 0.95f);
+
+        GameObject backTxtObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        backTxtObj.transform.SetParent(backBtnObj.transform, false);
+        RectTransform backTxtRt = backTxtObj.GetComponent<RectTransform>();
+        backTxtRt.anchorMin = Vector2.zero;
+        backTxtRt.anchorMax = Vector2.one;
+        TextMeshProUGUI backTmp = backTxtObj.GetComponent<TextMeshProUGUI>();
+        backTmp.text = "← Back to Assignment";
+        backTmp.fontSize = 16;
+        backTmp.fontStyle = FontStyles.Bold;
+        backTmp.alignment = TextAlignmentOptions.Center;
+        backTmp.color = Color.white;
+
+        backButton = backBtnObj.GetComponent<Button>();
     }
 
     private void LoadAccessoryData()
@@ -575,5 +623,24 @@ public class EmployeeViewerManager : MonoBehaviour
             default:
                 return "Facility staff member.";
         }
+    }
+
+    /// <summary>
+    /// Navigates back to the Employee Assignment scene.
+    /// </summary>
+    public void BackToAssignment()
+    {
+#if UNITY_EDITOR
+        string scenePath = "Assets/Scenes/EmployeeAssignment.unity";
+        if (System.IO.File.Exists(scenePath))
+        {
+            UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(
+                scenePath,
+                new UnityEngine.SceneManagement.LoadSceneParameters(UnityEngine.SceneManagement.LoadSceneMode.Single)
+            );
+            return;
+        }
+#endif
+        UnityEngine.SceneManagement.SceneManager.LoadScene("EmployeeAssignment");
     }
 }

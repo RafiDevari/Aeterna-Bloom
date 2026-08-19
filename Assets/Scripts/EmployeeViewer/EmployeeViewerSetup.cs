@@ -384,7 +384,36 @@ public class EmployeeViewerSetup : MonoBehaviour
         }
         previewAnchorObj.transform.position = new Vector3(6.4f, -0.2f, 0f);
 
-        // 10. Load Prefabs and Assign References
+        // 10. Add Back Button (Top Right of Canvas)
+        Transform existingBack = canvas.transform.Find("BackBtn");
+        if (existingBack != null) DestroyImmediate(existingBack.gameObject);
+
+        GameObject backBtnObj = new GameObject("BackBtn", typeof(RectTransform), typeof(Image), typeof(Button));
+        backBtnObj.transform.SetParent(canvas.transform, false);
+        RectTransform backRt = backBtnObj.GetComponent<RectTransform>();
+        backRt.anchorMin = new Vector2(1f, 1f);
+        backRt.anchorMax = new Vector2(1f, 1f);
+        backRt.pivot = new Vector2(1f, 1f);
+        backRt.anchoredPosition = new Vector2(-25, -25);
+        backRt.sizeDelta = new Vector2(230, 50);
+
+        Image backImg = backBtnObj.GetComponent<Image>();
+        backImg.color = new Color(0.18f, 0.45f, 0.85f, 0.95f);
+        Button backBtn = backBtnObj.GetComponent<Button>();
+
+        GameObject backTxtObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        backTxtObj.transform.SetParent(backBtnObj.transform, false);
+        RectTransform backTxtRt = backTxtObj.GetComponent<RectTransform>();
+        backTxtRt.anchorMin = Vector2.zero;
+        backTxtRt.anchorMax = Vector2.one;
+        TextMeshProUGUI backTmp = backTxtObj.GetComponent<TextMeshProUGUI>();
+        backTmp.text = "← Back to Assignment";
+        backTmp.fontSize = 16;
+        backTmp.fontStyle = FontStyles.Bold;
+        backTmp.alignment = TextAlignmentOptions.Center;
+        backTmp.color = Color.white;
+
+        // 11. Load Prefabs and Assign References
         List<GameObject> employeePrefabs = new List<GameObject>();
 #if UNITY_EDITOR
         string[] employeeNames = { "EmployeeBotanist", "EmployeeResearcher", "EmployeeSecurity", "EmployeeMedic", "EmployeeEngineer" };
@@ -407,6 +436,7 @@ public class EmployeeViewerSetup : MonoBehaviour
         SetFieldValue(manager, "selectedDetailsText", detailsTmp);
         SetFieldValue(manager, "previewAnchor", previewAnchorObj.transform);
         SetFieldValue(manager, "employeePrefabs", employeePrefabs);
+        SetFieldValue(manager, "backButton", backBtn);
 
         SetFieldValue(manager, "suitButton", suitBtn);
         SetFieldValue(manager, "hairButton", hairBtn);

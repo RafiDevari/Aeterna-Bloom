@@ -150,7 +150,7 @@ public class EmployeeAssignmentSetup : MonoBehaviour
         GameObject cardPrefab = CreateEmployeeCardPrefab();
         cardPrefab.SetActive(false);
 
-        // 7. Action Buttons (Top Right: Save, Play Test, Reset)
+        // 7. Action Buttons (Top Right: Viewer, Reset, Save, Play Test)
         Transform existingReset = canvas.transform.Find("ResetBtn");
         if (existingReset != null) DestroyImmediate(existingReset.gameObject);
 
@@ -160,20 +160,31 @@ public class EmployeeAssignmentSetup : MonoBehaviour
         Transform existingTest = canvas.transform.Find("TestPlayBtn");
         if (existingTest != null) DestroyImmediate(existingTest.gameObject);
 
+        Transform existingViewer = canvas.transform.Find("ViewerBtn");
+        if (existingViewer != null) DestroyImmediate(existingViewer.gameObject);
+
+        GameObject viewerBtnObj = CreateButton("ViewerBtn", canvas.transform, "👔 Employee Viewer", new Color(0.48f, 0.22f, 0.72f), new Vector2(200, 50));
+        RectTransform viewerRt = viewerBtnObj.GetComponent<RectTransform>();
+        viewerRt.anchorMin = new Vector2(1f, 1f);
+        viewerRt.anchorMax = new Vector2(1f, 1f);
+        viewerRt.pivot = new Vector2(1f, 1f);
+        viewerRt.anchoredPosition = new Vector2(-480, -20);
+        Button viewerBtn = viewerBtnObj.GetComponent<Button>();
+
         GameObject resetBtnObj = CreateButton("ResetBtn", canvas.transform, "🔄 Reset", new Color(0.85f, 0.35f, 0.15f), new Vector2(130, 50));
         RectTransform resetRt = resetBtnObj.GetComponent<RectTransform>();
         resetRt.anchorMin = new Vector2(1f, 1f);
         resetRt.anchorMax = new Vector2(1f, 1f);
         resetRt.pivot = new Vector2(1f, 1f);
-        resetRt.anchoredPosition = new Vector2(-380, -20);
+        resetRt.anchoredPosition = new Vector2(-340, -20);
         Button resetBtn = resetBtnObj.GetComponent<Button>();
 
-        GameObject saveBtnObj = CreateButton("SaveLayoutBtn", canvas.transform, "💾 Save", new Color(0.18f, 0.45f, 0.85f), new Vector2(170, 50));
+        GameObject saveBtnObj = CreateButton("SaveLayoutBtn", canvas.transform, "💾 Save", new Color(0.18f, 0.45f, 0.85f), new Vector2(140, 50));
         RectTransform saveRt = saveBtnObj.GetComponent<RectTransform>();
         saveRt.anchorMin = new Vector2(1f, 1f);
         saveRt.anchorMax = new Vector2(1f, 1f);
         saveRt.pivot = new Vector2(1f, 1f);
-        saveRt.anchoredPosition = new Vector2(-200, -20);
+        saveRt.anchoredPosition = new Vector2(-190, -20);
         Button saveBtn = saveBtnObj.GetComponent<Button>();
 
         GameObject testBtnObj = CreateButton("TestPlayBtn", canvas.transform, "▶ Play Test", new Color(0.15f, 0.65f, 0.25f), new Vector2(160, 50));
@@ -225,6 +236,7 @@ public class EmployeeAssignmentSetup : MonoBehaviour
         // 10. Assign references to EmployeeAssignmentManager
         SetFieldValue(manager, "cardContainer", containerObj.transform);
         SetFieldValue(manager, "cardPrefab", cardPrefab);
+        SetFieldValue(manager, "viewerButton", viewerBtn);
         SetFieldValue(manager, "saveButton", saveBtn);
         SetFieldValue(manager, "playTestButton", testBtn);
         SetFieldValue(manager, "resetButton", resetBtn);
