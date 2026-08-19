@@ -139,7 +139,7 @@ public class RoomCreatorSetup : MonoBehaviour
         confirmRt.anchorMax = new Vector2(0.5f, 0.5f);
         confirmRt.pivot = new Vector2(0.5f, 0.5f);
         confirmRt.anchoredPosition = new Vector2(0, -180);
-        confirmRt.sizeDelta = new Vector2(360, 110);
+        confirmRt.sizeDelta = new Vector2(510, 110);
 
         Image confirmImg = confirmPanelObj.GetComponent<Image>();
         confirmImg.color = new Color(0.05f, 0.07f, 0.1f, 0.92f);
@@ -154,17 +154,21 @@ public class RoomCreatorSetup : MonoBehaviour
 
         HorizontalLayoutGroup confirmHlg = btnContainer.GetComponent<HorizontalLayoutGroup>();
         confirmHlg.childAlignment = TextAnchor.MiddleCenter;
-        confirmHlg.spacing = 20;
+        confirmHlg.spacing = 15;
         confirmHlg.childControlWidth = false;
         confirmHlg.childControlHeight = false;
 
         // Checklist Button (✔)
-        GameObject checkBtnObj = CreateButton("ChecklistBtn", btnContainer.transform, "✔ Checklist", new Color(0.15f, 0.65f, 0.25f), new Vector2(140, 50));
+        GameObject checkBtnObj = CreateButton("ChecklistBtn", btnContainer.transform, "✔ Checklist", new Color(0.15f, 0.65f, 0.25f), new Vector2(130, 48));
         Button checklistBtn = checkBtnObj.GetComponent<Button>();
 
         // Cancel Button (✖)
-        GameObject cancelBtnObj = CreateButton("CancelBtn", btnContainer.transform, "✖ Cancel", new Color(0.8f, 0.2f, 0.2f), new Vector2(140, 50));
+        GameObject cancelBtnObj = CreateButton("CancelBtn", btnContainer.transform, "✖ Cancel", new Color(0.8f, 0.2f, 0.2f), new Vector2(130, 48));
         Button cancelBtn = cancelBtnObj.GetComponent<Button>();
+
+        // Delete Room Button (🗑️)
+        GameObject deleteBtnObj = CreateButton("DeleteBtn", btnContainer.transform, "🗑️ Hapus Room", new Color(0.9f, 0.45f, 0.1f), new Vector2(140, 48));
+        Button deleteBtn = deleteBtnObj.GetComponent<Button>();
 
         // Warning Text in Confirmation Panel
         GameObject warnTextObj = new GameObject("WarningText", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -215,6 +219,7 @@ public class RoomCreatorSetup : MonoBehaviour
         SetFieldValue(manager, "confirmationPanel", confirmPanelObj);
         SetFieldValue(manager, "checklistButton", checklistBtn);
         SetFieldValue(manager, "cancelButton", cancelBtn);
+        SetFieldValue(manager, "deleteButton", deleteBtn);
         SetFieldValue(manager, "saveButton", null);
         SetFieldValue(manager, "testPlayButton", testBtn);
         SetFieldValue(manager, "resetButton", resetBtn);

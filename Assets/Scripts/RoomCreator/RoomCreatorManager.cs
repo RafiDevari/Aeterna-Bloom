@@ -39,6 +39,7 @@ public class RoomCreatorManager : MonoBehaviour
     [SerializeField] private GameObject confirmationPanel;
     [SerializeField] private Button checklistButton;
     [SerializeField] private Button cancelButton;
+    [SerializeField] private Button deleteButton;
     [SerializeField] private Button saveButton;
     [SerializeField] private Button testPlayButton;
     [SerializeField] private Button resetButton;
@@ -167,6 +168,12 @@ public class RoomCreatorManager : MonoBehaviour
         {
             cancelButton.onClick.RemoveAllListeners();
             cancelButton.onClick.AddListener(OnCancelClicked);
+        }
+
+        if (deleteButton != null)
+        {
+            deleteButton.onClick.RemoveAllListeners();
+            deleteButton.onClick.AddListener(OnDeleteClicked);
         }
 
         if (saveButton != null)
@@ -745,6 +752,149 @@ public class RoomCreatorManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Callback saat tombol Delete (🗑️ Hapus Room) ditekan oleh user saat memindahkan room/unit yang sudah diletakkan.
+    /// Mengembalikan room/tanaman ke inventaris dan menghapus objek dari scene.
+    /// </summary>
+    public void OnDeleteClicked()
+    {
+        if (activePreview == null || !isRepositioningExisting) return;
+
+        GameObject objToDelete = activePreview.gameObject;
+
+        if (objToDelete.name.Contains("ContainmentUnit"))
+        {
+            // Kembalikan tanaman ke panel kiri inventaris
+            if (!string.IsNullOrEmpty(activePlantInstanceId))
+            {
+                placedPlantInstanceIds.Remove(activePlantInstanceId);
+            }
+            placedContainmentUnits.Remove(objToDelete);
+            DestroyImmediate(objToDelete);
+        }
+        else
+        {
+            // Room biasa: Hapus unit containment di dalam room ini jika ada (misal Containment Room dihapus)
+            Bounds roomBounds = RoomPlacementPreview.GetAccurateBounds(objToDelete);
+            List<GameObject> unitsInside = new List<GameObject>();
+            foreach (var cu in placedContainmentUnits)
+            {
+                if (cu == null) continue;
+                if (cu.transform.IsChildOf(objToDelete.transform))
+                {
+                    unitsInside.Add(cu);
+                }
+                else
+                {
+                    Bounds cuBounds = RoomPlacementPreview.GetAccurateBounds(cu);
+                    if (roomBounds.Contains(cuBounds.center))
+                    {
+                        unitsInside.Add(cu);
+                    }
+                }
+            }
+
+            foreach (var cu in unitsInside)
+            {
+                placedContainmentUnits.Remove(cu);
+                string[] parts = cu.name.Split(':');
+                if (parts.Length > 2)
+                {
+                    string pInstanceId = parts[1];
+                    placedPlantInstanceIds.Remove(pInstanceId);
+                }
+                DestroyImmediate(cu);
+            }
+
+            // Kembalikan stok room ke inventaris
+            RoomInventoryItemData matchedItem = FindInventoryItemForRoom(objToDelete);
+            if (matchedItem != null)
+            {
+                matchedItem.count++;
+            }
+            else
+            {
+                string cleanName = objToDelete.name.Replace("Preview_", "").Replace("(Clone)", "").Trim();
+                Room rComp = objToDelete.GetComponent<Room>();
+                string dispName = (rComp != null && !string.IsNullOrEmpty(rComp.RoomName)) ? rComp.RoomName : cleanName;
+                GameObject prefab = FindPrefabForRoom(rComp != null ? rComp.GetType().Name : cleanName, dispName);
+                inventoryItems.Add(new RoomInventoryItemData(dispName, 1, prefab));
+            }
+
+            if (RoomInventorySaveSystem.Instance != null)
+            {
+                RoomInventorySaveSystem.Instance.SaveFromItemDataList(inventoryItems);
+            }
+
+            placedRooms.Remove(objToDelete);
+            DestroyImmediate(objToDelete);
+        }
+
+        activePreview = null;
+        activeItemData = null;
+        activePlantInstanceId = null;
+        activePlantId = null;
+        isDraggingPreview = false;
+        isRepositioningExisting = false;
+
+        HideConfirmationUI();
+        RefreshInventoryUI();
+        RoomCreatorSetup.RefreshLeftContainmentPanel(placedPlantInstanceIds);
+        SetStatusMessage("Room berhasil dihapus dan dikembalikan ke inventory.");
+    }
+
+    private RoomInventoryItemData FindInventoryItemForRoom(GameObject roomObj)
+    {
+        if (roomObj == null) return null;
+
+        string cleanName = roomObj.name.Replace("Preview_", "").Replace("(Clone)", "").Trim();
+        Room roomComp = roomObj.GetComponent<Room>();
+        string roomName = roomComp != null ? roomComp.RoomName : "";
+        string typeName = roomComp != null ? roomComp.GetType().Name : "";
+
+        foreach (var item in inventoryItems)
+        {
+            if (item == null) continue;
+
+            if (item.roomPrefab != null)
+            {
+                string pName = item.roomPrefab.name.Replace("Prefab_", "").Trim();
+                if (cleanName.Equals(item.roomPrefab.name, System.StringComparison.OrdinalIgnoreCase) ||
+                    cleanName.Equals(pName, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return item;
+                }
+
+                Room pComp = item.roomPrefab.GetComponent<Room>();
+                if (pComp != null)
+                {
+                    if (!string.IsNullOrEmpty(typeName) && pComp.GetType().Name.Equals(typeName, System.StringComparison.OrdinalIgnoreCase))
+                        return item;
+                    if (!string.IsNullOrEmpty(roomName) && pComp.RoomName.Equals(roomName, System.StringComparison.OrdinalIgnoreCase))
+                        return item;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(item.displayName))
+            {
+                if (cleanName.IndexOf(item.displayName, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    item.displayName.IndexOf(cleanName, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return item;
+                }
+
+                if (!string.IsNullOrEmpty(roomName) &&
+                    (roomName.IndexOf(item.displayName, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                     item.displayName.IndexOf(roomName, System.StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    return item;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Menyimpan semua room yang sudah diletakkan ke file JSON (misal room_layout_1.json).
     /// </summary>
     public void SaveLayoutToJson(string fileName = "room_layout_1.json")
@@ -1309,6 +1459,10 @@ public class RoomCreatorManager : MonoBehaviour
         if (confirmationPanel != null)
         {
             confirmationPanel.SetActive(true);
+        }
+        if (deleteButton != null)
+        {
+            deleteButton.gameObject.SetActive(isRepositioningExisting);
         }
         SetStatusMessage("");
     }
