@@ -210,6 +210,26 @@ public class RoomCreatorSetup : MonoBehaviour
         testRt.anchoredPosition = new Vector2(-20, -20);
         Button testBtn = testBtnObj.GetComponent<Button>();
 
+        // Global Warning/Notification Text for Room Creator (Top Center)
+        Transform existingGlobalStatus = canvas.transform.Find("GlobalStatusText");
+        if (existingGlobalStatus != null) DestroyImmediate(existingGlobalStatus.gameObject);
+
+        GameObject globalStatusObj = new GameObject("GlobalStatusText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        globalStatusObj.transform.SetParent(canvas.transform, false);
+        RectTransform gsRt = globalStatusObj.GetComponent<RectTransform>();
+        gsRt.anchorMin = new Vector2(0.5f, 1f);
+        gsRt.anchorMax = new Vector2(0.5f, 1f);
+        gsRt.pivot = new Vector2(0.5f, 1f);
+        gsRt.anchoredPosition = new Vector2(0, -25);
+        gsRt.sizeDelta = new Vector2(1000, 45);
+
+        TextMeshProUGUI gsTmp = globalStatusObj.GetComponent<TextMeshProUGUI>();
+        gsTmp.text = "";
+        gsTmp.fontSize = 18;
+        gsTmp.alignment = TextAlignmentOptions.Center;
+        gsTmp.color = new Color(1f, 0.35f, 0.35f);
+        gsTmp.fontStyle = FontStyles.Bold;
+
         // 9. Find Prefabs dynamically from Assets/Prefabs/Rooms/
         System.Collections.Generic.List<GameObject> allRoomPrefabs = FindAllRoomPrefabs();
 
@@ -224,6 +244,7 @@ public class RoomCreatorSetup : MonoBehaviour
         SetFieldValue(manager, "testPlayButton", testBtn);
         SetFieldValue(manager, "resetButton", resetBtn);
         SetFieldValue(manager, "statusMessageText", warnTmp);
+        SetFieldValue(manager, "globalStatusText", gsTmp);
         SetFieldValue(manager, "roomPrefabs", allRoomPrefabs);
 
         manager.EnsureDefaultInventory();

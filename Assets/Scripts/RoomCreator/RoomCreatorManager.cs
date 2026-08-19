@@ -44,7 +44,9 @@ public class RoomCreatorManager : MonoBehaviour
     [SerializeField] private Button testPlayButton;
     [SerializeField] private Button resetButton;
     [SerializeField] private TextMeshProUGUI statusMessageText;
+    [SerializeField] private TextMeshProUGUI globalStatusText;
     [SerializeField] private Text legacyStatusMessageText;
+    private Coroutine statusClearCoroutine;
 
     private List<RoomInventoryCardUI> cardUIList = new List<RoomInventoryCardUI>();
     private List<GameObject> placedRooms = new List<GameObject>();
@@ -154,6 +156,17 @@ public class RoomCreatorManager : MonoBehaviour
                 TryPickUpPlacedRoom();
             }
         }
+
+        // Update visual state of testPlayButton (Mulai)
+        if (testPlayButton != null)
+        {
+            bool canStart = ValidateLayoutConstraints(out _);
+            Image btnImg = testPlayButton.GetComponent<Image>();
+            if (btnImg != null)
+            {
+                btnImg.color = canStart ? new Color(0.15f, 0.65f, 0.25f, 1f) : new Color(0.35f, 0.38f, 0.42f, 0.85f);
+            }
+        }
     }
 
     private void InitializeButtons()
@@ -231,6 +244,14 @@ public class RoomCreatorManager : MonoBehaviour
                 GameObject prefab = FindPrefabForRoom(item.roomTypeId, item.displayName);
                 inventoryItems.Add(new RoomInventoryItemData(item.displayName, item.count, prefab));
             }
+            if (inventoryItems.Find(x => x.displayName.Contains("Stock")) == null)
+            {
+                inventoryItems.Add(new RoomInventoryItemData("Stock Room", 2, FindPrefabForRoom("StockRoom", "Stock Room")));
+            }
+            if (inventoryItems.Find(x => x.displayName.Contains("Electricity")) == null)
+            {
+                inventoryItems.Add(new RoomInventoryItemData("Electricity Room", 2, FindPrefabForRoom("ElectricityRoom", "Electricity Room")));
+            }
         }
         else
         {
@@ -238,7 +259,9 @@ public class RoomCreatorManager : MonoBehaviour
             {
                 new RoomInventoryItemData("Hall Room", 4, FindPrefabForRoom("HallRoom", "Hall Room")),
                 new RoomInventoryItemData("Main Hall", 2, FindPrefabForRoom("MainRoom", "Main Hall")),
-                new RoomInventoryItemData("Botanist Room", 1, FindPrefabForRoom("DivisionBotanist", "Botanist Room")),
+                new RoomInventoryItemData("Botanist Room", 4, FindPrefabForRoom("DivisionBotanist", "Botanist Room")),
+                new RoomInventoryItemData("Stock Room", 2, FindPrefabForRoom("StockRoom", "Stock Room")),
+                new RoomInventoryItemData("Electricity Room", 2, FindPrefabForRoom("ElectricityRoom", "Electricity Room")),
                 new RoomInventoryItemData("Lift", 2, FindPrefabForRoom("Lift", "Lift")),
                 new RoomInventoryItemData("Containment Room", 2, FindPrefabForRoom("ContainmentRoom", "Containment Room"))
             };
@@ -1308,9 +1331,17 @@ public class RoomCreatorManager : MonoBehaviour
 
     /// <summary>
     /// Menyimpan layout ke JSON dan langsung berpindah ke scene EmployeeAssignment untuk menugaskan employee.
+    /// Memvalidasi syarat layout terlebih dahulu.
     /// </summary>
     public void SaveAndProceedToEmployeeAssign()
     {
+        if (!ValidateLayoutConstraints(out string errorReason))
+        {
+            SetStatusMessage(errorReason);
+            Debug.LogWarning($"[RoomCreatorManager] Syarat mulai belum terpenuhi: {errorReason}");
+            return;
+        }
+
         SaveLayoutToJson("room_layout_1.json");
         SaveLayoutToJson("room_layout.json");
 
@@ -1330,6 +1361,90 @@ public class RoomCreatorManager : MonoBehaviour
 #endif
 
         UnityEngine.SceneManagement.SceneManager.LoadScene("EmployeeAssignment");
+    }
+
+    /// <summary>
+    /// Memvalidasi syarat layout sebelum player dapat melanjutkan ke penugasan employee:
+    /// 1. Semua tanaman yang dimiliki player harus diletakkan.
+    /// 2. Harus ada minimal: 1 Stock Room, 1 Divisi Room apapun, dan 1 Electricity Room.
+    /// </summary>
+    public bool ValidateLayoutConstraints(out string errorReason)
+    {
+        errorReason = "";
+
+        // 1. Validasi: Semua tanaman yang dimiliki player harus diletakkan
+        PlantInventoryData plantData = null;
+        if (PlantInventorySaveSystem.Instance != null)
+        {
+            plantData = PlantInventorySaveSystem.Instance.LoadInventory();
+        }
+        else
+        {
+            PlantInventorySaveSystem pSys = FindFirstObjectByType<PlantInventorySaveSystem>();
+            if (pSys != null) plantData = pSys.LoadInventory();
+        }
+
+        if (plantData == null || plantData.plants == null)
+        {
+            plantData = PlantInventorySaveSystem.GetDefaultInventoryData();
+        }
+
+        int totalPlantsOwned = plantData != null && plantData.plants != null ? plantData.plants.Count : 0;
+        int placedCount = 0;
+        if (plantData != null && plantData.plants != null)
+        {
+            foreach (var p in plantData.plants)
+            {
+                if (p != null && !string.IsNullOrEmpty(p.plantInstanceId) && placedPlantInstanceIds.Contains(p.plantInstanceId))
+                {
+                    placedCount++;
+                }
+            }
+        }
+
+        if (totalPlantsOwned > 0 && placedCount < totalPlantsOwned)
+        {
+            errorReason = $"Semua tanaman yang dimiliki harus diletakkan! ({placedCount}/{totalPlantsOwned} terpasang)";
+            return false;
+        }
+
+        // 2. Validasi: Minimal 1 Stock Room, 1 Divisi Room, 1 Electricity Room
+        int stockRoomCount = 0;
+        int divisionRoomCount = 0;
+        int electricityRoomCount = 0;
+
+        foreach (GameObject roomObj in placedRooms)
+        {
+            if (roomObj == null) continue;
+            Room roomComp = roomObj.GetComponent<Room>();
+            string rName = (roomComp != null && !string.IsNullOrEmpty(roomComp.RoomName) ? roomComp.RoomName : roomObj.name).ToLower();
+
+            if (roomComp is StockRoom || rName.Contains("stock") || rName.Contains("stok"))
+            {
+                stockRoomCount++;
+            }
+            if (roomComp is ElectricityRoom || rName.Contains("electricity") || rName.Contains("elektrisitas") || rName.Contains("listrik"))
+            {
+                electricityRoomCount++;
+            }
+            if (roomComp is DivisionRoom || rName.Contains("division") || rName.Contains("botanist") || rName.Contains("security") || rName.Contains("researcher") || rName.Contains("medic") || rName.Contains("engineer") || rName.Contains("clerk"))
+            {
+                divisionRoomCount++;
+            }
+        }
+
+        List<string> missing = new List<string>();
+        if (stockRoomCount < 1) missing.Add("1 Stock Room");
+        if (divisionRoomCount < 1) missing.Add("1 Divisi Room");
+        if (electricityRoomCount < 1) missing.Add("1 Electricity Room");
+
+        if (missing.Count > 0)
+        {
+            errorReason = "Syarat belum terpenuhi! Wajib meletakkan: " + string.Join(", ", missing) + ".";
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -1475,8 +1590,41 @@ public class RoomCreatorManager : MonoBehaviour
         }
     }
 
+    private void EnsureGlobalStatusUI()
+    {
+        if (globalStatusText != null) return;
+
+        Canvas canvas = FindFirstObjectByType<Canvas>();
+        if (canvas == null) return;
+
+        Transform existing = canvas.transform.Find("GlobalStatusText");
+        if (existing != null)
+        {
+            globalStatusText = existing.GetComponent<TextMeshProUGUI>();
+            return;
+        }
+
+        GameObject globalStatusObj = new GameObject("GlobalStatusText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        globalStatusObj.transform.SetParent(canvas.transform, false);
+        RectTransform gsRt = globalStatusObj.GetComponent<RectTransform>();
+        gsRt.anchorMin = new Vector2(0.5f, 1f);
+        gsRt.anchorMax = new Vector2(0.5f, 1f);
+        gsRt.pivot = new Vector2(0.5f, 1f);
+        gsRt.anchoredPosition = new Vector2(0, -25);
+        gsRt.sizeDelta = new Vector2(1000, 45);
+
+        globalStatusText = globalStatusObj.GetComponent<TextMeshProUGUI>();
+        globalStatusText.text = "";
+        globalStatusText.fontSize = 18;
+        globalStatusText.alignment = TextAlignmentOptions.Center;
+        globalStatusText.color = new Color(1f, 0.35f, 0.35f);
+        globalStatusText.fontStyle = FontStyles.Bold;
+    }
+
     private void SetStatusMessage(string msg)
     {
+        EnsureGlobalStatusUI();
+
         if (statusMessageText != null)
         {
             statusMessageText.text = msg;
@@ -1484,6 +1632,24 @@ public class RoomCreatorManager : MonoBehaviour
         if (legacyStatusMessageText != null)
         {
             legacyStatusMessageText.text = msg;
+        }
+        if (globalStatusText != null)
+        {
+            globalStatusText.text = msg;
+            if (statusClearCoroutine != null) StopCoroutine(statusClearCoroutine);
+            if (!string.IsNullOrEmpty(msg))
+            {
+                statusClearCoroutine = StartCoroutine(ClearGlobalStatusAfterSeconds(4.5f));
+            }
+        }
+    }
+
+    private System.Collections.IEnumerator ClearGlobalStatusAfterSeconds(float sec)
+    {
+        yield return new WaitForSeconds(sec);
+        if (globalStatusText != null)
+        {
+            globalStatusText.text = "";
         }
     }
 
