@@ -3,27 +3,37 @@
         {
             "roomTypeId": "HallRoom",
             "displayName": "Hall Room",
-            "count": 98
+            "count": 95
         },
         {
             "roomTypeId": "MainRoom",
             "displayName": "Main Hall",
-            "count": 103
+            "count": 100
         },
         {
             "roomTypeId": "DivisionBotanist",
             "displayName": "Botanist Room",
-            "count": 103
+            "count": 102
+        },
+        {
+            "roomTypeId": "StockRoom",
+            "displayName": "Stock Room",
+            "count": 1
+        },
+        {
+            "roomTypeId": "ElectricityRoom",
+            "displayName": "Electricity Room",
+            "count": 1
         },
         {
             "roomTypeId": "Lift",
             "displayName": "Lift",
-            "count": 102
+            "count": 99
         },
         {
             "roomTypeId": "ContainmentRoom",
             "displayName": "Containment Room",
-            "count": 106
+            "count": 105
         }
     ]
 }
