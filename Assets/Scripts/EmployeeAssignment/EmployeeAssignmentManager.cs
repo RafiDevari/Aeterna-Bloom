@@ -117,6 +117,17 @@ public class EmployeeAssignmentManager : MonoBehaviour
 
             TryClickDivisionRoom();
         }
+
+        // Update visual state of playTestButton
+        if (playTestButton != null)
+        {
+            bool canPlay = HasAtLeastOneEmployeeAssigned();
+            Image btnImg = playTestButton.GetComponent<Image>();
+            if (btnImg != null)
+            {
+                btnImg.color = canPlay ? new Color(0.15f, 0.65f, 0.25f, 1f) : new Color(0.35f, 0.38f, 0.42f, 0.85f);
+            }
+        }
     }
 
     private void InitializeButtons()
@@ -979,6 +990,13 @@ public class EmployeeAssignmentManager : MonoBehaviour
 
     public void SaveAndPlayTest()
     {
+        if (!HasAtLeastOneEmployeeAssigned())
+        {
+            SetStatusMessage("Minimal harus menugaskan 1 employee ke divisi apapun sebelum memulai!", isError: true);
+            Debug.LogWarning("[EmployeeAssignmentManager] Tidak dapat mulai: Minimal 1 employee harus di-assign!");
+            return;
+        }
+
         SaveLayout("room_layout_1.json");
         SaveLayout("room_layout.json");
 
@@ -998,6 +1016,30 @@ public class EmployeeAssignmentManager : MonoBehaviour
 #endif
 
         UnityEngine.SceneManagement.SceneManager.LoadScene("GameplaySaveLoad");
+    }
+
+    /// <summary>
+    /// Menghitung total employee yang saat ini ditugaskan ke Division Room.
+    /// </summary>
+    public int GetTotalAssignedEmployeesCount()
+    {
+        int count = 0;
+        foreach (var pair in employeeRoomMap)
+        {
+            if (!string.IsNullOrEmpty(pair.Key) && pair.Value != null)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// Mengecek apakah ada minimal 1 employee yang sudah di-assign.
+    /// </summary>
+    public bool HasAtLeastOneEmployeeAssigned()
+    {
+        return GetTotalAssignedEmployeesCount() >= 1;
     }
 
     public void ResetAllAssignments()
@@ -1020,11 +1062,12 @@ public class EmployeeAssignmentManager : MonoBehaviour
         SetStatusMessage("All employee assignments have been reset.");
     }
 
-    private void SetStatusMessage(string msg)
+    private void SetStatusMessage(string msg, bool isError = false)
     {
         if (statusMessageText != null)
         {
             statusMessageText.text = msg;
+            statusMessageText.color = isError ? new Color(1f, 0.35f, 0.35f) : Color.yellow;
         }
         Debug.Log($"[EmployeeAssignment] {msg}");
     }
