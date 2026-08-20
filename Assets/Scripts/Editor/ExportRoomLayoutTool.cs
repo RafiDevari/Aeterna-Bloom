@@ -143,12 +143,14 @@ public class ExportRoomLayoutTool : EditorWindow
                             var divisionField = item.GetType().GetField("division");
                             var suitColorField = item.GetType().GetField("suitColor");
                             var hairColorField = item.GetType().GetField("hairColor");
+                            var moodField = item.GetType().GetField("mood");
 
                             string empName = nameField != null ? (string)nameField.GetValue(item) : "";
                             Employee empPrefab = prefabField != null ? (Employee)prefabField.GetValue(item) : null;
                             EmployeeDivision empDiv = divisionField != null ? (EmployeeDivision)divisionField.GetValue(item) : EmployeeDivision.Researcher;
                             Color sColor = suitColorField != null ? (Color)suitColorField.GetValue(item) : Color.white;
                             Color hColor = hairColorField != null ? (Color)hairColorField.GetValue(item) : Color.white;
+                            int eMood = moodField != null ? (int)moodField.GetValue(item) : 3;
 
                             string prefabName = empPrefab != null ? empPrefab.gameObject.name : "";
 
@@ -158,7 +160,8 @@ public class ExportRoomLayoutTool : EditorWindow
                                 employeePrefabName = prefabName,
                                 division = empDiv,
                                 suitColor = sColor,
-                                hairColor = hColor
+                                hairColor = hColor,
+                                mood = eMood
                             });
                         }
                     }

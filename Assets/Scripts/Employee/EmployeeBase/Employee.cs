@@ -341,6 +341,11 @@ public partial class Employee : MonoBehaviour
                     Appearance.HairColor = hair;
                 }
             }
+
+            if (invItem.mood >= 0)
+            {
+                SetMood(invItem.mood);
+            }
         }
     }
 

@@ -17,7 +17,8 @@
                 "a": 1.0
             },
             "suitPath": "Sprites/Employee/Suit/Suit_2",
-            "hairPath": "Sprites/Employee/Hair/Hair_2"
+            "hairPath": "Sprites/Employee/Hair/Hair_2",
+            "mood": 3
         },
         {
             "employeeName": "Alice",
@@ -36,7 +37,8 @@
                 "a": 1.0
             },
             "suitPath": "Sprites/Employee/Suit/Suit_1",
-            "hairPath": "Sprites/Employee/Hair/Hair_2"
+            "hairPath": "Sprites/Employee/Hair/Hair_2",
+            "mood": 1
         },
         {
             "employeeName": "Charlie",
@@ -55,7 +57,8 @@
                 "a": 1.0
             },
             "suitPath": "",
-            "hairPath": ""
+            "hairPath": "",
+            "mood": 4
         },
         {
             "employeeName": "Daniel",
@@ -74,7 +77,8 @@
                 "a": 1.0
             },
             "suitPath": "",
-            "hairPath": ""
+            "hairPath": "",
+            "mood": 2
         },
         {
             "employeeName": "Edward",
@@ -93,7 +97,8 @@
                 "a": 1.0
             },
             "suitPath": "",
-            "hairPath": ""
+            "hairPath": "",
+            "mood": 5
         },
         {
             "employeeName": "Faelantern",
@@ -112,7 +117,8 @@
                 "a": 1.0
             },
             "suitPath": "",
-            "hairPath": "Sprites/Employee/Hair/Hair_2"
+            "hairPath": "Sprites/Employee/Hair/Hair_2",
+            "mood": 3
         },
         {
             "employeeName": "Garion",
@@ -131,7 +137,8 @@
                 "a": 1.0
             },
             "suitPath": "",
-            "hairPath": ""
+            "hairPath": "",
+            "mood": 1
         },
         {
             "employeeName": "Harrold",
@@ -150,7 +157,8 @@
                 "a": 1.0
             },
             "suitPath": "",
-            "hairPath": ""
+            "hairPath": "",
+            "mood": 3
         },
         {
             "employeeName": "Ina",
@@ -169,7 +177,8 @@
                 "a": 1.0
             },
             "suitPath": "",
-            "hairPath": ""
+            "hairPath": "",
+            "mood": 4
         }
     ]
 }

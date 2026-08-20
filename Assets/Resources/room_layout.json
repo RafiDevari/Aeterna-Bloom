@@ -206,55 +206,22 @@
             "containmentUnits": [],
             "employeesToSpawn": [
                 {
-                    "employeeName": "Bob",
-                    "employeePrefabName": "EmployeeBotanist",
-                    "division": 1,
+                    "employeeName": "Daniel",
+                    "employeePrefabName": "EmployeeMedic",
+                    "division": 3,
                     "suitColor": {
-                        "r": 0.6000000238418579,
-                        "g": 0.30000001192092898,
-                        "b": 0.10000000149011612,
-                        "a": 1.0
-                    },
-                    "hairColor": {
-                        "r": 0.6000000238418579,
-                        "g": 0.30000001192092898,
-                        "b": 0.10000000149011612,
-                        "a": 1.0
-                    }
-                },
-                {
-                    "employeeName": "Alice",
-                    "employeePrefabName": "EmployeeBotanist",
-                    "division": 1,
-                    "suitColor": {
-                        "r": 0.8999999761581421,
-                        "g": 0.20000000298023225,
-                        "b": 0.20000000298023225,
-                        "a": 1.0
-                    },
-                    "hairColor": {
-                        "r": 0.8999999761581421,
-                        "g": 0.20000000298023225,
-                        "b": 0.20000000298023225,
-                        "a": 1.0
-                    }
-                },
-                {
-                    "employeeName": "Faelantern",
-                    "employeePrefabName": "EmployeeResearcher",
-                    "division": 0,
-                    "suitColor": {
-                        "r": 0.20000000298023225,
+                        "r": 0.699999988079071,
                         "g": 0.4000000059604645,
-                        "b": 0.8999999761581421,
+                        "b": 0.800000011920929,
                         "a": 1.0
                     },
                     "hairColor": {
-                        "r": 0.8999999761581421,
-                        "g": 0.800000011920929,
+                        "r": 0.5,
+                        "g": 0.30000001192092898,
                         "b": 0.20000000298023225,
                         "a": 1.0
-                    }
+                    },
+                    "mood": 2
                 }
             ]
         },

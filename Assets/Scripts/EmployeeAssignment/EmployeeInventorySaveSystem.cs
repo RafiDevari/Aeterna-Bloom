@@ -12,10 +12,11 @@ public class EmployeeInventoryItemSaveData
     public Color hairColor = Color.white;
     public string suitPath = "";
     public string hairPath = "";
+    public int mood = 3;
 
     public EmployeeInventoryItemSaveData() { }
 
-    public EmployeeInventoryItemSaveData(string name, string prefabName, EmployeeDivision div = EmployeeDivision.Researcher, Color? suit = null, Color? hair = null, string sPath = "", string hPath = "")
+    public EmployeeInventoryItemSaveData(string name, string prefabName, EmployeeDivision div = EmployeeDivision.Researcher, Color? suit = null, Color? hair = null, string sPath = "", string hPath = "", int moodVal = 3)
     {
         employeeName = name;
         employeePrefabName = prefabName;
@@ -24,6 +25,7 @@ public class EmployeeInventoryItemSaveData
         hairColor = hair ?? Color.white;
         suitPath = sPath;
         hairPath = hPath;
+        mood = moodVal;
     }
 }
 

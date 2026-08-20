@@ -34,6 +34,16 @@
             "roomTypeId": "ContainmentRoom",
             "displayName": "Containment Room",
             "count": 105
+        },
+        {
+            "roomTypeId": "DivisionResearcher",
+            "displayName": "Researcher Room",
+            "count": 0
+        },
+        {
+            "roomTypeId": "DivisionSecurity",
+            "displayName": "Security Room",
+            "count": 1
         }
     ]
 }

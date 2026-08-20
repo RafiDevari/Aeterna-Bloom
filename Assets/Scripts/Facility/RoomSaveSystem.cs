@@ -21,6 +21,7 @@ public class EmployeeSaveData
     public EmployeeDivision division;
     public Color suitColor = Color.white;
     public Color hairColor = Color.white;
+    public int mood = 3;
 }
 
 [System.Serializable]
@@ -382,12 +383,14 @@ public class RoomSaveSystem : MonoBehaviour
                                             var divisionField = nestedType.GetField("division");
                                             var suitColorField = nestedType.GetField("suitColor");
                                             var hairColorField = nestedType.GetField("hairColor");
+                                            var moodField = nestedType.GetField("mood");
 
                                             if (nameField != null) nameField.SetValue(spawnData, empData.employeeName);
                                             if (prefabField != null) prefabField.SetValue(spawnData, empPrefab);
                                             if (divisionField != null) divisionField.SetValue(spawnData, empData.division);
                                             if (suitColorField != null) suitColorField.SetValue(spawnData, empData.suitColor);
                                             if (hairColorField != null) hairColorField.SetValue(spawnData, empData.hairColor);
+                                            if (moodField != null) moodField.SetValue(spawnData, empData.mood);
 
                                             newSpawnList.Add(spawnData);
                                         }
@@ -525,12 +528,14 @@ public class RoomSaveSystem : MonoBehaviour
                             var divisionField = item.GetType().GetField("division");
                             var suitColorField = item.GetType().GetField("suitColor");
                             var hairColorField = item.GetType().GetField("hairColor");
+                            var moodField = item.GetType().GetField("mood");
 
                             string empName = nameField != null ? (string)nameField.GetValue(item) : "";
                             Employee empPrefab = prefabField != null ? (Employee)prefabField.GetValue(item) : null;
                             EmployeeDivision empDiv = divisionField != null ? (EmployeeDivision)divisionField.GetValue(item) : EmployeeDivision.Researcher;
                             Color sColor = suitColorField != null ? (Color)suitColorField.GetValue(item) : Color.white;
                             Color hColor = hairColorField != null ? (Color)hairColorField.GetValue(item) : Color.white;
+                            int eMood = moodField != null ? (int)moodField.GetValue(item) : 3;
 
                             string prefabName = empPrefab != null ? empPrefab.gameObject.name : "";
 
@@ -540,7 +545,8 @@ public class RoomSaveSystem : MonoBehaviour
                                 employeePrefabName = prefabName,
                                 division = empDiv,
                                 suitColor = sColor,
-                                hairColor = hColor
+                                hairColor = hColor,
+                                mood = eMood
                             });
                         }
                     }
