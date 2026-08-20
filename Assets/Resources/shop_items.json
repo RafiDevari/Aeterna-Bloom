@@ -15,7 +15,7 @@
       "category": "Room",
       "price": 150,
       "description": "Standard hallway connection room for facility expansion.",
-      "spritePath": "Sprites/bg room"
+      "spritePath": "Sprites/Room/Hall/Hall"
     },
     {
       "id": "room_lift",
@@ -23,7 +23,7 @@
       "category": "Room",
       "price": 200,
       "description": "Elevator shaft for vertical movement between floors.",
-      "spritePath": "Sprites/bg room"
+      "spritePath": "Sprites/Room/Lift/Lift"
     },
     {
       "id": "room_main",
@@ -31,7 +31,7 @@
       "category": "Room",
       "price": 300,
       "description": "Central hub room for facility management.",
-      "spritePath": "Sprites/bg room"
+      "spritePath": "Sprites/Room/Main/Main"
     },
     {
       "id": "room_botanist",
@@ -39,7 +39,7 @@
       "category": "Room",
       "price": 350,
       "description": "Specialized laboratory room for flora research and botanists.",
-      "spritePath": "Sprites/bg room"
+      "spritePath": "Sprites/Room/Division/Mark/Botanist"
     },
     {
       "id": "room_containment",
@@ -47,7 +47,55 @@
       "category": "Room",
       "price": 500,
       "description": "High security chamber for dangerous specimens.",
-      "spritePath": "Sprites/bg containment unit"
+      "spritePath": "Sprites/Room/Containment/ContainmentRoom"
+    },
+    {
+      "id": "DivisionEngineer",
+      "title": "Engineer Room",
+      "category": "Room",
+      "price": 350,
+      "description": "Specialized division room for engineering.",
+      "spritePath": "Sprites/Room/Division/Mark/Engineer"
+    },
+    {
+      "id": "DivisionMedic",
+      "title": "Medic Room",
+      "category": "Room",
+      "price": 350,
+      "description": "Specialized division room for medical staff.",
+      "spritePath": "Sprites/Room/Division/Mark/Medic"
+    },
+    {
+      "id": "DivisionResearcher",
+      "title": "Researcher Room",
+      "category": "Room",
+      "price": 350,
+      "description": "Specialized division room for researchers.",
+      "spritePath": "Sprites/Room/Division/Mark/Researcher"
+    },
+    {
+      "id": "DivisionSecurity",
+      "title": "Security Room",
+      "category": "Room",
+      "price": 350,
+      "description": "Specialized division room for security personnel.",
+      "spritePath": "Sprites/Room/Division/Mark/Security"
+    },
+    {
+      "id": "ElectricityRoom",
+      "title": "Electricity Room",
+      "category": "Room",
+      "price": 300,
+      "description": "Room dedicated to power management.",
+      "spritePath": "Sprites/Room/ElectricityRoom/ElectricityRoom"
+    },
+    {
+      "id": "StockRoom",
+      "title": "Stock Room",
+      "category": "Room",
+      "price": 250,
+      "description": "Storage room for various supplies.",
+      "spritePath": "Sprites/Room/Stock/Stock"
     },
     {
       "id": "Suit_3",

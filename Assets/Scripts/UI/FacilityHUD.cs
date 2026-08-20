@@ -52,6 +52,7 @@ public class FacilityHUD : MonoBehaviour
 
     private Texture2D whiteTex;
     private bool stylesInitialized;
+    private bool isShowingReport = false;
 
     private Texture2D GetWhiteTexture()
     {
@@ -184,7 +185,14 @@ public class FacilityHUD : MonoBehaviour
 
         if (fac.Energy >= fac.MaxEnergy && fac.MaxEnergy > 0)
         {
-            DrawDayCompletePopup();
+            if (isShowingReport)
+            {
+                DrawDayReportPopup(fac);
+            }
+            else
+            {
+                DrawDayCompletePopup();
+            }
         }
     }
 
@@ -472,6 +480,79 @@ public class FacilityHUD : MonoBehaviour
         if (GUI.Button(new Rect(btnX, btnY, btnW, btnH), "Selesaikan Hari", buttonStyle))
         {
             Debug.Log("Tombol 'Selesaikan Hari' ditekan.");
+            isShowingReport = true;
+        }
+    }
+
+    private void DrawDayReportPopup(Facility fac)
+    {
+        float w = 600f;
+        float h = 450f;
+        float x = (Screen.width - w) / 2f;
+        float y = (Screen.height - h) / 2f;
+
+        Rect popupRect = new Rect(x, y, w, h);
+        
+        DrawRect(popupRect, new Color(0.08f, 0.08f, 0.1f, 0.95f));
+        DrawThickOutline(popupRect, borderGoldColor, 3);
+
+        GUIStyle popupTitleStyle = new GUIStyle(digitalValueStyle)
+        {
+            fontSize = 24,
+            normal = { textColor = new Color(0.9f, 0.9f, 0.9f, 1f) }
+        };
+        GUI.Label(new Rect(x, y + 20f, w, 30f), "LAPORAN HARIAN", popupTitleStyle);
+
+        // Perhitungan Uang
+        float maxEnergy = fac.MaxEnergy;
+        float totalEnergy = fac.Energy;
+        float surplusEnergy = Mathf.Max(0f, totalEnergy - maxEnergy);
+        float money = (maxEnergy * 2f) + (surplusEnergy * 1.1f);
+
+        GUIStyle textStyle = new GUIStyle(labelStyle)
+        {
+            fontSize = 18,
+            alignment = TextAnchor.UpperLeft
+        };
+        
+        float contentX = x + 30f;
+        float contentY = y + 80f;
+        
+        GUI.Label(new Rect(contentX, contentY, w - 60f, 30f), $"Uang yang didapat: {money:F1}", textStyle);
+        
+        contentY += 40f;
+        GUI.Label(new Rect(contentX, contentY, w - 60f, 30f), "Daftar Karyawan Mati:", textStyle);
+        
+        // Tempat untuk list karyawan mati (placeholder)
+        DrawRect(new Rect(contentX, contentY + 30f, w - 60f, 180f), new Color(0.05f, 0.05f, 0.05f, 0.8f));
+        GUI.Label(new Rect(contentX + 10f, contentY + 40f, w - 80f, 30f), "- (Belum ada data / List akan ditampilkan di sini)", labelStyle);
+        
+        // Tombol-tombol di bawah
+        GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 16,
+            fontStyle = FontStyle.Bold
+        };
+        
+        float btnW = 150f;
+        float btnH = 45f;
+        float totalBtnW = (btnW * 3) + 40f; // 3 tombol, margin 20f
+        float startBtnX = x + (w - totalBtnW) / 2f;
+        float btnY = y + h - 70f;
+        
+        if (GUI.Button(new Rect(startBtnX, btnY, btnW, btnH), "Next Day", buttonStyle))
+        {
+            Debug.Log("Next Day ditekan");
+        }
+        
+        if (GUI.Button(new Rect(startBtnX + btnW + 20f, btnY, btnW, btnH), "Restart", buttonStyle))
+        {
+            Debug.Log("Restart ditekan");
+        }
+        
+        if (GUI.Button(new Rect(startBtnX + (btnW * 2) + 40f, btnY, btnW, btnH), "Main Menu", buttonStyle))
+        {
+            Debug.Log("Main Menu ditekan");
         }
     }
 
