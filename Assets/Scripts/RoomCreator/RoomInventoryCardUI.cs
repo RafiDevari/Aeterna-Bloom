@@ -17,6 +17,8 @@ public class RoomInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHandle
 
     private RoomInventoryItemData itemData;
     private RoomCreatorManager manager;
+    private ScrollRect parentScrollRect;
+    private bool isDraggingSelf = false;
 
     public RoomInventoryItemData ItemData => itemData;
 
@@ -24,6 +26,10 @@ public class RoomInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHandle
     {
         itemData = data;
         manager = managerRef;
+        if (parentScrollRect == null)
+        {
+            parentScrollRect = GetComponentInParent<ScrollRect>();
+        }
         if (canvasGroup == null)
         {
             canvasGroup = GetComponent<CanvasGroup>();
@@ -83,17 +89,39 @@ public class RoomInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHandle
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (itemData == null || itemData.count <= 0 || manager == null) return;
+
+        // If drag is mostly horizontal, delegate to parent ScrollRect for scrolling
+        if (parentScrollRect != null && Mathf.Abs(eventData.delta.x) > Mathf.Abs(eventData.delta.y))
+        {
+            isDraggingSelf = false;
+            parentScrollRect.OnBeginDrag(eventData);
+            return;
+        }
+
+        isDraggingSelf = true;
         manager.StartDraggingRoom(itemData, eventData);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (!isDraggingSelf)
+        {
+            if (parentScrollRect != null) parentScrollRect.OnDrag(eventData);
+            return;
+        }
+
         if (itemData == null || itemData.count <= 0 || manager == null) return;
         manager.UpdateDraggingRoom(eventData);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (!isDraggingSelf)
+        {
+            if (parentScrollRect != null) parentScrollRect.OnEndDrag(eventData);
+            return;
+        }
+
         if (itemData == null || itemData.count <= 0 || manager == null) return;
         manager.DropDraggingRoom(eventData);
     }

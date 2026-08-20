@@ -108,22 +108,51 @@ public class RoomCreatorSetup : MonoBehaviour
         titleTmp.alignment = TextAlignmentOptions.Center;
         titleTmp.color = new Color(0.7f, 0.85f, 1f);
 
-        // Container for Cards (Horizontal Layout)
-        GameObject containerObj = new GameObject("CardContainer", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-        containerObj.transform.SetParent(invPanelObj.transform, false);
+        // Container Scroll Rect for scrollability when there are many rooms
+        GameObject scrollObj = new GameObject("CardScrollRect", typeof(RectTransform), typeof(ScrollRect));
+        scrollObj.transform.SetParent(invPanelObj.transform, false);
+        RectTransform scrollRt = scrollObj.GetComponent<RectTransform>();
+        scrollRt.anchorMin = new Vector2(0, 0);
+        scrollRt.anchorMax = new Vector2(1, 1);
+        scrollRt.offsetMin = new Vector2(20, 10);
+        scrollRt.offsetMax = new Vector2(-20, -35);
+
+        ScrollRect scrollRect = scrollObj.GetComponent<ScrollRect>();
+        scrollRect.vertical = false;
+        scrollRect.horizontal = true;
+
+        // Viewport inside Scroll Rect (using RectMask2D for clipping)
+        GameObject viewportObj = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D));
+        viewportObj.transform.SetParent(scrollObj.transform, false);
+        RectTransform viewportRt = viewportObj.GetComponent<RectTransform>();
+        viewportRt.anchorMin = Vector2.zero;
+        viewportRt.anchorMax = Vector2.one;
+        viewportRt.sizeDelta = Vector2.zero;
+
+        scrollRect.viewport = viewportRt;
+
+        // Container for Cards (Horizontal Layout + ContentSizeFitter)
+        GameObject containerObj = new GameObject("CardContainer", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
+        containerObj.transform.SetParent(viewportObj.transform, false);
         RectTransform containerRt = containerObj.GetComponent<RectTransform>();
-        containerRt.anchorMin = new Vector2(0, 0);
-        containerRt.anchorMax = new Vector2(1, 1);
-        containerRt.offsetMin = new Vector2(20, 10);
-        containerRt.offsetMax = new Vector2(-20, -30);
+        containerRt.anchorMin = new Vector2(0, 0.5f);
+        containerRt.anchorMax = new Vector2(0, 0.5f);
+        containerRt.pivot = new Vector2(0, 0.5f);
+        containerRt.anchoredPosition = Vector2.zero;
+        containerRt.sizeDelta = new Vector2(0, 80);
 
         HorizontalLayoutGroup hlg = containerObj.GetComponent<HorizontalLayoutGroup>();
-        hlg.childAlignment = TextAnchor.MiddleCenter;
-        hlg.spacing = 30;
+        hlg.childAlignment = TextAnchor.MiddleLeft;
+        hlg.spacing = 20;
         hlg.childControlWidth = false;
         hlg.childControlHeight = false;
         hlg.childForceExpandWidth = false;
         hlg.childForceExpandHeight = false;
+
+        ContentSizeFitter csf = containerObj.GetComponent<ContentSizeFitter>();
+        csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        scrollRect.content = containerRt;
 
         // 6. Build Card Prefab
         GameObject cardPrefab = CreateCardPrefab();
@@ -462,14 +491,37 @@ public class RoomCreatorSetup : MonoBehaviour
         titleTmp.color = new Color(0.7f, 0.85f, 1f);
         titleTmp.fontStyle = FontStyles.Bold;
 
-        // Vertical List Container
+        // Scroll Container for Left Panel
+        GameObject scrollObj = new GameObject("PlantScrollRect", typeof(RectTransform), typeof(ScrollRect));
+        scrollObj.transform.SetParent(leftPanel.transform, false);
+        RectTransform scrollRt = scrollObj.GetComponent<RectTransform>();
+        scrollRt.anchorMin = Vector2.zero;
+        scrollRt.anchorMax = Vector2.one;
+        scrollRt.offsetMin = new Vector2(15, 15);
+        scrollRt.offsetMax = new Vector2(-15, -55);
+
+        ScrollRect scrollRect = scrollObj.GetComponent<ScrollRect>();
+        scrollRect.vertical = true;
+        scrollRect.horizontal = false;
+
+        GameObject viewportObj = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D));
+        viewportObj.transform.SetParent(scrollObj.transform, false);
+        RectTransform viewportRt = viewportObj.GetComponent<RectTransform>();
+        viewportRt.anchorMin = Vector2.zero;
+        viewportRt.anchorMax = Vector2.one;
+        viewportRt.sizeDelta = Vector2.zero;
+
+        scrollRect.viewport = viewportRt;
+
+        // Vertical List Container inside Viewport
         GameObject listContainer = new GameObject("ListContainer", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-        listContainer.transform.SetParent(leftPanel.transform, false);
+        listContainer.transform.SetParent(viewportObj.transform, false);
         RectTransform listRt = listContainer.GetComponent<RectTransform>();
-        listRt.anchorMin = new Vector2(0, 0);
-        listRt.anchorMax = new Vector2(1, 1);
-        listRt.offsetMin = new Vector2(15, 15);
-        listRt.offsetMax = new Vector2(-15, -55);
+        listRt.anchorMin = new Vector2(0.5f, 1f);
+        listRt.anchorMax = new Vector2(0.5f, 1f);
+        listRt.pivot = new Vector2(0.5f, 1f);
+        listRt.anchoredPosition = Vector2.zero;
+        listRt.sizeDelta = new Vector2(230, 0);
 
         VerticalLayoutGroup vlg = listContainer.GetComponent<VerticalLayoutGroup>();
         vlg.childAlignment = TextAnchor.UpperCenter;
@@ -481,6 +533,8 @@ public class RoomCreatorSetup : MonoBehaviour
 
         ContentSizeFitter csf = listContainer.GetComponent<ContentSizeFitter>();
         csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        scrollRect.content = listRt;
 
         // Spawn Card UI for each plant
         RoomCreatorManager manager = FindFirstObjectByType<RoomCreatorManager>();
@@ -569,18 +623,32 @@ public class PlantInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHandl
     private string plantInstanceId;
     private string plantId;
     private RoomCreatorManager manager;
+    private ScrollRect parentScrollRect;
+    private bool isDraggingSelf = false;
 
     public void Setup(string instanceId, string id, RoomCreatorManager managerRef)
     {
         plantInstanceId = instanceId;
         plantId = id;
         manager = managerRef;
+        if (parentScrollRect == null)
+        {
+            parentScrollRect = GetComponentInParent<ScrollRect>();
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData) {}
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (parentScrollRect != null && Mathf.Abs(eventData.delta.x) > Mathf.Abs(eventData.delta.y))
+        {
+            isDraggingSelf = false;
+            parentScrollRect.OnBeginDrag(eventData);
+            return;
+        }
+
+        isDraggingSelf = true;
         if (manager != null)
         {
             manager.StartDraggingContainmentUnit(plantInstanceId, plantId, eventData);
@@ -589,7 +657,11 @@ public class PlantInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHandl
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (manager != null)
+        if (!isDraggingSelf)
+        {
+            if (parentScrollRect != null) parentScrollRect.OnDrag(eventData);
+        }
+        else if (manager != null)
         {
             manager.UpdateDraggingRoom(eventData);
         }
@@ -597,7 +669,11 @@ public class PlantInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHandl
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (manager != null)
+        if (!isDraggingSelf)
+        {
+            if (parentScrollRect != null) parentScrollRect.OnEndDrag(eventData);
+        }
+        else if (manager != null)
         {
             manager.DropDraggingRoom(eventData);
         }
