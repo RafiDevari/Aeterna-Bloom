@@ -10,6 +10,7 @@ public class ContainmentUnitSaveData
     public string monsterPrefabName;
     public Vector3 localPosition;
     public string plantInstanceId;
+    public float growth;
 }
 
 [System.Serializable]
@@ -20,6 +21,7 @@ public class EmployeeSaveData
     public EmployeeDivision division;
     public Color suitColor = Color.white;
     public Color hairColor = Color.white;
+    public int mood = 3;
 }
 
 [System.Serializable]
@@ -318,10 +320,37 @@ public class RoomSaveSystem : MonoBehaviour
                                         {
                                             field.SetValue(unit, monsterPrefab);
                                         }
-                                        else
+                                        unit.SpawnMonsterFromPrefab(monsterPrefab);
+                                    }
+
+                                    if (unit.Monster != null)
+                                    {
+                                        float initialGrowth = unitData.growth;
+                                        if (initialGrowth <= 0f && !string.IsNullOrEmpty(unitData.plantInstanceId))
                                         {
-                                            unit.SpawnMonsterFromPrefab(monsterPrefab);
+                                            PlantInventoryData invData = null;
+                                            if (PlantInventorySaveSystem.Instance != null)
+                                                invData = PlantInventorySaveSystem.Instance.LoadInventory();
+                                            else
+                                            {
+                                                PlantInventorySaveSystem pSys = FindFirstObjectByType<PlantInventorySaveSystem>();
+                                                if (pSys != null) invData = pSys.LoadInventory();
+                                            }
+
+                                            if (invData != null && invData.plants != null)
+                                            {
+                                                var invPlant = invData.plants.Find(p => p.plantInstanceId == unitData.plantInstanceId);
+                                                if (invPlant != null) initialGrowth = invPlant.growth;
+                                            }
+
+                                            if (initialGrowth <= 0f)
+                                            {
+                                                if (unitData.plantInstanceId == "Room_Unit-A1") initialGrowth = 0.7f;
+                                                else if (unitData.plantInstanceId == "Room_Unit-A2") initialGrowth = 1.2f;
+                                                else if (unitData.plantInstanceId == "Room_Unit-A3") initialGrowth = 1.02f;
+                                            }
                                         }
+                                        unit.Monster.SetGrowth(initialGrowth);
                                     }
                                 }
                             }
@@ -354,12 +383,14 @@ public class RoomSaveSystem : MonoBehaviour
                                             var divisionField = nestedType.GetField("division");
                                             var suitColorField = nestedType.GetField("suitColor");
                                             var hairColorField = nestedType.GetField("hairColor");
+                                            var moodField = nestedType.GetField("mood");
 
                                             if (nameField != null) nameField.SetValue(spawnData, empData.employeeName);
                                             if (prefabField != null) prefabField.SetValue(spawnData, empPrefab);
                                             if (divisionField != null) divisionField.SetValue(spawnData, empData.division);
                                             if (suitColorField != null) suitColorField.SetValue(spawnData, empData.suitColor);
                                             if (hairColorField != null) hairColorField.SetValue(spawnData, empData.hairColor);
+                                            if (moodField != null) moodField.SetValue(spawnData, empData.mood);
 
                                             newSpawnList.Add(spawnData);
                                         }
@@ -424,12 +455,43 @@ public class RoomSaveSystem : MonoBehaviour
                             if (nameParts.Length > 1) instanceId = nameParts[1];
                         }
 
+                        float currentGrowth = 0f;
+                        if (unit.Monster != null)
+                        {
+                            currentGrowth = unit.Monster.Growth;
+                        }
+                        else if (!string.IsNullOrEmpty(instanceId))
+                        {
+                            PlantInventoryData invData = null;
+                            if (PlantInventorySaveSystem.Instance != null)
+                                invData = PlantInventorySaveSystem.Instance.LoadInventory();
+                            else
+                            {
+                                PlantInventorySaveSystem pSys = FindFirstObjectByType<PlantInventorySaveSystem>();
+                                if (pSys != null) invData = pSys.LoadInventory();
+                            }
+
+                            if (invData != null && invData.plants != null)
+                            {
+                                var invPlant = invData.plants.Find(p => p.plantInstanceId == instanceId);
+                                if (invPlant != null) currentGrowth = invPlant.growth;
+                            }
+
+                            if (currentGrowth <= 0f)
+                            {
+                                if (instanceId == "Room_Unit-A1") currentGrowth = 0.7f;
+                                else if (instanceId == "Room_Unit-A2") currentGrowth = 1.2f;
+                                else if (instanceId == "Room_Unit-A3") currentGrowth = 1.02f;
+                            }
+                        }
+
                         var unitData = new ContainmentUnitSaveData
                         {
                             unitName = unit.UnitName,
                             monsterPrefabName = "",
                             localPosition = unit.transform.localPosition,
-                            plantInstanceId = instanceId
+                            plantInstanceId = instanceId,
+                            growth = currentGrowth
                         };
 
                         // Use reflection to get the private monsterPrefab field
@@ -466,12 +528,14 @@ public class RoomSaveSystem : MonoBehaviour
                             var divisionField = item.GetType().GetField("division");
                             var suitColorField = item.GetType().GetField("suitColor");
                             var hairColorField = item.GetType().GetField("hairColor");
+                            var moodField = item.GetType().GetField("mood");
 
                             string empName = nameField != null ? (string)nameField.GetValue(item) : "";
                             Employee empPrefab = prefabField != null ? (Employee)prefabField.GetValue(item) : null;
                             EmployeeDivision empDiv = divisionField != null ? (EmployeeDivision)divisionField.GetValue(item) : EmployeeDivision.Researcher;
                             Color sColor = suitColorField != null ? (Color)suitColorField.GetValue(item) : Color.white;
                             Color hColor = hairColorField != null ? (Color)hairColorField.GetValue(item) : Color.white;
+                            int eMood = moodField != null ? (int)moodField.GetValue(item) : 3;
 
                             string prefabName = empPrefab != null ? empPrefab.gameObject.name : "";
 
@@ -481,7 +545,8 @@ public class RoomSaveSystem : MonoBehaviour
                                 employeePrefabName = prefabName,
                                 division = empDiv,
                                 suitColor = sColor,
-                                hairColor = hColor
+                                hairColor = hColor,
+                                mood = eMood
                             });
                         }
                     }

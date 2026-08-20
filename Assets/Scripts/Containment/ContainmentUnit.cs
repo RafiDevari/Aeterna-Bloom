@@ -103,8 +103,8 @@ public class ContainmentUnit : MonoBehaviour
     {
         EnsureFrontDepth();
 
-        // Spawn monster dari prefab yang di-assign di Inspector
-        if (monsterPrefab != null)
+        // Spawn monster dari prefab yang di-assign di Inspector (hanya jika monster belum di-spawn)
+        if (monsterPrefab != null && monster == null)
             SpawnMonsterFromPrefab(monsterPrefab);
     }
 

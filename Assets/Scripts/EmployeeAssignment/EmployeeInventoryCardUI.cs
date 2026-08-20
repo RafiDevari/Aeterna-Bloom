@@ -56,32 +56,41 @@ public class EmployeeInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHa
         string cleanRole = itemData.employeePrefabName.Replace("Employee", "");
         if (roleText != null)
         {
-            roleText.text = cleanRole;
+            roleText.text = $"{cleanRole} | Mood: {itemData.mood}/5";
         }
+
+        bool isDepressed = itemData.mood <= 1;
 
         // Set card colors depending on the role to make it look gorgeous
         if (cardBackground != null)
         {
-            switch (cleanRole)
+            if (isDepressed)
             {
-                case "Botanist":
-                    cardBackground.color = new Color(0.12f, 0.35f, 0.2f, 0.9f); // Greenish
-                    break;
-                case "Researcher":
-                    cardBackground.color = new Color(0.12f, 0.25f, 0.45f, 0.9f); // Bluish
-                    break;
-                case "Security":
-                    cardBackground.color = new Color(0.45f, 0.15f, 0.15f, 0.9f); // Redish
-                    break;
-                case "Medic":
-                    cardBackground.color = new Color(0.35f, 0.15f, 0.4f, 0.9f); // Purpleish
-                    break;
-                case "Engineer":
-                    cardBackground.color = new Color(0.4f, 0.3f, 0.1f, 0.9f); // Yellow/Orange
-                    break;
-                default:
-                    cardBackground.color = new Color(0.2f, 0.22f, 0.28f, 0.9f); // Default gray
-                    break;
+                cardBackground.color = new Color(0.25f, 0.15f, 0.15f, 0.85f); // Dark depressed red
+            }
+            else
+            {
+                switch (cleanRole)
+                {
+                    case "Botanist":
+                        cardBackground.color = new Color(0.12f, 0.35f, 0.2f, 0.9f); // Greenish
+                        break;
+                    case "Researcher":
+                        cardBackground.color = new Color(0.12f, 0.25f, 0.45f, 0.9f); // Bluish
+                        break;
+                    case "Security":
+                        cardBackground.color = new Color(0.45f, 0.15f, 0.15f, 0.9f); // Redish
+                        break;
+                    case "Medic":
+                        cardBackground.color = new Color(0.35f, 0.15f, 0.4f, 0.9f); // Purpleish
+                        break;
+                    case "Engineer":
+                        cardBackground.color = new Color(0.4f, 0.3f, 0.1f, 0.9f); // Yellow/Orange
+                        break;
+                    default:
+                        cardBackground.color = new Color(0.2f, 0.22f, 0.28f, 0.9f); // Default gray
+                        break;
+                }
             }
         }
 
@@ -91,7 +100,12 @@ public class EmployeeInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHa
 
         if (statusText != null)
         {
-            if (isAssigned)
+            if (isDepressed)
+            {
+                statusText.text = $"DEPRESSED (Mood: {itemData.mood}/5)";
+                statusText.color = new Color(1f, 0.35f, 0.35f); // Bright red
+            }
+            else if (isAssigned)
             {
                 statusText.text = $"Room: {assignedRoomName}";
                 statusText.color = new Color(0.4f, 1f, 0.5f); // Neon green
@@ -103,6 +117,11 @@ public class EmployeeInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHa
             }
         }
 
+        if (mainButton != null)
+        {
+            mainButton.interactable = !isDepressed;
+        }
+
         if (unassignButton != null)
         {
             unassignButton.gameObject.SetActive(isAssigned);
@@ -111,7 +130,7 @@ public class EmployeeInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHa
         // Selection outline highlight
         if (outlineHighlight != null)
         {
-            outlineHighlight.enabled = isSelected;
+            outlineHighlight.enabled = isSelected && !isDepressed;
         }
     }
 
@@ -120,12 +139,14 @@ public class EmployeeInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHa
         isSelected = selected;
         if (outlineHighlight != null)
         {
-            outlineHighlight.enabled = selected;
+            outlineHighlight.enabled = selected && (itemData == null || itemData.mood > 1);
         }
     }
 
     private void OnCardClicked()
     {
+        if (itemData != null && itemData.mood <= 1) return;
+
         if (manager != null)
         {
             manager.SelectEmployeeCard(this);
@@ -142,6 +163,12 @@ public class EmployeeInventoryCardUI : MonoBehaviour, IBeginDragHandler, IDragHa
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (itemData != null && itemData.mood <= 1)
+        {
+            isDraggingSelf = false;
+            if (parentScrollRect != null) parentScrollRect.OnBeginDrag(eventData);
+            return;
+        }
         // If movement is mostly horizontal, scroll the parent list.
         // Otherwise, drag the employee to a room.
         if (Mathf.Abs(eventData.delta.x) > Mathf.Abs(eventData.delta.y))

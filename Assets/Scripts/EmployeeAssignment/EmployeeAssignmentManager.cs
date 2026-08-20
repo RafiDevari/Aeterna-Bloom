@@ -374,6 +374,18 @@ public class EmployeeAssignmentManager : MonoBehaviour
                                         monsterInstance.name = $"Monster_{unitData.monsterPrefabName}";
                                         monsterInstance.transform.localPosition = Vector3.zero;
                                         monsterInstance.transform.localScale = Vector3.one;
+
+                                        MonsterBase mb = monsterInstance.GetComponentInChildren<MonsterBase>(true);
+                                        if (mb != null)
+                                        {
+                                            float g = unitData.growth;
+                                            if (g <= 0f && !string.IsNullOrEmpty(unitData.plantInstanceId) && PlantInventorySaveSystem.Instance != null)
+                                            {
+                                                var inv = PlantInventorySaveSystem.Instance.CurrentData?.plants?.Find(p => p.plantInstanceId == unitData.plantInstanceId);
+                                                if (inv != null) g = inv.growth;
+                                            }
+                                            mb.SetGrowth(g);
+                                        }
                                     }
 
                                     // Strip other MonoBehaviour scripts except ContainmentUnit so we can click it if needed
@@ -440,12 +452,14 @@ public class EmployeeAssignmentManager : MonoBehaviour
                             var divisionField = nestedType.GetField("division");
                             var suitColorField = nestedType.GetField("suitColor");
                             var hairColorField = nestedType.GetField("hairColor");
+                            var moodField = nestedType.GetField("mood");
 
                             if (nameField != null) nameField.SetValue(spawnData, empData.employeeName);
                             if (prefabField != null) prefabField.SetValue(spawnData, empPrefab);
                             if (divisionField != null) divisionField.SetValue(spawnData, empData.division);
                             if (suitColorField != null) suitColorField.SetValue(spawnData, empData.suitColor);
                             if (hairColorField != null) hairColorField.SetValue(spawnData, empData.hairColor);
+                            if (moodField != null) moodField.SetValue(spawnData, empData.mood);
 
                             newSpawnList.Add(spawnData);
 
@@ -611,6 +625,13 @@ public class EmployeeAssignmentManager : MonoBehaviour
         selectedCard = card;
         if (selectedCard != null)
         {
+            if (selectedCard.ItemData != null && selectedCard.ItemData.mood <= 1)
+            {
+                SetStatusMessage($"Employee {selectedCard.ItemData.employeeName} sedang Depressed (Mood: {selectedCard.ItemData.mood}/5)! Tidak dapat dipilih.", isError: true);
+                selectedCard = null;
+                return;
+            }
+
             selectedCard.SetSelected(true);
             SetStatusMessage($"Selected employee: {selectedCard.ItemData.employeeName}. Click a Division Room to assign.");
         }
@@ -661,6 +682,13 @@ public class EmployeeAssignmentManager : MonoBehaviour
 
     private void AssignEmployeeToRoom(EmployeeInventoryItemSaveData empData, DivisionRoom room)
     {
+        if (empData != null && empData.mood <= 1)
+        {
+            SetStatusMessage($"Employee {empData.employeeName} sedang Depressed (Mood: {empData.mood}/5)! Tidak dapat ditugaskan.", isError: true);
+            SelectEmployeeCard(null);
+            return;
+        }
+
         // Remove from old room if already assigned
         if (employeeRoomMap.TryGetValue(empData.employeeName, out DivisionRoom oldRoom))
         {
@@ -771,6 +799,7 @@ public class EmployeeAssignmentManager : MonoBehaviour
                             var divisionField = nestedType.GetField("division");
                             var suitColorField = nestedType.GetField("suitColor");
                             var hairColorField = nestedType.GetField("hairColor");
+                            var moodField = nestedType.GetField("mood");
 
                             if (nameField != null) nameField.SetValue(spawnData, emp.employeeName);
                             if (prefabField != null) prefabField.SetValue(spawnData, empPrefab);
@@ -785,6 +814,7 @@ public class EmployeeAssignmentManager : MonoBehaviour
                             }
                             if (suitColorField != null) suitColorField.SetValue(spawnData, emp.suitColor);
                             if (hairColorField != null) hairColorField.SetValue(spawnData, emp.hairColor);
+                            if (moodField != null) moodField.SetValue(spawnData, emp.mood);
 
                             newSpawnList.Add(spawnData);
                         }
@@ -920,12 +950,14 @@ public class EmployeeAssignmentManager : MonoBehaviour
                             var divisionField = item.GetType().GetField("division");
                             var suitColorField = item.GetType().GetField("suitColor");
                             var hairColorField = item.GetType().GetField("hairColor");
+                            var moodField = item.GetType().GetField("mood");
 
                             string empName = nameField != null ? (string)nameField.GetValue(item) : "";
                             Employee empPrefab = prefabField != null ? (Employee)prefabField.GetValue(item) : null;
                             EmployeeDivision empDiv = divisionField != null ? (EmployeeDivision)divisionField.GetValue(item) : EmployeeDivision.Researcher;
                             Color sColor = suitColorField != null ? (Color)suitColorField.GetValue(item) : Color.white;
                             Color hColor = hairColorField != null ? (Color)hairColorField.GetValue(item) : Color.white;
+                            int eMood = moodField != null ? (int)moodField.GetValue(item) : 3;
 
                             string prefabName = empPrefab != null ? empPrefab.gameObject.name : "";
 
@@ -935,7 +967,8 @@ public class EmployeeAssignmentManager : MonoBehaviour
                                 employeePrefabName = prefabName,
                                 division = empDiv,
                                 suitColor = sColor,
-                                hairColor = hColor
+                                hairColor = hColor,
+                                mood = eMood
                             });
                         }
                     }
@@ -1078,8 +1111,15 @@ public class EmployeeAssignmentManager : MonoBehaviour
 
     public void StartDraggingEmployee(EmployeeInventoryCardUI card, PointerEventData eventData)
     {
+        if (card != null && card.ItemData != null && card.ItemData.mood <= 1)
+        {
+            SetStatusMessage($"Employee {card.ItemData.employeeName} sedang Depressed (Mood: {card.ItemData.mood}/5)! Tidak dapat ditugaskan.", isError: true);
+            return;
+        }
+
         draggedCard = card;
         SelectEmployeeCard(card); // auto select on drag start
+        if (selectedCard == null) return;
         CreateDragPreview(card.ItemData);
         UpdateDraggingEmployee(eventData);
     }

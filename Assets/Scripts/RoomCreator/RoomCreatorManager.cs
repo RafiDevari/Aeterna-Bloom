@@ -1041,12 +1041,14 @@ public class RoomCreatorManager : MonoBehaviour
                             var divisionField = item.GetType().GetField("division");
                             var suitColorField = item.GetType().GetField("suitColor");
                             var hairColorField = item.GetType().GetField("hairColor");
+                            var moodField = item.GetType().GetField("mood");
 
                             string empName = nameField != null ? (string)nameField.GetValue(item) : "";
                             Employee empPrefab = prefabField != null ? (Employee)prefabField.GetValue(item) : null;
                             EmployeeDivision empDiv = divisionField != null ? (EmployeeDivision)divisionField.GetValue(item) : EmployeeDivision.Researcher;
                             Color sColor = suitColorField != null ? (Color)suitColorField.GetValue(item) : Color.white;
                             Color hColor = hairColorField != null ? (Color)hairColorField.GetValue(item) : Color.white;
+                            int eMood = moodField != null ? (int)moodField.GetValue(item) : 3;
 
                             string prefabName = empPrefab != null ? empPrefab.gameObject.name : "";
 
@@ -1056,7 +1058,8 @@ public class RoomCreatorManager : MonoBehaviour
                                 employeePrefabName = prefabName,
                                 division = empDiv,
                                 suitColor = sColor,
-                                hairColor = hColor
+                                hairColor = hColor,
+                                mood = eMood
                             });
                         }
                     }
@@ -1094,12 +1097,51 @@ public class RoomCreatorManager : MonoBehaviour
 
                         Vector3 localPos = roomObj.transform.InverseTransformPoint(cuObj.transform.position);
 
+                        float plantGrowth = 0f;
+                        if (!string.IsNullOrEmpty(instanceId))
+                        {
+                            PlantInventoryData invData = null;
+                            if (PlantInventorySaveSystem.Instance != null)
+                            {
+                                invData = PlantInventorySaveSystem.Instance.LoadInventory();
+                            }
+                            else
+                            {
+                                PlantInventorySaveSystem pSys = FindFirstObjectByType<PlantInventorySaveSystem>();
+                                if (pSys != null)
+                                {
+                                    invData = pSys.LoadInventory();
+                                }
+                                else
+                                {
+                                    GameObject tempObj = new GameObject("TempPlantSaveSys");
+                                    PlantInventorySaveSystem tempSys = tempObj.AddComponent<PlantInventorySaveSystem>();
+                                    invData = tempSys.LoadInventory();
+                                    DestroyImmediate(tempObj);
+                                }
+                            }
+
+                            if (invData != null && invData.plants != null)
+                            {
+                                var invPlant = invData.plants.Find(p => p.plantInstanceId == instanceId);
+                                if (invPlant != null) plantGrowth = invPlant.growth;
+                            }
+
+                            if (plantGrowth <= 0f)
+                            {
+                                if (instanceId == "Room_Unit-A1") plantGrowth = 0.7f;
+                                else if (instanceId == "Room_Unit-A2") plantGrowth = 1.2f;
+                                else if (instanceId == "Room_Unit-A3") plantGrowth = 1.02f;
+                            }
+                        }
+
                         roomCus.Add(new ContainmentUnitSaveData
                         {
                             unitName = "Containment Unit",
                             monsterPrefabName = plantId,
                             localPosition = localPos,
-                            plantInstanceId = instanceId
+                            plantInstanceId = instanceId,
+                            growth = plantGrowth
                         });
                     }
                 }
@@ -1264,12 +1306,14 @@ public class RoomCreatorManager : MonoBehaviour
                                             var divisionField = nestedType.GetField("division");
                                             var suitColorField = nestedType.GetField("suitColor");
                                             var hairColorField = nestedType.GetField("hairColor");
+                                            var moodField = nestedType.GetField("mood");
 
                                             if (nameField != null) nameField.SetValue(spawnData, empData.employeeName);
                                             if (prefabField != null) prefabField.SetValue(spawnData, empPrefab);
                                             if (divisionField != null) divisionField.SetValue(spawnData, empData.division);
                                             if (suitColorField != null) suitColorField.SetValue(spawnData, empData.suitColor);
                                             if (hairColorField != null) hairColorField.SetValue(spawnData, empData.hairColor);
+                                            if (moodField != null) moodField.SetValue(spawnData, empData.mood);
 
                                             newSpawnList.Add(spawnData);
                                         }

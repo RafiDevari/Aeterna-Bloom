@@ -35,6 +35,9 @@ public abstract class DivisionRoom : Room
 
         [Tooltip("Warna rambut employee.")]
         public Color hairColor;
+
+        [Tooltip("Mood awal/tersimpan employee (0-5).")]
+        public int mood;
     }
 
     [Header("Employee Spawn")]
@@ -169,6 +172,11 @@ public abstract class DivisionRoom : Room
 
             // Set division variable from JSON / spawn data
             employee.SetDivision(data.division);
+
+            if (data.mood > 0)
+            {
+                employee.SetMood(data.mood);
+            }
 
             // Maintain native EmployeeDivision from prefab (do not overwrite with room's division)
             employee.AssignDivision(this);

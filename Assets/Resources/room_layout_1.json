@@ -149,7 +149,8 @@
                         "y": -8.616445541381836,
                         "z": -1.0
                     },
-                    "plantInstanceId": "Room_Unit-A2"
+                    "plantInstanceId": "Room_Unit-A2",
+                    "growth": 1.2000000476837159
                 },
                 {
                     "unitName": "Containment Unit",
@@ -159,7 +160,8 @@
                         "y": -8.47917366027832,
                         "z": -1.0
                     },
-                    "plantInstanceId": "Room_Unit-A3"
+                    "plantInstanceId": "Room_Unit-A3",
+                    "growth": 1.0199999809265137
                 }
             ],
             "employeesToSpawn": []
@@ -204,89 +206,22 @@
             "containmentUnits": [],
             "employeesToSpawn": [
                 {
-                    "employeeName": "Rafi",
-                    "employeePrefabName": "EmployeeBotanist",
-                    "division": 1,
+                    "employeeName": "Daniel",
+                    "employeePrefabName": "EmployeeMedic",
+                    "division": 3,
                     "suitColor": {
-                        "r": 1.0,
-                        "g": 1.0,
-                        "b": 1.0,
+                        "r": 0.699999988079071,
+                        "g": 0.4000000059604645,
+                        "b": 0.800000011920929,
                         "a": 1.0
                     },
                     "hairColor": {
-                        "r": 1.0,
-                        "g": 1.0,
-                        "b": 1.0,
-                        "a": 1.0
-                    }
-                },
-                {
-                    "employeeName": "Devari",
-                    "employeePrefabName": "EmployeeBotanist",
-                    "division": 1,
-                    "suitColor": {
-                        "r": 1.0,
-                        "g": 1.0,
-                        "b": 1.0,
-                        "a": 1.0
-                    },
-                    "hairColor": {
-                        "r": 1.0,
-                        "g": 1.0,
-                        "b": 1.0,
-                        "a": 1.0
-                    }
-                },
-                {
-                    "employeeName": "Phoveus",
-                    "employeePrefabName": "EmployeeBotanist",
-                    "division": 1,
-                    "suitColor": {
-                        "r": 1.0,
-                        "g": 1.0,
-                        "b": 1.0,
-                        "a": 1.0
-                    },
-                    "hairColor": {
-                        "r": 1.0,
-                        "g": 1.0,
-                        "b": 1.0,
-                        "a": 1.0
-                    }
-                },
-                {
-                    "employeeName": "Bob",
-                    "employeePrefabName": "EmployeeBotanist",
-                    "division": 1,
-                    "suitColor": {
-                        "r": 0.6000000238418579,
+                        "r": 0.5,
                         "g": 0.30000001192092898,
-                        "b": 0.10000000149011612,
-                        "a": 1.0
-                    },
-                    "hairColor": {
-                        "r": 0.6000000238418579,
-                        "g": 0.30000001192092898,
-                        "b": 0.10000000149011612,
-                        "a": 1.0
-                    }
-                },
-                {
-                    "employeeName": "Alice",
-                    "employeePrefabName": "EmployeeBotanist",
-                    "division": 1,
-                    "suitColor": {
-                        "r": 0.8999999761581421,
-                        "g": 0.20000000298023225,
                         "b": 0.20000000298023225,
                         "a": 1.0
                     },
-                    "hairColor": {
-                        "r": 0.8999999761581421,
-                        "g": 0.20000000298023225,
-                        "b": 0.20000000298023225,
-                        "a": 1.0
-                    }
+                    "mood": 2
                 }
             ]
         },
@@ -336,7 +271,8 @@
                         "y": -8.417402267456055,
                         "z": -1.0
                     },
-                    "plantInstanceId": "Room_Unit-A1"
+                    "plantInstanceId": "Room_Unit-A1",
+                    "growth": 0.699999988079071
                 }
             ],
             "employeesToSpawn": []
