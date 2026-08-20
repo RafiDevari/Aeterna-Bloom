@@ -84,6 +84,21 @@ public class PlantInventorySaveSystem : MonoBehaviour
             currentData = GetDefaultInventoryData();
             SaveInventory(currentData);
         }
+        else
+        {
+            // Auto-upgrade old default stock items if their growth is 0.0f
+            bool updated = false;
+            foreach (var plant in currentData.plants)
+            {
+                if (plant != null && plant.growth <= 0f)
+                {
+                    if (plant.plantInstanceId == "Room_Unit-A1") { plant.growth = 0.7f; updated = true; }
+                    else if (plant.plantInstanceId == "Room_Unit-A2") { plant.growth = 1.2f; updated = true; }
+                    else if (plant.plantInstanceId == "Room_Unit-A3") { plant.growth = 1.02f; updated = true; }
+                }
+            }
+            if (updated) SaveInventory(currentData);
+        }
 
         return currentData;
     }
@@ -158,9 +173,9 @@ public class PlantInventorySaveSystem : MonoBehaviour
         {
             plants = new List<PlantInventoryItemData>
             {
-                new PlantInventoryItemData { plantInstanceId = "Room_Unit-A1", plantId = "Sunny Flower", growth = 0.0f, completedResearchIds = new List<string>() },
-                new PlantInventoryItemData { plantInstanceId = "Room_Unit-A2", plantId = "Sunny Flower", growth = 0.0f, completedResearchIds = new List<string>() },
-                new PlantInventoryItemData { plantInstanceId = "Room_Unit-A3", plantId = "Dandelectric", growth = 0.0f, completedResearchIds = new List<string>() }
+                new PlantInventoryItemData { plantInstanceId = "Room_Unit-A1", plantId = "Sunny Flower", growth = 0.7f, completedResearchIds = new List<string>() },
+                new PlantInventoryItemData { plantInstanceId = "Room_Unit-A2", plantId = "Sunny Flower", growth = 1.2f, completedResearchIds = new List<string>() },
+                new PlantInventoryItemData { plantInstanceId = "Room_Unit-A3", plantId = "Dandelectric", growth = 1.02f, completedResearchIds = new List<string>() }
             }
         };
     }

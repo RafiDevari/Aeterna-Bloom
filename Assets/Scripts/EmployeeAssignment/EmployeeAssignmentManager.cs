@@ -374,6 +374,18 @@ public class EmployeeAssignmentManager : MonoBehaviour
                                         monsterInstance.name = $"Monster_{unitData.monsterPrefabName}";
                                         monsterInstance.transform.localPosition = Vector3.zero;
                                         monsterInstance.transform.localScale = Vector3.one;
+
+                                        MonsterBase mb = monsterInstance.GetComponentInChildren<MonsterBase>(true);
+                                        if (mb != null)
+                                        {
+                                            float g = unitData.growth;
+                                            if (g <= 0f && !string.IsNullOrEmpty(unitData.plantInstanceId) && PlantInventorySaveSystem.Instance != null)
+                                            {
+                                                var inv = PlantInventorySaveSystem.Instance.CurrentData?.plants?.Find(p => p.plantInstanceId == unitData.plantInstanceId);
+                                                if (inv != null) g = inv.growth;
+                                            }
+                                            mb.SetGrowth(g);
+                                        }
                                     }
 
                                     // Strip other MonoBehaviour scripts except ContainmentUnit so we can click it if needed

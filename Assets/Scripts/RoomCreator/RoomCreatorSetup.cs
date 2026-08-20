@@ -525,7 +525,7 @@ public class RoomCreatorSetup : MonoBehaviour
             subRt.offsetMax = new Vector2(-10, 0);
 
             TextMeshProUGUI subTmp = subObj.GetComponent<TextMeshProUGUI>();
-            subTmp.text = isPlaced ? "Status: PLACED" : $"ID: {plant.plantInstanceId}";
+            subTmp.text = isPlaced ? $"Status: PLACED ({plant.growth * 100f:F0}%)" : $"ID: {plant.plantInstanceId} ({plant.growth * 100f:F0}%)";
             subTmp.fontSize = 14;
             subTmp.alignment = TextAlignmentOptions.Left;
             subTmp.color = isPlaced ? new Color(0.5f, 0.8f, 0.5f) : new Color(0.7f, 0.8f, 0.9f);

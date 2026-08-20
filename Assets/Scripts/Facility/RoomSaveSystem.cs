@@ -10,6 +10,7 @@ public class ContainmentUnitSaveData
     public string monsterPrefabName;
     public Vector3 localPosition;
     public string plantInstanceId;
+    public float growth;
 }
 
 [System.Serializable]
@@ -318,10 +319,37 @@ public class RoomSaveSystem : MonoBehaviour
                                         {
                                             field.SetValue(unit, monsterPrefab);
                                         }
-                                        else
+                                        unit.SpawnMonsterFromPrefab(monsterPrefab);
+                                    }
+
+                                    if (unit.Monster != null)
+                                    {
+                                        float initialGrowth = unitData.growth;
+                                        if (initialGrowth <= 0f && !string.IsNullOrEmpty(unitData.plantInstanceId))
                                         {
-                                            unit.SpawnMonsterFromPrefab(monsterPrefab);
+                                            PlantInventoryData invData = null;
+                                            if (PlantInventorySaveSystem.Instance != null)
+                                                invData = PlantInventorySaveSystem.Instance.LoadInventory();
+                                            else
+                                            {
+                                                PlantInventorySaveSystem pSys = FindFirstObjectByType<PlantInventorySaveSystem>();
+                                                if (pSys != null) invData = pSys.LoadInventory();
+                                            }
+
+                                            if (invData != null && invData.plants != null)
+                                            {
+                                                var invPlant = invData.plants.Find(p => p.plantInstanceId == unitData.plantInstanceId);
+                                                if (invPlant != null) initialGrowth = invPlant.growth;
+                                            }
+
+                                            if (initialGrowth <= 0f)
+                                            {
+                                                if (unitData.plantInstanceId == "Room_Unit-A1") initialGrowth = 0.7f;
+                                                else if (unitData.plantInstanceId == "Room_Unit-A2") initialGrowth = 1.2f;
+                                                else if (unitData.plantInstanceId == "Room_Unit-A3") initialGrowth = 1.02f;
+                                            }
                                         }
+                                        unit.Monster.SetGrowth(initialGrowth);
                                     }
                                 }
                             }
@@ -424,12 +452,43 @@ public class RoomSaveSystem : MonoBehaviour
                             if (nameParts.Length > 1) instanceId = nameParts[1];
                         }
 
+                        float currentGrowth = 0f;
+                        if (unit.Monster != null)
+                        {
+                            currentGrowth = unit.Monster.Growth;
+                        }
+                        else if (!string.IsNullOrEmpty(instanceId))
+                        {
+                            PlantInventoryData invData = null;
+                            if (PlantInventorySaveSystem.Instance != null)
+                                invData = PlantInventorySaveSystem.Instance.LoadInventory();
+                            else
+                            {
+                                PlantInventorySaveSystem pSys = FindFirstObjectByType<PlantInventorySaveSystem>();
+                                if (pSys != null) invData = pSys.LoadInventory();
+                            }
+
+                            if (invData != null && invData.plants != null)
+                            {
+                                var invPlant = invData.plants.Find(p => p.plantInstanceId == instanceId);
+                                if (invPlant != null) currentGrowth = invPlant.growth;
+                            }
+
+                            if (currentGrowth <= 0f)
+                            {
+                                if (instanceId == "Room_Unit-A1") currentGrowth = 0.7f;
+                                else if (instanceId == "Room_Unit-A2") currentGrowth = 1.2f;
+                                else if (instanceId == "Room_Unit-A3") currentGrowth = 1.02f;
+                            }
+                        }
+
                         var unitData = new ContainmentUnitSaveData
                         {
                             unitName = unit.UnitName,
                             monsterPrefabName = "",
                             localPosition = unit.transform.localPosition,
-                            plantInstanceId = instanceId
+                            plantInstanceId = instanceId,
+                            growth = currentGrowth
                         };
 
                         // Use reflection to get the private monsterPrefab field

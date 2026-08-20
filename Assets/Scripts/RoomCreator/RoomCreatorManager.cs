@@ -1094,12 +1094,51 @@ public class RoomCreatorManager : MonoBehaviour
 
                         Vector3 localPos = roomObj.transform.InverseTransformPoint(cuObj.transform.position);
 
+                        float plantGrowth = 0f;
+                        if (!string.IsNullOrEmpty(instanceId))
+                        {
+                            PlantInventoryData invData = null;
+                            if (PlantInventorySaveSystem.Instance != null)
+                            {
+                                invData = PlantInventorySaveSystem.Instance.LoadInventory();
+                            }
+                            else
+                            {
+                                PlantInventorySaveSystem pSys = FindFirstObjectByType<PlantInventorySaveSystem>();
+                                if (pSys != null)
+                                {
+                                    invData = pSys.LoadInventory();
+                                }
+                                else
+                                {
+                                    GameObject tempObj = new GameObject("TempPlantSaveSys");
+                                    PlantInventorySaveSystem tempSys = tempObj.AddComponent<PlantInventorySaveSystem>();
+                                    invData = tempSys.LoadInventory();
+                                    DestroyImmediate(tempObj);
+                                }
+                            }
+
+                            if (invData != null && invData.plants != null)
+                            {
+                                var invPlant = invData.plants.Find(p => p.plantInstanceId == instanceId);
+                                if (invPlant != null) plantGrowth = invPlant.growth;
+                            }
+
+                            if (plantGrowth <= 0f)
+                            {
+                                if (instanceId == "Room_Unit-A1") plantGrowth = 0.7f;
+                                else if (instanceId == "Room_Unit-A2") plantGrowth = 1.2f;
+                                else if (instanceId == "Room_Unit-A3") plantGrowth = 1.02f;
+                            }
+                        }
+
                         roomCus.Add(new ContainmentUnitSaveData
                         {
                             unitName = "Containment Unit",
                             monsterPrefabName = plantId,
                             localPosition = localPos,
-                            plantInstanceId = instanceId
+                            plantInstanceId = instanceId,
+                            growth = plantGrowth
                         });
                     }
                 }
