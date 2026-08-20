@@ -1,5 +1,7 @@
 {
-    "money": 330,
+    "money": 230,
     "day": 5,
-    "purchasedItemIds": []
+    "purchasedItemIds": [
+        "plant_sunny_flower"
+    ]
 }

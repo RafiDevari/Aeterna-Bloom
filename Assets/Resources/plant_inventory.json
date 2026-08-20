@@ -3,19 +3,25 @@
         {
             "plantInstanceId": "Room_Unit-A1",
             "plantId": "Sunny Flower",
-            "growth": 0.7,
+            "growth": 0.699999988079071,
             "completedResearchIds": []
         },
         {
             "plantInstanceId": "Room_Unit-A2",
             "plantId": "Sunny Flower",
-            "growth": 1.2,
+            "growth": 1.2000000476837159,
             "completedResearchIds": []
         },
         {
             "plantInstanceId": "Room_Unit-A3",
             "plantId": "Dandelectric",
-            "growth": 1.02,
+            "growth": 1.0199999809265137,
+            "completedResearchIds": []
+        },
+        {
+            "plantInstanceId": "Room_Unit-A4",
+            "plantId": "Sunny Flower",
+            "growth": 0.0,
             "completedResearchIds": []
         }
     ]
