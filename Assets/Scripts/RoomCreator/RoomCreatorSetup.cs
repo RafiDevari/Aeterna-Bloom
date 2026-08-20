@@ -139,7 +139,7 @@ public class RoomCreatorSetup : MonoBehaviour
         confirmRt.anchorMax = new Vector2(0.5f, 0.5f);
         confirmRt.pivot = new Vector2(0.5f, 0.5f);
         confirmRt.anchoredPosition = new Vector2(0, -180);
-        confirmRt.sizeDelta = new Vector2(360, 110);
+        confirmRt.sizeDelta = new Vector2(510, 110);
 
         Image confirmImg = confirmPanelObj.GetComponent<Image>();
         confirmImg.color = new Color(0.05f, 0.07f, 0.1f, 0.92f);
@@ -154,17 +154,21 @@ public class RoomCreatorSetup : MonoBehaviour
 
         HorizontalLayoutGroup confirmHlg = btnContainer.GetComponent<HorizontalLayoutGroup>();
         confirmHlg.childAlignment = TextAnchor.MiddleCenter;
-        confirmHlg.spacing = 20;
+        confirmHlg.spacing = 15;
         confirmHlg.childControlWidth = false;
         confirmHlg.childControlHeight = false;
 
         // Checklist Button (✔)
-        GameObject checkBtnObj = CreateButton("ChecklistBtn", btnContainer.transform, "✔ Checklist", new Color(0.15f, 0.65f, 0.25f), new Vector2(140, 50));
+        GameObject checkBtnObj = CreateButton("ChecklistBtn", btnContainer.transform, "✔ Checklist", new Color(0.15f, 0.65f, 0.25f), new Vector2(130, 48));
         Button checklistBtn = checkBtnObj.GetComponent<Button>();
 
         // Cancel Button (✖)
-        GameObject cancelBtnObj = CreateButton("CancelBtn", btnContainer.transform, "✖ Cancel", new Color(0.8f, 0.2f, 0.2f), new Vector2(140, 50));
+        GameObject cancelBtnObj = CreateButton("CancelBtn", btnContainer.transform, "✖ Cancel", new Color(0.8f, 0.2f, 0.2f), new Vector2(130, 48));
         Button cancelBtn = cancelBtnObj.GetComponent<Button>();
+
+        // Delete Room Button (🗑️)
+        GameObject deleteBtnObj = CreateButton("DeleteBtn", btnContainer.transform, "🗑️ Hapus Room", new Color(0.9f, 0.45f, 0.1f), new Vector2(140, 48));
+        Button deleteBtn = deleteBtnObj.GetComponent<Button>();
 
         // Warning Text in Confirmation Panel
         GameObject warnTextObj = new GameObject("WarningText", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -206,6 +210,26 @@ public class RoomCreatorSetup : MonoBehaviour
         testRt.anchoredPosition = new Vector2(-20, -20);
         Button testBtn = testBtnObj.GetComponent<Button>();
 
+        // Global Warning/Notification Text for Room Creator (Top Center)
+        Transform existingGlobalStatus = canvas.transform.Find("GlobalStatusText");
+        if (existingGlobalStatus != null) DestroyImmediate(existingGlobalStatus.gameObject);
+
+        GameObject globalStatusObj = new GameObject("GlobalStatusText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        globalStatusObj.transform.SetParent(canvas.transform, false);
+        RectTransform gsRt = globalStatusObj.GetComponent<RectTransform>();
+        gsRt.anchorMin = new Vector2(0.5f, 1f);
+        gsRt.anchorMax = new Vector2(0.5f, 1f);
+        gsRt.pivot = new Vector2(0.5f, 1f);
+        gsRt.anchoredPosition = new Vector2(0, -25);
+        gsRt.sizeDelta = new Vector2(1000, 45);
+
+        TextMeshProUGUI gsTmp = globalStatusObj.GetComponent<TextMeshProUGUI>();
+        gsTmp.text = "";
+        gsTmp.fontSize = 18;
+        gsTmp.alignment = TextAlignmentOptions.Center;
+        gsTmp.color = new Color(1f, 0.35f, 0.35f);
+        gsTmp.fontStyle = FontStyles.Bold;
+
         // 9. Find Prefabs dynamically from Assets/Prefabs/Rooms/
         System.Collections.Generic.List<GameObject> allRoomPrefabs = FindAllRoomPrefabs();
 
@@ -215,10 +239,12 @@ public class RoomCreatorSetup : MonoBehaviour
         SetFieldValue(manager, "confirmationPanel", confirmPanelObj);
         SetFieldValue(manager, "checklistButton", checklistBtn);
         SetFieldValue(manager, "cancelButton", cancelBtn);
+        SetFieldValue(manager, "deleteButton", deleteBtn);
         SetFieldValue(manager, "saveButton", null);
         SetFieldValue(manager, "testPlayButton", testBtn);
         SetFieldValue(manager, "resetButton", resetBtn);
         SetFieldValue(manager, "statusMessageText", warnTmp);
+        SetFieldValue(manager, "globalStatusText", gsTmp);
         SetFieldValue(manager, "roomPrefabs", allRoomPrefabs);
 
         manager.EnsureDefaultInventory();

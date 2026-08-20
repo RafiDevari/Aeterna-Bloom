@@ -174,7 +174,8 @@ public class RoomPopup : PopupBase
                 if (EmployeeSelectPopup.Instance != null)
                 {
                     EmployeeSelectPopup.Instance.Open(
-                        employee => employee.GoFixElectricity(er)
+                        employee => employee.GoFixElectricity(er),
+                        typeof(DivisionEngineer)
                     );
                 }
                 Close();

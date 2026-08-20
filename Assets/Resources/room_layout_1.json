@@ -7,8 +7,8 @@
             "roomType": "HallRoom",
             "roomName": "Room",
             "position": {
-                "x": -9.92316722869873,
-                "y": -20.134197235107423,
+                "x": -52.12590408325195,
+                "y": -24.41299057006836,
                 "z": 0.0
             },
             "scale": {
@@ -27,8 +27,48 @@
             "roomType": "MainRoom",
             "roomName": "Room",
             "position": {
-                "x": -20.723167419433595,
-                "y": -20.188196182250978,
+                "x": -62.925907135009769,
+                "y": -24.41299057006836,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "Lift",
+            "roomName": "Lift",
+            "position": {
+                "x": -62.9259033203125,
+                "y": -10.228991508483887,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "MainRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -62.9259033203125,
+                "y": -2.8129916191101076,
                 "z": 0.0
             },
             "scale": {
@@ -47,8 +87,89 @@
             "roomType": "HallRoom",
             "roomName": "Room",
             "position": {
-                "x": -31.52316665649414,
-                "y": -20.13419532775879,
+                "x": -52.12590026855469,
+                "y": -2.8129916191101076,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "ElectricityRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -41.325897216796878,
+                "y": 0.5710082054138184,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "ContainmentRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -30.52590560913086,
+                "y": -15.627233505249024,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 0.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [
+                {
+                    "unitName": "Containment Unit",
+                    "monsterPrefabName": "Sunny Flower",
+                    "localPosition": {
+                        "x": -9.867107391357422,
+                        "y": -8.616445541381836,
+                        "z": -1.0
+                    },
+                    "plantInstanceId": "Room_Unit-A2"
+                },
+                {
+                    "unitName": "Containment Unit",
+                    "monsterPrefabName": "Dandelectric",
+                    "localPosition": {
+                        "x": 3.1745033264160158,
+                        "y": -8.47917366027832,
+                        "z": -1.0
+                    },
+                    "plantInstanceId": "Room_Unit-A3"
+                }
+            ],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "StockRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -73.72590637207031,
+                "y": -21.02899169921875,
                 "z": 0.0
             },
             "scale": {
@@ -67,8 +188,8 @@
             "roomType": "DivisionBotanist",
             "roomName": "Botanist Room",
             "position": {
-                "x": -42.32316970825195,
-                "y": -20.188196182250978,
+                "x": -84.52590942382813,
+                "y": -24.41299057006836,
                 "z": 0.0
             },
             "scale": {
@@ -82,6 +203,57 @@
             "isSterilizing": false,
             "containmentUnits": [],
             "employeesToSpawn": [
+                {
+                    "employeeName": "Rafi",
+                    "employeePrefabName": "EmployeeBotanist",
+                    "division": 1,
+                    "suitColor": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "hairColor": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                },
+                {
+                    "employeeName": "Devari",
+                    "employeePrefabName": "EmployeeBotanist",
+                    "division": 1,
+                    "suitColor": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "hairColor": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                },
+                {
+                    "employeeName": "Phoveus",
+                    "employeePrefabName": "EmployeeBotanist",
+                    "division": 1,
+                    "suitColor": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    },
+                    "hairColor": {
+                        "r": 1.0,
+                        "g": 1.0,
+                        "b": 1.0,
+                        "a": 1.0
+                    }
+                },
                 {
                     "employeeName": "Bob",
                     "employeePrefabName": "EmployeeBotanist",
@@ -119,11 +291,31 @@
             ]
         },
         {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -95.32591247558594,
+                "y": -24.41299057006836,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
             "roomType": "ContainmentRoom",
             "roomName": "Room",
             "position": {
-                "x": 11.676831245422364,
-                "y": -11.402440071105957,
+                "x": -116.92591094970703,
+                "y": -15.627233505249024,
                 "z": 0.0
             },
             "scale": {
@@ -140,13 +332,153 @@
                     "unitName": "Containment Unit",
                     "monsterPrefabName": "Sunny Flower",
                     "localPosition": {
-                        "x": -7.219513893127441,
-                        "y": -8.268290519714356,
-                        "z": 0.0
+                        "x": -9.884284973144532,
+                        "y": -8.417402267456055,
+                        "z": -1.0
                     },
-                    "plantInstanceId": "Room_Unit-A2"
+                    "plantInstanceId": "Room_Unit-A1"
                 }
             ],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -8.925904273986817,
+                "y": -24.412988662719728,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "MainRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 1.874096393585205,
+                "y": -24.412986755371095,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "Lift",
+            "roomName": "Lift",
+            "position": {
+                "x": 1.874096393585205,
+                "y": -10.228986740112305,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "Lift",
+            "roomName": "Lift",
+            "position": {
+                "x": 1.874096393585205,
+                "y": 4.171012878417969,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "MainRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 1.874096393585205,
+                "y": 11.587013244628907,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": -8.9259033203125,
+                "y": 11.587013244628907,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
+            "employeesToSpawn": []
+        },
+        {
+            "roomType": "HallRoom",
+            "roomName": "Room",
+            "position": {
+                "x": 12.674095153808594,
+                "y": 11.587013244628907,
+                "z": 0.0
+            },
+            "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "temperature": 20.0,
+            "isLocked": false,
+            "isPoisoned": false,
+            "isSterilizing": false,
+            "containmentUnits": [],
             "employeesToSpawn": []
         }
     ]

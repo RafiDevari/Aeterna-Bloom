@@ -1354,18 +1354,18 @@ PrefabInstance:
     - target: {fileID: -2153807791028940902, guid: e8ab0b0501a72214d9a85c9156c37453, type: 3}
       propertyPath: employeesToSpawn.Array.data[0].employeePrefab
       value: 
-      objectReference: {fileID: -1247808099591183380, guid: 8a04dc67ae7b6614c853db19a01209ac, type: 3}
+      objectReference: {fileID: -2306319966245919236, guid: 42a0be65b9d66384d8fde2a015653dfa, type: 3}
     - target: {fileID: 4743545235859033521, guid: e8ab0b0501a72214d9a85c9156c37453, type: 3}
       propertyPath: m_Name
       value: Prefab_DivisionEngineer
       objectReference: {fileID: 0}
     - target: {fileID: 5001955188625345748, guid: e8ab0b0501a72214d9a85c9156c37453, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 91.53
+      value: 102.16
       objectReference: {fileID: 0}
     - target: {fileID: 5001955188625345748, guid: e8ab0b0501a72214d9a85c9156c37453, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -18.939999
+      value: 23.9
       objectReference: {fileID: 0}
     - target: {fileID: 5001955188625345748, guid: e8ab0b0501a72214d9a85c9156c37453, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5852,11 +5852,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5001955188625345748, guid: b2ceaefee791ffb4791005fdc6a9af7e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 102.32031
+      value: 91.35
       objectReference: {fileID: 0}
     - target: {fileID: 5001955188625345748, guid: b2ceaefee791ffb4791005fdc6a9af7e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -18.97102
+      value: -18.92
       objectReference: {fileID: 0}
     - target: {fileID: 5001955188625345748, guid: b2ceaefee791ffb4791005fdc6a9af7e, type: 3}
       propertyPath: m_LocalPosition.z

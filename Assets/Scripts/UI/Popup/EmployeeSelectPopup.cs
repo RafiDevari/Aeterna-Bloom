@@ -105,10 +105,13 @@ public class EmployeeSelectPopup : PopupBase
         if (priorityDivisionType != null)
         {
             System.Type checkType = priorityDivisionType;
-            if (checkType == typeof(EmployeeSecurity))
-            {
-                checkType = typeof(DivisionSecurity);
-            }
+            if (checkType == typeof(EmployeeSecurity)) checkType = typeof(DivisionSecurity);
+            else if (checkType == typeof(EmployeeEngineer)) checkType = typeof(DivisionEngineer);
+            else if (checkType == typeof(EmployeeBotanist)) checkType = typeof(DivisionBotanist);
+            else if (checkType == typeof(EmployeeResearcher)) checkType = typeof(DivisionResearcher);
+            else if (checkType == typeof(EmployeeMedic)) checkType = typeof(DivisionMedic);
+            else if (checkType == typeof(EmployeeClerk)) checkType = typeof(DivisionClerk);
+
             rooms = rooms.OrderBy(room => room.GetType() == checkType ? 0 : 1);
         }
 
