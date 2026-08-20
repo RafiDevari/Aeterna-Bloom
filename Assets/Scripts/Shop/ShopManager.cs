@@ -178,6 +178,16 @@ public class ShopManager : MonoBehaviour
             if (!string.IsNullOrEmpty(item.spritePath))
             {
                 itemSprite = Resources.Load<Sprite>(item.spritePath);
+#if UNITY_EDITOR
+                if (itemSprite == null)
+                {
+                    itemSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/" + item.spritePath + ".png");
+                }
+                if (itemSprite == null)
+                {
+                    itemSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/" + item.spritePath + ".jpg");
+                }
+#endif
             }
 
             if (itemSprite != null)
