@@ -40,16 +40,22 @@ public static class RoomPathfinder
         }
     }
 
-    private static List<RoomPart> CollectParts(bool canEnterLockedRooms = false)
+    private static List<RoomPart> CollectParts(bool canEnterLockedRooms = false, bool includeDisabledLifts = false)
     {
         var parts = new List<RoomPart>();
 
         if (Facility.Instance == null)
             return parts;
 
+        bool isBlackout = Facility.Instance.IsBlackout;
+
         foreach (Room room in Facility.Instance.Rooms)
         {
             if (room == null || (!canEnterLockedRooms && room.IsLocked))
+                continue;
+
+            // Saat mati lampu (Blackout), Lift tidak dialiri listrik sehingga TIDAK DAPAT DILEWATI
+            if (!includeDisabledLifts && isBlackout && room is Lift)
                 continue;
 
             foreach (Bounds bounds in room.CollisionBounds)
@@ -111,7 +117,7 @@ public static class RoomPathfinder
     /// </summary>
     public static Room FindRoomAt(Vector3 worldPosition)
     {
-        var parts = CollectParts(true);
+        var parts = CollectParts(canEnterLockedRooms: true, includeDisabledLifts: true);
         return TryFindPartAt(parts, worldPosition, out int idx) ? parts[idx].room : null;
     }
 

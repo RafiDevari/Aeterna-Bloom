@@ -41,7 +41,7 @@ public abstract class Room : MonoBehaviour
     public System.Action<bool> OnPoisonChanged;
     public System.Action<bool> OnSterilizeChanged;
 
-    private Color originalColor = Color.white;
+    protected Color originalColor = Color.white;
 
     public string RoomName
     {
