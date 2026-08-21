@@ -482,6 +482,12 @@ public partial class Employee : MonoBehaviour
 
     private void Update()
     {
+        if (hp <= 0 && currentState != EmployeeState.Dead)
+        {
+            Die();
+            return;
+        }
+
         if (currentState == EmployeeState.Dead)
             return;
 

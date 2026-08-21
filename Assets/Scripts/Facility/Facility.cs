@@ -278,6 +278,37 @@ public class Facility : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Menghitung jumlah employee yang masih hidup di facility saat ini.
+    /// </summary>
+    public int LivingEmployeesCount
+    {
+        get
+        {
+            var list = (employees != null && employees.Count > 0)
+                ? employees.Where(e => e != null).ToList()
+                : FindObjectsByType<Employee>(FindObjectsSortMode.None).ToList();
+
+            return list.Count(e => e.CurrentState != EmployeeState.Dead && e.Hp > 0);
+        }
+    }
+
+    /// <summary>
+    /// Mengecek apakah semua employee telah gugur (Lose Condition).
+    /// </summary>
+    public bool IsAllEmployeesDead
+    {
+        get
+        {
+            var list = (employees != null && employees.Count > 0)
+                ? employees.Where(e => e != null).ToList()
+                : FindObjectsByType<Employee>(FindObjectsSortMode.None).ToList();
+
+            if (list.Count == 0) return false;
+            return list.All(e => e.CurrentState == EmployeeState.Dead || e.Hp <= 0);
+        }
+    }
+
     public StockRoom FindNearestStockRoom(Vector3 fromPosition)
     {
         return Rooms
