@@ -126,32 +126,39 @@ public class ShopSetup : MonoBehaviour
         GameObject categoryBarObj = new GameObject("CategoryBar", typeof(RectTransform));
         categoryBarObj.transform.SetParent(uiRoot.transform, false);
         RectTransform catBarRt = categoryBarObj.GetComponent<RectTransform>();
-        catBarRt.anchorMin = new Vector2(0.25f, 0.80f);
-        catBarRt.anchorMax = new Vector2(0.75f, 0.89f);
+        catBarRt.anchorMin = new Vector2(0.18f, 0.80f);
+        catBarRt.anchorMax = new Vector2(0.82f, 0.89f);
         catBarRt.offsetMin = Vector2.zero;
         catBarRt.offsetMax = Vector2.zero;
 
-        // Category Buttons (Seed, Room, Accessory)
-        GameObject seedBtnObj = CreateButton("SeedCategoryButton", categoryBarObj.transform, "SEED", 22, new Color(0.2f, 0.6f, 1f));
+        // Category Buttons (Seed, Room, Accessory, Upgrade)
+        GameObject seedBtnObj = CreateButton("SeedCategoryButton", categoryBarObj.transform, "SEED", 20, new Color(0.2f, 0.6f, 1f));
         RectTransform seedRt = seedBtnObj.GetComponent<RectTransform>();
-        seedRt.anchorMin = new Vector2(0.0f, 0.1f);
-        seedRt.anchorMax = new Vector2(0.31f, 0.9f);
+        seedRt.anchorMin = new Vector2(0.00f, 0.1f);
+        seedRt.anchorMax = new Vector2(0.23f, 0.9f);
         seedRt.offsetMin = Vector2.zero;
         seedRt.offsetMax = Vector2.zero;
 
-        GameObject roomBtnObj = CreateButton("RoomCategoryButton", categoryBarObj.transform, "ROOM", 22, new Color(0.2f, 0.25f, 0.35f));
+        GameObject roomBtnObj = CreateButton("RoomCategoryButton", categoryBarObj.transform, "ROOM", 20, new Color(0.2f, 0.25f, 0.35f));
         RectTransform roomRt = roomBtnObj.GetComponent<RectTransform>();
-        roomRt.anchorMin = new Vector2(0.34f, 0.1f);
-        roomRt.anchorMax = new Vector2(0.65f, 0.9f);
+        roomRt.anchorMin = new Vector2(0.25f, 0.1f);
+        roomRt.anchorMax = new Vector2(0.48f, 0.9f);
         roomRt.offsetMin = Vector2.zero;
         roomRt.offsetMax = Vector2.zero;
 
-        GameObject accBtnObj = CreateButton("AccessoryCategoryButton", categoryBarObj.transform, "ACCESSORY", 22, new Color(0.2f, 0.25f, 0.35f));
+        GameObject accBtnObj = CreateButton("AccessoryCategoryButton", categoryBarObj.transform, "ACCESSORY", 20, new Color(0.2f, 0.25f, 0.35f));
         RectTransform accRt = accBtnObj.GetComponent<RectTransform>();
-        accRt.anchorMin = new Vector2(0.68f, 0.1f);
-        accRt.anchorMax = new Vector2(1.0f, 0.9f);
+        accRt.anchorMin = new Vector2(0.50f, 0.1f);
+        accRt.anchorMax = new Vector2(0.73f, 0.9f);
         accRt.offsetMin = Vector2.zero;
         accRt.offsetMax = Vector2.zero;
+
+        GameObject upgradeBtnObj = CreateButton("UpgradeCategoryButton", categoryBarObj.transform, "UPGRADE", 20, new Color(0.2f, 0.25f, 0.35f));
+        RectTransform upgradeRt = upgradeBtnObj.GetComponent<RectTransform>();
+        upgradeRt.anchorMin = new Vector2(0.75f, 0.1f);
+        upgradeRt.anchorMax = new Vector2(0.98f, 0.9f);
+        upgradeRt.offsetMin = Vector2.zero;
+        upgradeRt.offsetMax = Vector2.zero;
 
         // --- CAROUSEL MAIN CONTENT AREA ---
         GameObject carouselAreaObj = new GameObject("CarouselArea", typeof(RectTransform));
@@ -357,10 +364,12 @@ public class ShopSetup : MonoBehaviour
         mgrSo.FindProperty("seedCategoryButton").objectReferenceValue = seedBtnObj.GetComponent<Button>();
         mgrSo.FindProperty("roomCategoryButton").objectReferenceValue = roomBtnObj.GetComponent<Button>();
         mgrSo.FindProperty("accessoryCategoryButton").objectReferenceValue = accBtnObj.GetComponent<Button>();
+        mgrSo.FindProperty("upgradeCategoryButton").objectReferenceValue = upgradeBtnObj.GetComponent<Button>();
 
         mgrSo.FindProperty("seedButtonBg").objectReferenceValue = seedBtnObj.GetComponent<Image>();
         mgrSo.FindProperty("roomButtonBg").objectReferenceValue = roomBtnObj.GetComponent<Image>();
         mgrSo.FindProperty("accessoryButtonBg").objectReferenceValue = accBtnObj.GetComponent<Image>();
+        mgrSo.FindProperty("upgradeButtonBg").objectReferenceValue = upgradeBtnObj.GetComponent<Image>();
 
         mgrSo.FindProperty("prevButton").objectReferenceValue = prevBtnObj.GetComponent<Button>();
         mgrSo.FindProperty("nextButton").objectReferenceValue = nextBtnObj.GetComponent<Button>();

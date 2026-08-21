@@ -37,7 +37,7 @@ public class ShopConfirmationPopup : MonoBehaviour
         }
     }
 
-    public void Show(ShopItemData item, Action onConfirm, Action onCancel = null)
+    public void Show(ShopItemData item, int actualPrice, Action onConfirm, Action onCancel = null)
     {
         if (item == null) return;
 
@@ -59,7 +59,7 @@ public class ShopConfirmationPopup : MonoBehaviour
 
         if (priceText != null)
         {
-            priceText.text = $"{item.price} Gold";
+            priceText.text = $"{actualPrice} Gold";
         }
 
         if (itemPreviewImage != null)
@@ -79,6 +79,11 @@ public class ShopConfirmationPopup : MonoBehaviour
             popupContainer.SetActive(true);
         }
         gameObject.SetActive(true);
+    }
+
+    public void Show(ShopItemData item, Action onConfirm, Action onCancel = null)
+    {
+        Show(item, item != null ? item.price : 0, onConfirm, onCancel);
     }
 
     public void Hide()

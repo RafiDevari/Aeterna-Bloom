@@ -112,6 +112,14 @@
       "price": 120,
       "description": "Modern aesthetic hairstyle for staff.",
       "spritePath": "Sprites/Employee/Hair/Hair_3"
+    },
+    {
+      "id": "upgrade_electricity",
+      "title": "Electricity Level",
+      "category": "Upgrade",
+      "price": 400,
+      "description": "Increases max electricity capacity (+50 max capacity per level).",
+      "spritePath": "Sprites/Room/ElectricityRoom/ElectricityRoom"
     }
   ]
 }

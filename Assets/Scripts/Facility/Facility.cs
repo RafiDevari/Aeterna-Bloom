@@ -54,7 +54,14 @@ public class Facility : MonoBehaviour
     private float blackoutTimer = 0f;
 
     public bool IsBlackout => isBlackout;
-    public float MaxElectricity => maxElectricity;
+    public float MaxElectricity
+    {
+        get
+        {
+            RecalculateMaxElectricity();
+            return maxElectricity;
+        }
+    }
     public float MaxEnergy
     {
         get
@@ -62,6 +69,12 @@ public class Facility : MonoBehaviour
             RecalculateMaxEnergy();
             return maxEnergy;
         }
+    }
+
+    public void RecalculateMaxElectricity()
+    {
+        int level = (GameSaveSystem.Instance != null) ? GameSaveSystem.Instance.ElectricityLevel : 1;
+        maxElectricity = 100f + ((level - 1) * 50f);
     }
 
     public void RecalculateMaxEnergy()
@@ -133,17 +146,21 @@ public class Facility : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         RecalculateMaxEnergy();
+        RecalculateMaxElectricity();
     }
 
     private void OnEnable()
     {
         GameSaveSystem.OnDayChanged += HandleDayChanged;
+        GameSaveSystem.OnElectricityLevelChanged += HandleElectricityLevelChanged;
         RecalculateMaxEnergy();
+        RecalculateMaxElectricity();
     }
 
     private void OnDisable()
     {
         GameSaveSystem.OnDayChanged -= HandleDayChanged;
+        GameSaveSystem.OnElectricityLevelChanged -= HandleElectricityLevelChanged;
     }
 
     private void HandleDayChanged(int newDay)
@@ -153,16 +170,25 @@ public class Facility : MonoBehaviour
         OnEnergyChanged?.Invoke(energy);
     }
 
+    private void HandleElectricityLevelChanged(int newLevel)
+    {
+        RecalculateMaxElectricity();
+        OnElectricityChanged?.Invoke(Electricity);
+        CheckBlackoutTrigger();
+    }
+
 #if UNITY_EDITOR
     private void OnValidate()
     {
         RecalculateMaxEnergy();
+        RecalculateMaxElectricity();
     }
 #endif
 
     private void Start()
     {
         RecalculateMaxEnergy();
+        RecalculateMaxElectricity();
         foreach (var room in rooms)
         {
             if (room != null)
