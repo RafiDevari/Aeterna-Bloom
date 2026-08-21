@@ -14,9 +14,11 @@ public partial class Employee
         float baseDuration = 30f; // Durasi sterilize dasar 30 detik
 
         // Security adalah spesialis sterilisasi. Divisi lain kena penalti.
-        return division == EmployeeDivision.Security
+        float duration = division == EmployeeDivision.Security
             ? baseDuration
             : baseDuration * offDivisionMultiplier;
+
+        return duration * GetDivisionAssignmentWorkMultiplier();
     }
 
     /// <summary>

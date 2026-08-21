@@ -1099,7 +1099,8 @@ public partial class Employee : MonoBehaviour
 
     public void StartTimedAction(float duration, System.Action onComplete, System.Action onFail)
     {
-        SetActionDuration(duration);
+        float finalDuration = duration * GetDivisionAssignmentWorkMultiplier();
+        SetActionDuration(finalDuration);
         onTimedActionComplete = onComplete;
         onTimedActionFail = onFail;
         hasTimedAction = true;

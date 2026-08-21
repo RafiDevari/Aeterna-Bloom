@@ -11,12 +11,14 @@ public partial class Employee
     /// </summary>
     public virtual float CalculateFixElectricityDuration(ElectricityRoom targetRoom)
     {
-        float baseDuration = targetRoom.FixDuration;
+        float baseDuration = targetRoom != null ? targetRoom.FixDuration : 5f;
 
         // Engineer adalah spesialis perbaikan listrik. Divisi lain kena penalti.
-        return division == EmployeeDivision.Engineer
+        float duration = division == EmployeeDivision.Engineer
             ? baseDuration
             : baseDuration * offDivisionMultiplier;
+
+        return duration * GetDivisionAssignmentWorkMultiplier();
     }
 
     /// <summary>

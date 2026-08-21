@@ -56,9 +56,11 @@ public partial class Employee
         float baseDuration = target.HarvestDuration;
 
         // Harvest = keahlian Botanist. Yang lain kena penalti.
-        return division != EmployeeDivision.Botanist
+        float duration = division != EmployeeDivision.Botanist
             ? baseDuration * offDivisionMultiplier
             : baseDuration;
+
+        return duration * GetDivisionAssignmentWorkMultiplier();
     }
 
     //────────────────────────────────────────────────────────
