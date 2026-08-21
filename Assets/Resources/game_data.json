@@ -1,6 +1,7 @@
 {
-    "money": 230,
+    "money": 450,
     "day": 5,
+    "electricityLevel": 3,
     "purchasedItemIds": [
         "plant_sunny_flower"
     ]

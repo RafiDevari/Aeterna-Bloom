@@ -145,6 +145,20 @@ public class EmployeeInventorySaveSystem : MonoBehaviour
     }
 
     /// <summary>
+    /// Menambahkan employee baru ke inventaris persisten dan menyimpannya.
+    /// </summary>
+    public void AddEmployee(EmployeeInventoryItemSaveData empData)
+    {
+        if (empData == null) return;
+        if (currentData == null) LoadInventory();
+        if (currentData.employees == null) currentData.employees = new List<EmployeeInventoryItemSaveData>();
+
+        currentData.employees.Add(empData);
+        SaveInventory(currentData);
+        Debug.Log($"[EmployeeInventorySaveSystem] Added employee '{empData.employeeName}' with random hair color ({empData.hairColor}). Total employees: {currentData.employees.Count}");
+    }
+
+    /// <summary>
     /// Me-reset inventaris ke data default.
     /// </summary>
     public void ResetInventoryToDefault()

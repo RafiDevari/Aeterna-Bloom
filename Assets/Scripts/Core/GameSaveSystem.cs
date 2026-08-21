@@ -7,20 +7,22 @@ public class GameData
 {
     public int money = 1000;
     public int day = 1;
+    public int electricityLevel = 1;
     public List<string> purchasedItemIds = new List<string>();
 
     public GameData() { }
 
-    public GameData(int initialMoney, int initialDay)
+    public GameData(int initialMoney, int initialDay, int initialElectricityLevel = 1)
     {
         money = initialMoney;
         day = initialDay;
+        electricityLevel = initialElectricityLevel;
         purchasedItemIds = new List<string>();
     }
 }
 
 /// <summary>
-/// Sistem Save & Load Data Game Utama (Money & Day) berbasis JSON (game_data.json).
+/// Sistem Save & Load Data Game Utama (Money & Day & Electricity Level) berbasis JSON (game_data.json).
 /// </summary>
 public class GameSaveSystem : MonoBehaviour
 {
@@ -44,6 +46,7 @@ public class GameSaveSystem : MonoBehaviour
 
     public static event System.Action<int> OnMoneyChanged;
     public static event System.Action<int> OnDayChanged;
+    public static event System.Action<int> OnElectricityLevelChanged;
     public static event System.Action OnDataLoaded;
 
     private const string FILE_NAME = "game_data.json";
@@ -55,6 +58,7 @@ public class GameSaveSystem : MonoBehaviour
 
     public int Money => currentData != null ? currentData.money : 0;
     public int Day => currentData != null ? currentData.day : 1;
+    public int ElectricityLevel => currentData != null ? Mathf.Max(1, currentData.electricityLevel) : 1;
 
     private void Awake()
     {
@@ -117,6 +121,11 @@ public class GameSaveSystem : MonoBehaviour
             SaveData(currentData);
         }
 
+        if (currentData.electricityLevel < 1)
+        {
+            currentData.electricityLevel = 1;
+        }
+
         if (currentData.purchasedItemIds == null)
         {
             currentData.purchasedItemIds = new List<string>();
@@ -125,6 +134,7 @@ public class GameSaveSystem : MonoBehaviour
         OnDataLoaded?.Invoke();
         OnMoneyChanged?.Invoke(currentData.money);
         OnDayChanged?.Invoke(currentData.day);
+        OnElectricityLevelChanged?.Invoke(currentData.electricityLevel);
 
         return currentData;
     }
@@ -215,7 +225,29 @@ public class GameSaveSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// Reset data ke default (Money = 1000, Day = 1).
+    /// Mengeset level listrik secara langsung.
+    /// </summary>
+    public void SetElectricityLevel(int newLevel)
+    {
+        if (currentData == null) LoadData();
+        currentData.electricityLevel = Mathf.Max(1, newLevel);
+        SaveData(currentData);
+        OnElectricityLevelChanged?.Invoke(currentData.electricityLevel);
+    }
+
+    /// <summary>
+    /// Menambah level listrik sejumlah amount (default +1).
+    /// </summary>
+    public void AddElectricityLevel(int amount = 1)
+    {
+        if (currentData == null) LoadData();
+        currentData.electricityLevel = Mathf.Max(1, currentData.electricityLevel + amount);
+        SaveData(currentData);
+        OnElectricityLevelChanged?.Invoke(currentData.electricityLevel);
+    }
+
+    /// <summary>
+    /// Reset data ke default (Money = 1000, Day = 1, ElectricityLevel = 1).
     /// </summary>
     public void ResetToDefault()
     {
@@ -223,6 +255,7 @@ public class GameSaveSystem : MonoBehaviour
         SaveData(currentData);
         OnMoneyChanged?.Invoke(currentData.money);
         OnDayChanged?.Invoke(currentData.day);
+        OnElectricityLevelChanged?.Invoke(currentData.electricityLevel);
     }
 
     /// <summary>
@@ -260,6 +293,6 @@ public class GameSaveSystem : MonoBehaviour
 
     public static GameData GetDefaultData()
     {
-        return new GameData(1000, 1);
+        return new GameData(1000, 1, 1);
     }
 }

@@ -10,10 +10,14 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private Button seedCategoryButton;
     [SerializeField] private Button roomCategoryButton;
     [SerializeField] private Button accessoryCategoryButton;
+    [SerializeField] private Button upgradeCategoryButton;
+    [SerializeField] private Button hireCategoryButton;
 
     [SerializeField] private Image seedButtonBg;
     [SerializeField] private Image roomButtonBg;
     [SerializeField] private Image accessoryButtonBg;
+    [SerializeField] private Image upgradeButtonBg;
+    [SerializeField] private Image hireButtonBg;
 
     [Header("Carousel Elements")]
     [SerializeField] private Button prevButton;
@@ -83,6 +87,8 @@ public class ShopManager : MonoBehaviour
         if (seedCategoryButton != null) seedCategoryButton.onClick.AddListener(() => SwitchCategory("Seed"));
         if (roomCategoryButton != null) roomCategoryButton.onClick.AddListener(() => SwitchCategory("Room"));
         if (accessoryCategoryButton != null) accessoryCategoryButton.onClick.AddListener(() => SwitchCategory("Accessory"));
+        if (upgradeCategoryButton != null) upgradeCategoryButton.onClick.AddListener(() => SwitchCategory("Upgrade"));
+        if (hireCategoryButton != null) hireCategoryButton.onClick.AddListener(() => SwitchCategory("Hire"));
 
         if (prevButton != null) prevButton.onClick.AddListener(OnPrevItemClicked);
         if (nextButton != null) nextButton.onClick.AddListener(OnNextItemClicked);
@@ -145,6 +151,22 @@ public class ShopManager : MonoBehaviour
         if (seedButtonBg != null) seedButtonBg.color = (currentCategory == "Seed") ? activeCategoryColor : inactiveCategoryColor;
         if (roomButtonBg != null) roomButtonBg.color = (currentCategory == "Room") ? activeCategoryColor : inactiveCategoryColor;
         if (accessoryButtonBg != null) accessoryButtonBg.color = (currentCategory == "Accessory") ? activeCategoryColor : inactiveCategoryColor;
+        if (upgradeButtonBg != null) upgradeButtonBg.color = (currentCategory == "Upgrade") ? activeCategoryColor : inactiveCategoryColor;
+        if (hireButtonBg != null) hireButtonBg.color = (currentCategory == "Hire") ? activeCategoryColor : inactiveCategoryColor;
+    }
+
+    public int GetItemPrice(ShopItemData item)
+    {
+        if (item == null) return 0;
+
+        if (string.Equals(item.id, "upgrade_electricity", System.StringComparison.OrdinalIgnoreCase) ||
+            (string.Equals(item.category, "Upgrade", System.StringComparison.OrdinalIgnoreCase) && item.id.ToLower().Contains("electricity")))
+        {
+            int level = (GameSaveSystem.Instance != null) ? GameSaveSystem.Instance.ElectricityLevel : 1;
+            return 400 + (80 * (level - 1));
+        }
+
+        return item.price;
     }
 
     private void RefreshCarouselDisplay()
@@ -165,10 +187,30 @@ public class ShopManager : MonoBehaviour
 
         ShopItemData item = currentCategoryItems[currentItemIndex];
 
-        // Title ABOVE Image
-        if (itemTitleText != null)
+        // Title & Description ABOVE / UNDER Image
+        if (string.Equals(item.category, "Upgrade", System.StringComparison.OrdinalIgnoreCase))
         {
-            itemTitleText.text = item.title;
+            if (string.Equals(item.id, "upgrade_electricity", System.StringComparison.OrdinalIgnoreCase) || item.id.ToLower().Contains("electricity"))
+            {
+                int currentLevel = (GameSaveSystem.Instance != null) ? GameSaveSystem.Instance.ElectricityLevel : 1;
+                if (itemTitleText != null) itemTitleText.text = $"{item.title} (Lv. {currentLevel})";
+                if (itemDescriptionText != null) itemDescriptionText.text = $"{item.description}\nCapacity: {100 + (currentLevel - 1) * 50} -> {100 + currentLevel * 50}";
+            }
+            else
+            {
+                if (itemTitleText != null) itemTitleText.text = item.title;
+                if (itemDescriptionText != null) itemDescriptionText.text = item.description;
+            }
+        }
+        else if (string.Equals(item.category, "Hire", System.StringComparison.OrdinalIgnoreCase) || item.id.ToLower().Contains("hire"))
+        {
+            if (itemTitleText != null) itemTitleText.text = item.title;
+            if (itemDescriptionText != null) itemDescriptionText.text = $"{item.description}\nRecruits a new staff member with a randomized hair color.";
+        }
+        else
+        {
+            if (itemTitleText != null) itemTitleText.text = item.title;
+            if (itemDescriptionText != null) itemDescriptionText.text = item.description;
         }
 
         // Image in Center
@@ -206,14 +248,10 @@ public class ShopManager : MonoBehaviour
         }
 
         // Price UNDER Image
+        int actualPrice = GetItemPrice(item);
         if (itemPriceText != null)
         {
-            itemPriceText.text = $"{item.price} Gold";
-        }
-
-        if (itemDescriptionText != null)
-        {
-            itemDescriptionText.text = item.description;
+            itemPriceText.text = $"{actualPrice} Gold";
         }
 
         // Page indicator
@@ -242,6 +280,14 @@ public class ShopManager : MonoBehaviour
             else if (isDayLocked)
             {
                 btnText.text = $"LOCKED (DAY {item.day})";
+            }
+            else if (string.Equals(item.category, "Upgrade", System.StringComparison.OrdinalIgnoreCase))
+            {
+                btnText.text = "UPGRADE NOW";
+            }
+            else if (string.Equals(item.category, "Hire", System.StringComparison.OrdinalIgnoreCase) || item.id.ToLower().Contains("hire"))
+            {
+                btnText.text = "HIRE NOW";
             }
             else
             {
@@ -374,9 +420,11 @@ public class ShopManager : MonoBehaviour
             return;
         }
 
+        int actualPrice = GetItemPrice(currentItem);
+
         if (confirmationPopup != null)
         {
-            confirmationPopup.Show(currentItem, () =>
+            confirmationPopup.Show(currentItem, actualPrice, () =>
             {
                 ExecutePurchase(currentItem);
             });
@@ -406,8 +454,10 @@ public class ShopManager : MonoBehaviour
             return false;
         }
 
+        int actualPrice = GetItemPrice(item);
+
         // Try spend money using GameSaveSystem (returns true if successful, false if insufficient funds)
-        bool success = GameSaveSystem.Instance.TrySpendMoney(item.price);
+        bool success = GameSaveSystem.Instance.TrySpendMoney(actualPrice);
 
         if (success)
         {
@@ -424,16 +474,134 @@ public class ShopManager : MonoBehaviour
             {
                 AddPurchasedRoomToInventory(item);
             }
+            else if (string.Equals(item.category, "Upgrade", System.StringComparison.OrdinalIgnoreCase) || item.id.ToLower().Contains("upgrade"))
+            {
+                ExecuteUpgradePurchase(item);
+            }
+            else if (string.Equals(item.category, "Hire", System.StringComparison.OrdinalIgnoreCase) || item.id.ToLower().Contains("hire"))
+            {
+                ExecuteHirePurchase(item);
+            }
 
-            ShowToast($"<color=#55FF55>Successfully bought {item.title} for {item.price} Gold!</color>");
+            ShowToast($"<color=#55FF55>Successfully bought {item.title} for {actualPrice} Gold!</color>");
             RefreshCarouselDisplay();
         }
         else
         {
-            ShowToast($"<color=#FF5555>Not enough money! Need {item.price} Gold (Have {GameSaveSystem.Instance.Money} Gold).</color>");
+            ShowToast($"<color=#FF5555>Not enough money! Need {actualPrice} Gold (Have {GameSaveSystem.Instance.Money} Gold).</color>");
         }
 
         return success;
+    }
+
+    private void ExecuteHirePurchase(ShopItemData item)
+    {
+        if (item == null) return;
+
+        EmployeeInventorySaveSystem invSystem = EmployeeInventorySaveSystem.Instance;
+        if (invSystem == null) invSystem = FindFirstObjectByType<EmployeeInventorySaveSystem>();
+        if (invSystem == null)
+        {
+            GameObject go = new GameObject("EmployeeInventorySaveSystem");
+            invSystem = go.AddComponent<EmployeeInventorySaveSystem>();
+        }
+
+        if (invSystem != null)
+        {
+            var invData = invSystem.LoadInventory();
+            int currentCount = (invData != null && invData.employees != null) ? invData.employees.Count : 0;
+
+            string[] firstNames = new string[] {
+                "Fiona", "Alice", "Julia", "Laura", "Nora", "Penelope", "Rachel", "Tina", "Wendy", "Yara",
+                "Beatrice", "Diana", "Clara", "Elena", "Grace", "Iris", "Kira", "Luna", "Maya", "Nina",
+                "Olivia", "Stella", "Violet", "Zoe", "Arthur", "Bob", "Charlie", "Daniel", "Edward", "George",
+                "Ian", "Kevin", "Michael", "Oliver", "Quinn", "Steven", "Victor", "Xavier", "Zack", "Caleb",
+                "Felix", "Henry", "Leo", "Oscar"
+            };
+
+            string[] lastNames = new string[] {
+                "George", "Vance", "Miller", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Davis",
+                "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore",
+                "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez",
+                "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen",
+                "Hill", "Flores", "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell"
+            };
+
+            string firstName = firstNames[UnityEngine.Random.Range(0, firstNames.Length)];
+            string lastName = lastNames[UnityEngine.Random.Range(0, lastNames.Length)];
+            string empName = $"{firstName} {lastName}";
+
+            EmployeeDivision targetDiv = GetDivisionFromItem(item);
+
+            string prefabName = "Employee" + targetDiv.ToString();
+            Color suitColor = GetDefaultSuitColorForDivision(targetDiv);
+
+            // Random hair color as requested
+            Color randomHairColor = Color.HSVToRGB(UnityEngine.Random.value, UnityEngine.Random.Range(0.4f, 0.95f), UnityEngine.Random.Range(0.4f, 1f));
+
+            EmployeeInventoryItemSaveData newEmp = new EmployeeInventoryItemSaveData(
+                empName,
+                prefabName,
+                targetDiv,
+                suitColor,
+                randomHairColor
+            );
+
+            invSystem.AddEmployee(newEmp);
+            Debug.Log($"[ShopManager] Hired new employee '{empName}' ({targetDiv}) with random hair color ({randomHairColor})");
+        }
+    }
+
+    private EmployeeDivision GetDivisionFromItem(ShopItemData item)
+    {
+        if (item == null) return EmployeeDivision.Botanist;
+
+        string idStr = (item.id ?? "").ToLower();
+        string titleStr = (item.title ?? "").ToLower();
+
+        if (idStr.Contains("botanist") || titleStr.Contains("botanist")) return EmployeeDivision.Botanist;
+        if (idStr.Contains("researcher") || titleStr.Contains("researcher")) return EmployeeDivision.Researcher;
+        if (idStr.Contains("security") || titleStr.Contains("security")) return EmployeeDivision.Security;
+        if (idStr.Contains("medic") || titleStr.Contains("medic")) return EmployeeDivision.Medic;
+        if (idStr.Contains("engineer") || titleStr.Contains("engineer")) return EmployeeDivision.Engineer;
+        if (idStr.Contains("clerk") || titleStr.Contains("clerk")) return EmployeeDivision.Clerk;
+
+        EmployeeDivision[] divisions = new EmployeeDivision[] {
+            EmployeeDivision.Botanist,
+            EmployeeDivision.Researcher,
+            EmployeeDivision.Security,
+            EmployeeDivision.Medic,
+            EmployeeDivision.Engineer,
+            EmployeeDivision.Clerk
+        };
+        return divisions[UnityEngine.Random.Range(0, divisions.Length)];
+    }
+
+    private Color GetDefaultSuitColorForDivision(EmployeeDivision div)
+    {
+        switch (div)
+        {
+            case EmployeeDivision.Botanist: return new Color(0.4f, 0.8f, 0.4f, 1f);
+            case EmployeeDivision.Researcher: return new Color(0.4f, 0.6f, 0.9f, 1f);
+            case EmployeeDivision.Security: return new Color(0.8f, 0.3f, 0.3f, 1f);
+            case EmployeeDivision.Medic: return new Color(0.7f, 0.4f, 0.8f, 1f);
+            case EmployeeDivision.Engineer: return new Color(0.9f, 0.7f, 0.3f, 1f);
+            default: return new Color(0.8f, 0.8f, 0.8f, 1f);
+        }
+    }
+
+    private void ExecuteUpgradePurchase(ShopItemData item)
+    {
+        if (item == null) return;
+
+        if (string.Equals(item.id, "upgrade_electricity", System.StringComparison.OrdinalIgnoreCase) ||
+            item.id.ToLower().Contains("electricity"))
+        {
+            GameSaveSystem.Instance.AddElectricityLevel(1);
+            int newLevel = GameSaveSystem.Instance.ElectricityLevel;
+            int newMaxElec = 100 + ((newLevel - 1) * 50);
+            Debug.Log($"[ShopManager] Electricity upgraded to Level {newLevel}. Max Electricity is now {newMaxElec}.");
+        }
     }
 
     private void AddPurchasedRoomToInventory(ShopItemData item)

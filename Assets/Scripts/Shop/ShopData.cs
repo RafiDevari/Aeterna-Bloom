@@ -7,7 +7,7 @@ public class ShopItemData
 {
     public string id;
     public string title;
-    public string category; // "Seed", "Room", "Accessory"
+    public string category; // "Seed", "Room", "Accessory", "Upgrade", "Hire"
     public int price;
     public string description;
     public string spritePath;
