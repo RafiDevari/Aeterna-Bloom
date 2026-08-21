@@ -120,6 +120,54 @@
       "price": 400,
       "description": "Increases max electricity capacity (+50 max capacity per level).",
       "spritePath": "Sprites/Room/ElectricityRoom/ElectricityRoom"
+    },
+    {
+      "id": "hire_botanist",
+      "title": "Hire Botanist",
+      "category": "Hire",
+      "price": 200,
+      "description": "Recruit a new Botanist employee for plant cultivation and care.",
+      "spritePath": "Sprites/Employee/Hair/Hair_3"
+    },
+    {
+      "id": "hire_researcher",
+      "title": "Hire Researcher",
+      "category": "Hire",
+      "price": 200,
+      "description": "Recruit a new Researcher employee for specimen analysis.",
+      "spritePath": "Sprites/Employee/Hair/Hair_1"
+    },
+    {
+      "id": "hire_security",
+      "title": "Hire Security",
+      "category": "Hire",
+      "price": 200,
+      "description": "Recruit a new Security employee for facility defense.",
+      "spritePath": "Sprites/Employee/Hair/Hair_2"
+    },
+    {
+      "id": "hire_medic",
+      "title": "Hire Medic",
+      "category": "Hire",
+      "price": 200,
+      "description": "Recruit a new Medic employee for medical care and healing.",
+      "spritePath": "Sprites/Employee/Hair/Hair_3"
+    },
+    {
+      "id": "hire_engineer",
+      "title": "Hire Engineer",
+      "category": "Hire",
+      "price": 200,
+      "description": "Recruit a new Engineer employee for facility maintenance.",
+      "spritePath": "Sprites/Employee/Hair/Hair_1"
+    },
+    {
+      "id": "hire_clerk",
+      "title": "Hire Clerk",
+      "category": "Hire",
+      "price": 200,
+      "description": "Recruit a new Clerk employee for general facility operations.",
+      "spritePath": "Sprites/Employee/Hair/Hair_2"
     }
   ]
 }

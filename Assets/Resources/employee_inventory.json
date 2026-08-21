@@ -179,6 +179,86 @@
             "suitPath": "",
             "hairPath": "",
             "mood": 4
+        },
+        {
+            "employeeName": "Julia",
+            "employeePrefabName": "EmployeeEngineer",
+            "division": 2,
+            "suitColor": {
+                "r": 0.8999999761581421,
+                "g": 0.699999988079071,
+                "b": 0.30000001192092898,
+                "a": 1.0
+            },
+            "hairColor": {
+                "r": 0.43589699268341067,
+                "g": 0.054512590169906619,
+                "b": 0.6739702224731445,
+                "a": 1.0
+            },
+            "suitPath": "",
+            "hairPath": "",
+            "mood": 3
+        },
+        {
+            "employeeName": "Kevin",
+            "employeePrefabName": "EmployeeMedic",
+            "division": 3,
+            "suitColor": {
+                "r": 0.699999988079071,
+                "g": 0.4000000059604645,
+                "b": 0.800000011920929,
+                "a": 1.0
+            },
+            "hairColor": {
+                "r": 0.7356532216072083,
+                "g": 0.7883888483047485,
+                "b": 0.38970285654067995,
+                "a": 1.0
+            },
+            "suitPath": "",
+            "hairPath": "",
+            "mood": 3
+        },
+        {
+            "employeeName": "Laura",
+            "employeePrefabName": "EmployeeSecurity",
+            "division": 4,
+            "suitColor": {
+                "r": 0.800000011920929,
+                "g": 0.30000001192092898,
+                "b": 0.30000001192092898,
+                "a": 1.0
+            },
+            "hairColor": {
+                "r": 0.12397624552249909,
+                "g": 0.9015661478042603,
+                "b": 0.6867585778236389,
+                "a": 1.0
+            },
+            "suitPath": "",
+            "hairPath": "",
+            "mood": 3
+        },
+        {
+            "employeeName": "Wendy Robinson",
+            "employeePrefabName": "EmployeeSecurity",
+            "division": 4,
+            "suitColor": {
+                "r": 0.800000011920929,
+                "g": 0.30000001192092898,
+                "b": 0.30000001192092898,
+                "a": 1.0
+            },
+            "hairColor": {
+                "r": 0.2863536775112152,
+                "g": 0.5253989696502686,
+                "b": 0.9215303063392639,
+                "a": 1.0
+            },
+            "suitPath": "",
+            "hairPath": "",
+            "mood": 3
         }
     ]
 }
