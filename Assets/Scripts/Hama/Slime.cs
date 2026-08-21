@@ -343,6 +343,7 @@ public class Slime : Pest
 
         if (Facility.Instance != null)
         {
+            Facility.Instance.RecordEmployeeDeath(deadEmp, "Death by Slime");
             Facility.Instance.UnregisterEmployee(deadEmp);
         }
 

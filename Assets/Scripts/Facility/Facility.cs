@@ -23,6 +23,28 @@ public class Facility : MonoBehaviour
     [SerializeField]
     private List<Employee> employees = new();
 
+    [Header("Death Records")]
+    public List<EmployeeDeathRecord> DeadEmployeesReport = new List<EmployeeDeathRecord>();
+
+    public void RecordEmployeeDeath(Employee emp, string cause)
+    {
+        if (emp == null) return;
+        
+        var existing = DeadEmployeesReport.FirstOrDefault(r => r.EmployeeName == emp.EmployeeName);
+        if (existing != null)
+        {
+            existing.CauseOfDeath = cause;
+        }
+        else
+        {
+            DeadEmployeesReport.Add(new EmployeeDeathRecord 
+            { 
+                EmployeeName = emp.EmployeeName, 
+                CauseOfDeath = cause 
+            });
+        }
+    }
+
     [Header("Blackout Settings")]
     [SerializeField] private float maxElectricity = 100f;
     [SerializeField] private float blackoutMoodDecayInterval = 10f;
@@ -368,4 +390,11 @@ public class Facility : MonoBehaviour
             }
         }
     }
+}
+
+[System.Serializable]
+public class EmployeeDeathRecord
+{
+    public string EmployeeName;
+    public string CauseOfDeath;
 }

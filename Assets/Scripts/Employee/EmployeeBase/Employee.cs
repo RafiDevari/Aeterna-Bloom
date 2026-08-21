@@ -1029,6 +1029,11 @@ public partial class Employee : MonoBehaviour
 
         Debug.LogWarning($"[Employee] {EmployeeName} HAS DIED.");
 
+        if (Facility.Instance != null)
+        {
+            Facility.Instance.RecordEmployeeDeath(this, "Natural Death");
+        }
+
         OnEmployeeDied?.Invoke(this);
 
         // Notifikasi ke semua rekan satu divisi
