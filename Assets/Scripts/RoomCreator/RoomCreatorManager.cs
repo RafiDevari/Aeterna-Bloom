@@ -645,10 +645,10 @@ public class RoomCreatorManager : MonoBehaviour
                 if (isContainmentRoom)
                 {
                     Bounds roomBounds = RoomPlacementPreview.GetAccurateBounds(roomObj);
-                    if (cuBounds.min.x >= roomBounds.min.x &&
-                        cuBounds.max.x <= roomBounds.max.x &&
-                        cuBounds.min.y >= roomBounds.min.y &&
-                        cuBounds.max.y <= roomBounds.max.y)
+                    if (cuBounds.min.x >= roomBounds.min.x - 0.5f &&
+                        cuBounds.max.x <= roomBounds.max.x + 0.5f &&
+                        cuBounds.min.y >= roomBounds.min.y - 0.5f &&
+                        cuBounds.max.y <= roomBounds.max.y + 0.5f)
                     {
                         parentRoomObj = roomObj;
                         break;

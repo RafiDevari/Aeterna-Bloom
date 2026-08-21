@@ -81,9 +81,62 @@ public class RoomPlacementPreview : MonoBehaviour
         isCurrentlySnapped = false;
         snappedTargetRoom = null;
 
-        // Skip snapping for containment units so they can be placed freely inside a room
+        // Containment Unit walking path snapping
         if (gameObject.name.Contains("ContainmentUnit"))
         {
+            GameObject targetContainmentRoom = null;
+            Bounds bestRoomBounds = default;
+            float bestDistance = float.MaxValue;
+
+            if (placedRooms != null)
+            {
+                foreach (GameObject rObj in placedRooms)
+                {
+                    if (rObj == null) continue;
+                    bool isCR = rObj.GetComponent<ContainmentRoom>() != null || rObj.name.ToLower().Contains("containmentroom") || rObj.name.ToLower().Contains("containment room");
+                    if (!isCR) continue;
+
+                    Bounds rBounds = GetAccurateBounds(rObj);
+                    // Check if mouse is near or inside containment room
+                    if (mouseWorldPos.x >= rBounds.min.x - 3f && mouseWorldPos.x <= rBounds.max.x + 3f &&
+                        mouseWorldPos.y >= rBounds.min.y - 4f && mouseWorldPos.y <= rBounds.max.y + 4f)
+                    {
+                        float dist = Vector2.Distance(new Vector2(mouseWorldPos.x, mouseWorldPos.y), new Vector2(rBounds.center.x, rBounds.center.y));
+                        if (dist < bestDistance)
+                        {
+                            bestDistance = dist;
+                            targetContainmentRoom = rObj;
+                            bestRoomBounds = rBounds;
+                        }
+                    }
+                }
+            }
+
+            if (targetContainmentRoom != null)
+            {
+                Bounds cuBounds = GetAccurateBounds(gameObject);
+                float cuHalfWidth = Mathf.Max(0.5f, cuBounds.extents.x);
+
+                // Snap Y ke walking path / lantai Containment Room
+                // Diletakkan sedikit di atas garis tepi bawah agar pas dan estetis sesuai gambar
+                float floorY = bestRoomBounds.min.y + 0.35f;
+
+                float minX = bestRoomBounds.min.x + cuHalfWidth + 0.3f;
+                float maxX = bestRoomBounds.max.x - cuHalfWidth - 0.3f;
+
+                targetPos.x = (minX < maxX) ? Mathf.Clamp(mouseWorldPos.x, minX, maxX) : bestRoomBounds.center.x;
+                targetPos.y = floorY;
+
+                transform.position = targetPos;
+                Physics2D.SyncTransforms();
+
+                isCurrentlySnapped = true;
+                snappedTargetRoom = targetContainmentRoom;
+                return;
+            }
+
+            transform.position = targetPos;
+            Physics2D.SyncTransforms();
             return;
         }
 
@@ -249,11 +302,12 @@ public class RoomPlacementPreview : MonoBehaviour
                     if (isContainmentRoom)
                     {
                         Bounds roomBounds = GetAccurateBounds(roomObj);
-                        // Check if preview bounds are completely within room bounds
-                        if (previewBounds.min.x >= roomBounds.min.x &&
-                            previewBounds.max.x <= roomBounds.max.x &&
-                            previewBounds.min.y >= roomBounds.min.y &&
-                            previewBounds.max.y <= roomBounds.max.y)
+                        // Check if preview bounds are within room bounds and placed on the lower walking path
+                        if (previewBounds.min.x >= roomBounds.min.x - 0.25f &&
+                            previewBounds.max.x <= roomBounds.max.x + 0.25f &&
+                            previewBounds.min.y >= roomBounds.min.y - 0.25f &&
+                            previewBounds.min.y <= roomBounds.min.y + 2.5f &&
+                            previewBounds.max.y <= roomBounds.max.y + 0.25f)
                         {
                             insideContainmentRoom = true;
                             break;
