@@ -525,7 +525,21 @@ public class FacilityHUD : MonoBehaviour
         
         // Tempat untuk list karyawan mati (placeholder)
         DrawRect(new Rect(contentX, contentY + 30f, w - 60f, 180f), new Color(0.05f, 0.05f, 0.05f, 0.8f));
-        GUI.Label(new Rect(contentX + 10f, contentY + 40f, w - 80f, 30f), "- (Belum ada data / List akan ditampilkan di sini)", labelStyle);
+        
+        if (fac.DeadEmployeesReport.Count == 0)
+        {
+            GUI.Label(new Rect(contentX + 10f, contentY + 40f, w - 80f, 30f), "- (Belum ada data karyawan mati)", labelStyle);
+        }
+        else
+        {
+            float listY = contentY + 40f;
+            foreach (var record in fac.DeadEmployeesReport)
+            {
+                GUI.Label(new Rect(contentX + 10f, listY, w - 80f, 20f), $"- {record.EmployeeName} ({record.CauseOfDeath})", labelStyle);
+                listY += 20f;
+                if (listY > contentY + 190f) break; // Jangan gambar kalau kepanjangan
+            }
+        }
         
         // Tombol-tombol di bawah
         GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
