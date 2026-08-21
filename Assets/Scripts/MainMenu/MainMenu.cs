@@ -13,6 +13,26 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene("Gallery");
     }
 
+    public void Tutorial()
+    {
+        SceneManager.LoadScene("Tutorial");
+    }
+
+    public void Guide()
+    {
+        SceneManager.LoadScene("Guide");
+    }
+
+    public void Shop()
+    {
+        SceneManager.LoadScene("Shop");
+    }
+
+    public void Credits()
+    {
+        SceneManager.LoadScene("Credits");
+    }
+
     public void ExitGame()
     {
         Application.Quit();
