@@ -35,8 +35,10 @@ public class Lift : Room
         Facility.OnBlackoutStateChanged -= HandleBlackoutChanged;
     }
 
-    private void Start()
+    protected override void Start()
     {
+        base.Start();
+
         if (spriteRenderer != null)
         {
             originalColor = spriteRenderer.color;
