@@ -32,5 +32,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Gallery.unity
     guid: 51683f3e5110f8c4bacea73cc207bdf7
+  - enabled: 1
+    path: Assets/Scenes/Credits.unity
+    guid: bf37246ea360a9848aca18e7c6f4da71
+  - enabled: 1
+    path: Assets/Scenes/Shop.unity
+    guid: 593a1f9076d1e4c4eb91209b1192fa2c
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
