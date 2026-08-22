@@ -82,9 +82,11 @@ public partial class Employee
         float baseDuration = target.FeedDuration;
 
         // Feed = keahlian Botanist. Yang lain kena penalti.
-        return division != EmployeeDivision.Botanist
+        float duration = division != EmployeeDivision.Botanist
             ? baseDuration * offDivisionMultiplier
             : baseDuration;
+
+        return duration * GetDivisionAssignmentWorkMultiplier();
     }
 
     protected internal virtual float CalculateTakeStockDuration(StockRoom stockRoom, FoodType food, int amount)
@@ -92,9 +94,11 @@ public partial class Employee
         float baseDuration = stockRoom.TakeStockDuration;
 
         // Take Stock = keahlian Botanist. Yang lain kena penalti.
-        return division != EmployeeDivision.Botanist
+        float duration = division != EmployeeDivision.Botanist
             ? baseDuration * offDivisionMultiplier
             : baseDuration;
+
+        return duration * GetDivisionAssignmentWorkMultiplier();
     }
 
     //────────────────────────────────────────────────────────

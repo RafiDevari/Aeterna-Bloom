@@ -53,6 +53,7 @@ public class FacilityHUD : MonoBehaviour
     private Texture2D whiteTex;
     private bool stylesInitialized;
     private bool isShowingReport = false;
+    private bool isShowingGameOverReport = false;
 
     private Texture2D GetWhiteTexture()
     {
@@ -183,7 +184,20 @@ public class FacilityHUD : MonoBehaviour
 
         DrawSelectionHint();
 
-        if (fac.Energy >= fac.MaxEnergy && fac.MaxEnergy > 0)
+        // 1. Lose Condition: Semua employee telah gugur
+        if (fac.IsAllEmployeesDead)
+        {
+            if (isShowingGameOverReport)
+            {
+                DrawGameOverReportPopup(fac);
+            }
+            else
+            {
+                DrawGameOverPopup(fac);
+            }
+        }
+        // 2. Win Condition: Target energi terpenuhi
+        else if (fac.Energy >= fac.MaxEnergy && fac.MaxEnergy > 0)
         {
             if (isShowingReport)
             {
@@ -556,17 +570,148 @@ public class FacilityHUD : MonoBehaviour
         
         if (GUI.Button(new Rect(startBtnX, btnY, btnW, btnH), "Next Day", buttonStyle))
         {
-            Debug.Log("Next Day ditekan");
+            Debug.Log("[FacilityHUD] Next Day ditekan");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("EmployeeAssignment");
         }
         
         if (GUI.Button(new Rect(startBtnX + btnW + 20f, btnY, btnW, btnH), "Restart", buttonStyle))
         {
-            Debug.Log("Restart ditekan");
+            Debug.Log("[FacilityHUD] Restart ditekan");
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
         }
         
         if (GUI.Button(new Rect(startBtnX + (btnW * 2) + 40f, btnY, btnW, btnH), "Main Menu", buttonStyle))
         {
-            Debug.Log("Main Menu ditekan");
+            Debug.Log("[FacilityHUD] Main Menu ditekan");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+        }
+    }
+
+    private void DrawGameOverPopup(Facility fac)
+    {
+        float w = 450f;
+        float h = 210f;
+        float x = (Screen.width - w) / 2f;
+        float y = (Screen.height - h) / 2f;
+
+        Rect popupRect = new Rect(x, y, w, h);
+        
+        // Dark crimson background & bright red outline
+        DrawRect(popupRect, new Color(0.12f, 0.04f, 0.04f, 0.96f));
+        DrawThickOutline(popupRect, new Color(0.9f, 0.2f, 0.2f, 1f), 3);
+
+        GUIStyle popupTitleStyle = new GUIStyle(digitalValueStyle)
+        {
+            fontSize = 20,
+            fontStyle = FontStyle.Bold,
+            normal = { textColor = new Color(1f, 0.35f, 0.35f, 1f) }
+        };
+        GUI.Label(new Rect(x, y + 25f, w, 30f), "SEMUA KARYAWAN TELAH GUGUR", popupTitleStyle);
+
+        GUIStyle subtitleStyle = new GUIStyle(labelStyle)
+        {
+            fontSize = 14,
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = new Color(0.85f, 0.85f, 0.85f, 1f) }
+        };
+        GUI.Label(new Rect(x + 20f, y + 65f, w - 40f, 30f), "Tidak ada karyawan tersisa untuk mengelola fasilitas.", subtitleStyle);
+
+        GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 15,
+            fontStyle = FontStyle.Bold
+        };
+        
+        float btnW = 220f;
+        float btnH = 45f;
+        float btnX = x + (w - btnW) / 2f;
+        float btnY = y + 130f;
+
+        if (GUI.Button(new Rect(btnX, btnY, btnW, btnH), "Lihat Laporan Gugur", buttonStyle))
+        {
+            Debug.Log("[FacilityHUD] Tombol 'Lihat Laporan Gugur' ditekan.");
+            isShowingGameOverReport = true;
+        }
+    }
+
+    private void DrawGameOverReportPopup(Facility fac)
+    {
+        float w = 600f;
+        float h = 460f;
+        float x = (Screen.width - w) / 2f;
+        float y = (Screen.height - h) / 2f;
+
+        Rect popupRect = new Rect(x, y, w, h);
+        
+        DrawRect(popupRect, new Color(0.12f, 0.04f, 0.04f, 0.96f));
+        DrawThickOutline(popupRect, new Color(0.9f, 0.2f, 0.2f, 1f), 3);
+
+        GUIStyle popupTitleStyle = new GUIStyle(digitalValueStyle)
+        {
+            fontSize = 24,
+            fontStyle = FontStyle.Bold,
+            normal = { textColor = new Color(1f, 0.35f, 0.35f, 1f) }
+        };
+        GUI.Label(new Rect(x, y + 20f, w, 30f), "LAPORAN KEGAGALAN FASILITAS", popupTitleStyle);
+
+        GUIStyle textStyle = new GUIStyle(labelStyle)
+        {
+            fontSize = 16,
+            alignment = TextAnchor.UpperLeft,
+            normal = { textColor = new Color(0.9f, 0.9f, 0.9f, 1f) }
+        };
+        
+        float contentX = x + 30f;
+        float contentY = y + 70f;
+        
+        GUI.Label(new Rect(contentX, contentY, w - 60f, 25f), $"Energy Terkumpul: {fac.Energy:F1} / {fac.MaxEnergy:F1}", textStyle);
+        contentY += 30f;
+        GUI.Label(new Rect(contentX, contentY, w - 60f, 25f), $"Total Karyawan Gugur: {fac.DeadEmployeesReport.Count} orang", textStyle);
+        
+        contentY += 35f;
+        GUI.Label(new Rect(contentX, contentY, w - 60f, 25f), "Daftar Karyawan yang Gugur:", textStyle);
+        
+        // List container
+        DrawRect(new Rect(contentX, contentY + 28f, w - 60f, 170f), new Color(0.05f, 0.02f, 0.02f, 0.85f));
+        
+        if (fac.DeadEmployeesReport.Count == 0)
+        {
+            GUI.Label(new Rect(contentX + 10f, contentY + 38f, w - 80f, 30f), "- (Semua karyawan gugur)", labelStyle);
+        }
+        else
+        {
+            float listY = contentY + 38f;
+            foreach (var record in fac.DeadEmployeesReport)
+            {
+                GUI.Label(new Rect(contentX + 10f, listY, w - 80f, 20f), $"💀 {record.EmployeeName} - Penyebab: {record.CauseOfDeath}", labelStyle);
+                listY += 22f;
+                if (listY > contentY + 180f) break;
+            }
+        }
+        
+        // Tombol-tombol di bawah
+        GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 15,
+            fontStyle = FontStyle.Bold
+        };
+        
+        float btnW = 160f;
+        float btnH = 45f;
+        float totalBtnW = (btnW * 2) + 20f; // 2 tombol: Restart & Main Menu
+        float startBtnX = x + (w - totalBtnW) / 2f;
+        float btnY = y + h - 65f;
+        
+        if (GUI.Button(new Rect(startBtnX, btnY, btnW, btnH), "🔄 Ulangi Hari", buttonStyle))
+        {
+            Debug.Log("[FacilityHUD] Ulangi Hari (Restart) ditekan");
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+        
+        if (GUI.Button(new Rect(startBtnX + btnW + 20f, btnY, btnW, btnH), "🏠 Main Menu", buttonStyle))
+        {
+            Debug.Log("[FacilityHUD] Main Menu ditekan");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
         }
     }
 

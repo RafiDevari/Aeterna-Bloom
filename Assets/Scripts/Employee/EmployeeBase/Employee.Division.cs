@@ -36,6 +36,16 @@ public partial class Employee
         return assignedDivision != null && assignedDivision.RoomDivisionType == division;
     }
 
+    /// <summary>
+    /// Multiplier durasi kerja jika employee ditugaskan di luar room divisinya (misal Botanist ditaruh di Researcher room).
+    /// Konsekuensi: Waktu pengerjaan tugas apapun bertambah 20% (multiplier 1.2x).
+    /// </summary>
+    public float GetDivisionAssignmentWorkMultiplier()
+    {
+        if (assignedDivision == null) return 1.0f;
+        return IsAssignedToMatchingDivision() ? 1.0f : 1.2f;
+    }
+
     //────────────────────────────────────────────────────────
     // Public API
     //────────────────────────────────────────────────────────

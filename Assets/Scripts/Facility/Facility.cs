@@ -118,7 +118,17 @@ public class Facility : MonoBehaviour
     /// Murni hasil hitungan, bukan nilai yang di-set manual - selalu mencerminkan
     /// kondisi room-room saat ini (base cost + monster + selisih suhu).
     /// </summary>
-    public float Electricity => isBlackout ? 0f : rooms.Sum(room => room.ElectricityCost);
+    public float Electricity => isBlackout ? 0f : CalculateTotalElectricityUsage();
+
+    public float CalculateTotalElectricityUsage()
+    {
+        float total = 0f;
+        foreach (var r in rooms)
+        {
+            if (r != null) total += r.ElectricityCost;
+        }
+        return total;
+    }
 
     public IReadOnlyList<Room> Rooms => rooms;
     public IReadOnlyList<Employee> Employees => employees;
@@ -128,6 +138,8 @@ public class Facility : MonoBehaviour
     public System.Action<float> OnEnergyChanged;
     public System.Action<float> OnDefaultRoomTemperatureChanged;
     public System.Action<float> OnElectricityChanged;
+    public System.Action<bool> OnBlackoutChanged;
+    public static event System.Action<bool> OnBlackoutStateChanged;
 
     public System.Action<Room> OnRoomAdded;
     public System.Action<Employee> OnEmployeeRegistered;
@@ -266,6 +278,37 @@ public class Facility : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Menghitung jumlah employee yang masih hidup di facility saat ini.
+    /// </summary>
+    public int LivingEmployeesCount
+    {
+        get
+        {
+            var list = (employees != null && employees.Count > 0)
+                ? employees.Where(e => e != null).ToList()
+                : FindObjectsByType<Employee>(FindObjectsSortMode.None).ToList();
+
+            return list.Count(e => e.CurrentState != EmployeeState.Dead && e.Hp > 0);
+        }
+    }
+
+    /// <summary>
+    /// Mengecek apakah semua employee telah gugur (Lose Condition).
+    /// </summary>
+    public bool IsAllEmployeesDead
+    {
+        get
+        {
+            var list = (employees != null && employees.Count > 0)
+                ? employees.Where(e => e != null).ToList()
+                : FindObjectsByType<Employee>(FindObjectsSortMode.None).ToList();
+
+            if (list.Count == 0) return false;
+            return list.All(e => e.CurrentState == EmployeeState.Dead || e.Hp <= 0);
+        }
+    }
+
     public StockRoom FindNearestStockRoom(Vector3 fromPosition)
     {
         return Rooms
@@ -346,7 +389,7 @@ public class Facility : MonoBehaviour
         if (isBlackout) return;
 
         // Reset overload timers if current usage drops below capacity
-        float actualUsage = rooms.Sum(room => room.ElectricityCost);
+        float actualUsage = CalculateTotalElectricityUsage();
         if (actualUsage <= maxElectricity)
         {
             overloadTimer = 0f;
@@ -355,7 +398,8 @@ public class Facility : MonoBehaviour
         }
     }
 
-    private void TriggerBlackout()
+    [ContextMenu("Trigger Blackout (Mati Lampu)")]
+    public void TriggerBlackout()
     {
         isBlackout = true;
         blackoutTimer = 0f;
@@ -370,10 +414,13 @@ public class Facility : MonoBehaviour
         }
 
         OnElectricityChanged?.Invoke(Electricity); // Will trigger with 0f
+        OnBlackoutChanged?.Invoke(true);
+        OnBlackoutStateChanged?.Invoke(true);
         Debug.LogWarning("[Facility] MATI LAMPU! Penggunaan listrik melebihi 100%.");
         FacilityHUD.ShowBroadcast("MATI LAMPU! Penggunaan listrik melebihi 100%.", "System");
     }
 
+    [ContextMenu("Resolve Blackout (Perbaiki Listrik)")]
     public void ResolveBlackout()
     {
         isBlackout = false;
@@ -388,6 +435,8 @@ public class Facility : MonoBehaviour
         }
 
         OnElectricityChanged?.Invoke(Electricity); // Will trigger with actual usage
+        OnBlackoutChanged?.Invoke(false);
+        OnBlackoutStateChanged?.Invoke(false);
         Debug.Log("[Facility] Listrik telah diperbaiki.");
     }
 

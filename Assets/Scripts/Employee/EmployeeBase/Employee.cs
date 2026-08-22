@@ -290,15 +290,25 @@ public partial class Employee : MonoBehaviour
     {
         EmployeeInventorySaveSystem.OnInventoryChanged += RefreshAppearanceFromInventory;
         Room.OnAnyRoomLockChanged += HandleRoomLockChanged;
+        Facility.OnBlackoutStateChanged += HandleBlackoutStateChanged;
     }
 
     private void OnDisable()
     {
         EmployeeInventorySaveSystem.OnInventoryChanged -= RefreshAppearanceFromInventory;
         Room.OnAnyRoomLockChanged -= HandleRoomLockChanged;
+        Facility.OnBlackoutStateChanged -= HandleBlackoutStateChanged;
     }
 
     private void HandleRoomLockChanged(Room room, bool locked)
+    {
+        if (isMoving)
+        {
+            ReevaluatePath();
+        }
+    }
+
+    private void HandleBlackoutStateChanged(bool isBlackout)
     {
         if (isMoving)
         {
@@ -472,6 +482,12 @@ public partial class Employee : MonoBehaviour
 
     private void Update()
     {
+        if (hp <= 0 && currentState != EmployeeState.Dead)
+        {
+            Die();
+            return;
+        }
+
         if (currentState == EmployeeState.Dead)
             return;
 
@@ -799,16 +815,17 @@ public partial class Employee : MonoBehaviour
     }
 
     /// <summary>
-    /// Evaluasi ulang jalur saat status lockdown ruangan berubah di tengah jalan.
+    /// Evaluasi ulang jalur saat status lockdown ruangan atau blackout berubah di tengah jalan.
     /// Jika ada rute alternatif (memutar), employee akan tetap berjalan lewat rute baru.
-    /// Jika tidak ada rute valid atau berada di dalam room lockdown, movement dibatalkan.
+    /// Jika tidak ada rute valid atau berada di dalam room lockdown/lift mati, movement dibatalkan.
     /// </summary>
     public void ReevaluatePath()
     {
-        if (!isMoving || (this is EmployeeSecurity))
+        if (!isMoving)
             return;
 
-        List<Vector3> newPath = RoomPathfinder.FindWaypointPath(transform.position, lastMoveDestination, false);
+        bool canEnterLocked = (this is EmployeeSecurity);
+        List<Vector3> newPath = RoomPathfinder.FindWaypointPath(transform.position, lastMoveDestination, canEnterLocked);
 
         if (newPath != null && newPath.Count > 0)
         {
@@ -818,11 +835,11 @@ public partial class Employee : MonoBehaviour
                 movementWaypoints.Enqueue(pt);
             }
             StartNextWaypoint();
-            Debug.Log($"[Employee] {employeeName} menemukan jalur alternatif memutari lockdown!");
+            Debug.Log($"[Employee] {employeeName} menemukan jalur alternatif memutari rintangan!");
         }
         else
         {
-            Debug.LogWarning($"[Employee] {employeeName} terhalang lockdown / terkunci di ruangan! Pergerakan dibatalkan.");
+            Debug.LogWarning($"[Employee] {employeeName} terhalang rintangan / terkunci / lift mati! Pergerakan dibatalkan.");
             isMoving = false;
             movementWaypoints.Clear();
             if (currentState == EmployeeState.Moving)
@@ -867,10 +884,13 @@ public partial class Employee : MonoBehaviour
         if (!isMoving)
             return;
 
-        if (!(this is EmployeeSecurity))
+        Room currentR = RoomPathfinder.FindRoomAt(transform.position);
+        if (currentR != null)
         {
-            Room currentR = RoomPathfinder.FindRoomAt(transform.position);
-            if (currentR != null && currentR.IsLocked)
+            bool isBlockedByLock = !(this is EmployeeSecurity) && currentR.IsLocked;
+            bool isBlockedByBlackoutLift = (Facility.Instance != null && Facility.Instance.IsBlackout && currentR is Lift);
+
+            if (isBlockedByLock || isBlockedByBlackoutLift)
             {
                 ReevaluatePath();
                 if (!isMoving) return;
@@ -1085,7 +1105,8 @@ public partial class Employee : MonoBehaviour
 
     public void StartTimedAction(float duration, System.Action onComplete, System.Action onFail)
     {
-        SetActionDuration(duration);
+        float finalDuration = duration * GetDivisionAssignmentWorkMultiplier();
+        SetActionDuration(finalDuration);
         onTimedActionComplete = onComplete;
         onTimedActionFail = onFail;
         hasTimedAction = true;
