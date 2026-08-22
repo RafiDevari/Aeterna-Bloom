@@ -8,7 +8,6 @@ public class SceneNavigation : MonoBehaviour
         SceneManager.LoadScene("MainMenu");
     }
 
-    
     public void LoadScene(string sceneName)
     {
         SceneManager.LoadScene(sceneName);
