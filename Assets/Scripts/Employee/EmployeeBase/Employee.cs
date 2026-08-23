@@ -390,10 +390,9 @@ public partial class Employee : MonoBehaviour
 
         if (employeeCollider == null) return;
 
-        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
-        if (renderers == null || renderers.Length == 0) return;
-
         Transform root = transform.Find("Visuals") ?? transform.Find("Visual") ?? transform;
+        SpriteRenderer[] renderers = root.GetComponentsInChildren<SpriteRenderer>(true);
+        if (renderers == null || renderers.Length == 0) return;
 
         bool foundAny = false;
         float minX = float.MaxValue;
@@ -404,6 +403,9 @@ public partial class Employee : MonoBehaviour
         foreach (var r in renderers)
         {
             if (r == null || !r.enabled || r.sprite == null) continue;
+
+            // Abaikan SpriteRenderer yang berada di bawah child transform "Items" atau "Item"
+            if (IsUnderItemsTransform(r.transform)) continue;
 
             Bounds b = r.sprite.bounds;
 
@@ -439,6 +441,23 @@ public partial class Employee : MonoBehaviour
             employeeCollider.size = new Vector2(width, height);
             employeeCollider.offset = center;
         }
+    }
+
+    /// <summary>
+    /// Memeriksa apakah SpriteRenderer berada di bawah hirarki child "Items" atau "Item".
+    /// </summary>
+    private bool IsUnderItemsTransform(Transform t)
+    {
+        while (t != null && t != transform)
+        {
+            if (t.name.Equals("Items", System.StringComparison.OrdinalIgnoreCase) ||
+                t.name.Equals("Item", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            t = t.parent;
+        }
+        return false;
     }
 
     /// <summary>
