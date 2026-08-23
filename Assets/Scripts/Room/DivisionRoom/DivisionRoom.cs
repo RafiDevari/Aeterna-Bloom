@@ -46,6 +46,9 @@ public abstract class DivisionRoom : Room
              "di-assign stasiun kerjanya ke divisi ini.")]
     [SerializeField] private List<EmployeeSpawnData> employeesToSpawn = new List<EmployeeSpawnData>();
 
+    [Tooltip("Offset Y posisi spawn employee agar kakinya pas di atas lantai dan tidak keluar/tenggelam (misal 0.5f).")]
+    [SerializeField] private float spawnOffsetY = 0.5f;
+
     [Header("Division Add Objects")]
     [Tooltip("Daftar 5 objek dekorasi yang disembunyikan secara default. Untuk setiap 1 employee yang diassign, 1 objek akan ditampilkan.")]
     [SerializeField] private List<GameObject> addObjects = new List<GameObject>();
@@ -152,7 +155,8 @@ public abstract class DivisionRoom : Room
                 continue;
             }
 
-            Employee employee = Instantiate(data.employeePrefab, transform.position, Quaternion.identity);
+            Vector3 spawnPos = GetNearestWalkablePosition(transform.position) + new Vector3(0f, spawnOffsetY, 0f);
+            Employee employee = Instantiate(data.employeePrefab, spawnPos, Quaternion.identity);
 
             if (!string.IsNullOrEmpty(data.employeeName))
                 employee.EmployeeName = data.employeeName;
