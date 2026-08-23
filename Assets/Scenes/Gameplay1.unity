@@ -6053,6 +6053,7 @@ MonoBehaviour:
   defaultRoomTemperature: 20
   rooms: []
   employees: []
+  DeadEmployeesReport: []
   maxElectricity: 100
   blackoutMoodDecayInterval: 10
   blackoutMoodDecayAmount: 1
@@ -8852,7 +8853,7 @@ PrefabInstance:
     - target: {fileID: 5855016629643108748, guid: b48ae899d67ccdd45b95581ddc70bc27, type: 3}
       propertyPath: monsterPrefab
       value: 
-      objectReference: {fileID: 4031353912890426941, guid: 28196141c2647334fa86381415b25194, type: 3}
+      objectReference: {fileID: 4031353912890426941, guid: c62ca8f2530a7884190db23551878047, type: 3}
     - target: {fileID: 7062782232396217041, guid: b48ae899d67ccdd45b95581ddc70bc27, type: 3}
       propertyPath: m_LocalPosition.x
       value: 4.3729706
