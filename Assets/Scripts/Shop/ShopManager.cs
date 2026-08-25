@@ -205,7 +205,7 @@ public class ShopManager : MonoBehaviour
         else if (string.Equals(item.category, "Hire", System.StringComparison.OrdinalIgnoreCase) || item.id.ToLower().Contains("hire"))
         {
             if (itemTitleText != null) itemTitleText.text = item.title;
-            if (itemDescriptionText != null) itemDescriptionText.text = $"{item.description}\nRecruits a new staff member with a randomized hair color.";
+            if (itemDescriptionText != null) itemDescriptionText.text = $"{item.description}\n";
         }
         else
         {

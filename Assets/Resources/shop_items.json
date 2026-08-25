@@ -4,7 +4,7 @@
       "id": "plant_sunny_flower",
       "title": "Sunny Flower",
       "category": "Seed",
-      "price": 100,
+      "price": 200,
       "description": "A radiant sun-kissed flower specimen.",
       "spritePath": "Sprites/Tanaman/SunnyFlower/Mutated/SunnyFlower_Mutated_Bunga",
       "day": 5
@@ -45,7 +45,7 @@
       "id": "room_containment",
       "title": "Containment Unit",
       "category": "Room",
-      "price": 500,
+      "price": 400,
       "description": "High security chamber for dangerous specimens.",
       "spritePath": "Sprites/Room/Containment/ContainmentRoom"
     },
@@ -122,10 +122,18 @@
       "spritePath": "Sprites/Room/ElectricityRoom/ElectricityRoom"
     },
     {
+      "id": "hire_clerk",
+      "title": "Hire Clerk",
+      "category": "Hire",
+      "price": 50,
+      "description": "Recruit a new Clerk employee for general facility operations.",
+      "spritePath": "Sprites/Employee/head"
+    },
+    {
       "id": "hire_botanist",
       "title": "Hire Botanist",
       "category": "Hire",
-      "price": 200,
+      "price": 150,
       "description": "Recruit a new Botanist employee for plant cultivation and care.",
       "spritePath": "Sprites/Employee/head"
     },
@@ -133,7 +141,7 @@
       "id": "hire_researcher",
       "title": "Hire Researcher",
       "category": "Hire",
-      "price": 200,
+      "price": 150,
       "description": "Recruit a new Researcher employee for specimen analysis.",
       "spritePath": "Sprites/Employee/head"
     },
@@ -141,7 +149,7 @@
       "id": "hire_security",
       "title": "Hire Security",
       "category": "Hire",
-      "price": 200,
+      "price": 150,
       "description": "Recruit a new Security employee for facility defense.",
       "spritePath": "Sprites/Employee/head"
     },
@@ -149,7 +157,7 @@
       "id": "hire_medic",
       "title": "Hire Medic",
       "category": "Hire",
-      "price": 200,
+      "price": 150,
       "description": "Recruit a new Medic employee for medical care and healing.",
       "spritePath": "Sprites/Employee/head"
     },
@@ -157,16 +165,8 @@
       "id": "hire_engineer",
       "title": "Hire Engineer",
       "category": "Hire",
-      "price": 200,
+      "price": 150,
       "description": "Recruit a new Engineer employee for facility maintenance.",
-      "spritePath": "Sprites/Employee/head"
-    },
-    {
-      "id": "hire_clerk",
-      "title": "Hire Clerk",
-      "category": "Hire",
-      "price": 200,
-      "description": "Recruit a new Clerk employee for general facility operations.",
       "spritePath": "Sprites/Employee/head"
     }
   ]
