@@ -3,19 +3,19 @@
     {
       "plantId": "Sunny Flower",
       "isUnlocked": true,
-      "isMutated": false,
+      "isMutated": true,
       "plantDescription": "A cheerful & cute flower. It has a bright yellow bloom and is known for its ability to heat things up ;)."
     },
     {
       "plantId": "Dandelectric",
-      "isUnlocked": false,
-      "isMutated": false,
+      "isUnlocked": true,
+      "isMutated": true,
       "plantDescription": "A mysterious plant that glows with electric energy. It can shock rooms."
     },
     {
       "plantId": "Blight Root",
-      "isUnlocked": false,
-      "isMutated": false,
+      "isUnlocked": true,
+      "isMutated": true,
       "plantDescription": "A dark and twisted plant that spreads virus. It can infect employees and make them sick."
     }
   ]

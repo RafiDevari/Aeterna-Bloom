@@ -3,14 +3,20 @@
         {
             "plantInstanceId": "Room_Unit-A1",
             "plantId": "Sunny Flower",
-            "growth": 0.699999988079071,
+            "growth": 0,
             "completedResearchIds": []
         },
         {
             "plantInstanceId": "Room_Unit-A3",
             "plantId": "Dandelectric",
-            "growth": 1.0199999809265137,
+            "growth": 0,
             "completedResearchIds": []
+        },
+        {
+          "plantInstanceId": "Room_Unit-A4",
+          "plantId": "Blight Root",
+          "growth": 0,
+          "completedResearchIds": []
         }
     ]
 }
