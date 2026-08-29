@@ -110,7 +110,7 @@ public class EmployeeViewerManager : MonoBehaviour
         backTxtRt.anchorMin = Vector2.zero;
         backTxtRt.anchorMax = Vector2.one;
         TextMeshProUGUI backTmp = backTxtObj.GetComponent<TextMeshProUGUI>();
-        backTmp.text = "← Back to Assignment";
+        backTmp.text = "← Back to Main Menu";
         backTmp.fontSize = 16;
         backTmp.fontStyle = FontStyles.Bold;
         backTmp.alignment = TextAlignmentOptions.Center;
@@ -630,8 +630,8 @@ public class EmployeeViewerManager : MonoBehaviour
     /// </summary>
     public void BackToAssignment()
     {
-#if UNITY_EDITOR
-        string scenePath = "Assets/Scenes/EmployeeAssignment.unity";
+
+        string scenePath = "Assets/Scenes/MainMenu.unity";
         if (System.IO.File.Exists(scenePath))
         {
             UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(
@@ -640,7 +640,7 @@ public class EmployeeViewerManager : MonoBehaviour
             );
             return;
         }
-#endif
-        UnityEngine.SceneManagement.SceneManager.LoadScene("EmployeeAssignment");
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
     }
 }

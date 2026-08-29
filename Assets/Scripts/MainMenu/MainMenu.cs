@@ -18,9 +18,9 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene("Tutorial");
     }
 
-    public void Guide()
+    public void Employee()
     {
-        SceneManager.LoadScene("Guide");
+        SceneManager.LoadScene("EmployeeViewer");
     }
 
     public void Shop()

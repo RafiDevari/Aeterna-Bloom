@@ -114,13 +114,32 @@ public class ShopSetup : MonoBehaviour
         moneyRt.offsetMin = Vector2.zero;
         moneyRt.offsetMax = Vector2.zero;
 
-        // Debug Add Money Button
-        GameObject addMoneyBtnObj = CreateButton("AddMoneyButton", headerObj.transform, "+500 Gold", 18, new Color(0.2f, 0.5f, 0.3f));
-        RectTransform addMoneyRt = addMoneyBtnObj.GetComponent<RectTransform>();
-        addMoneyRt.anchorMin = new Vector2(0.87f, 0.15f);
-        addMoneyRt.anchorMax = new Vector2(0.97f, 0.85f);
-        addMoneyRt.offsetMin = Vector2.zero;
-        addMoneyRt.offsetMax = Vector2.zero;
+
+        // Back to Main Menu Button
+        GameObject mainMenuBtnObj = new GameObject("MainMenuButton", typeof(RectTransform), typeof(Image), typeof(Button));
+        mainMenuBtnObj.transform.SetParent(uiRoot.transform, false);
+        RectTransform mainMenuRt = mainMenuBtnObj.GetComponent<RectTransform>();
+        mainMenuRt.anchorMin = new Vector2(1f, 1f);
+        mainMenuRt.anchorMax = new Vector2(1f, 1f);
+        mainMenuRt.pivot = new Vector2(1f, 1f);
+        mainMenuRt.anchoredPosition = new Vector2(-25f, -25f);
+        mainMenuRt.sizeDelta = new Vector2(230f, 50f);
+        Image mainMenuImg = mainMenuBtnObj.GetComponent<Image>();
+        mainMenuImg.color = new Color(0.18f, 0.45f, 0.85f, 0.95f);
+
+        GameObject mainMenuTxtObj = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        mainMenuTxtObj.transform.SetParent(mainMenuBtnObj.transform, false);
+        RectTransform mainMenuTxtRt = mainMenuTxtObj.GetComponent<RectTransform>();
+        mainMenuTxtRt.anchorMin = Vector2.zero;
+        mainMenuTxtRt.anchorMax = Vector2.one;
+        mainMenuTxtRt.offsetMin = Vector2.zero;
+        mainMenuTxtRt.offsetMax = Vector2.zero;
+        TextMeshProUGUI mainMenuTmp = mainMenuTxtObj.GetComponent<TextMeshProUGUI>();
+        mainMenuTmp.text = "← Back to Main Menu";
+        mainMenuTmp.fontSize = 16;
+        mainMenuTmp.fontStyle = FontStyles.Bold;
+        mainMenuTmp.alignment = TextAlignmentOptions.Center;
+        mainMenuTmp.color = Color.white;
 
         // --- CATEGORY BAR (CENTER TOP) ---
         GameObject categoryBarObj = new GameObject("CategoryBar", typeof(RectTransform));
@@ -395,7 +414,7 @@ public class ShopSetup : MonoBehaviour
 
         mgrSo.FindProperty("moneyText").objectReferenceValue = moneyObj.GetComponent<TextMeshProUGUI>();
         mgrSo.FindProperty("toastMessageText").objectReferenceValue = toastObj.GetComponent<TextMeshProUGUI>();
-        mgrSo.FindProperty("addMoneyDebugButton").objectReferenceValue = addMoneyBtnObj.GetComponent<Button>();
+        mgrSo.FindProperty("mainMenuButton").objectReferenceValue = mainMenuBtnObj.GetComponent<Button>();
         mgrSo.FindProperty("confirmationPopup").objectReferenceValue = popupComp;
 
         mgrSo.ApplyModifiedProperties();

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 
@@ -37,7 +38,7 @@ public class ShopManager : MonoBehaviour
     [Header("HUD & Feedback")]
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private TextMeshProUGUI toastMessageText;
-    [SerializeField] private Button addMoneyDebugButton;
+    [SerializeField] private Button mainMenuButton;
 
     [Header("Popup References")]
     [SerializeField] private ShopConfirmationPopup confirmationPopup;
@@ -94,7 +95,7 @@ public class ShopManager : MonoBehaviour
         if (nextButton != null) nextButton.onClick.AddListener(OnNextItemClicked);
 
         if (buyButton != null) buyButton.onClick.AddListener(OnBuyItemClicked);
-        if (addMoneyDebugButton != null) addMoneyDebugButton.onClick.AddListener(OnAddMoneyClicked);
+        if (mainMenuButton != null) mainMenuButton.onClick.AddListener(GoToMainMenu);
 
         // Auto-detect item card frame & swipe handler if needed
         if (itemCardFrame == null && itemTitleText != null && itemTitleText.transform.parent != null)
@@ -680,10 +681,9 @@ public class ShopManager : MonoBehaviour
         }
     }
 
-    private void OnAddMoneyClicked()
+    public void GoToMainMenu()
     {
-        GameSaveSystem.Instance.AddMoney(500);
-        ShowToast("<color=#FFFF55>Added +500 Gold (Debug)</color>");
+        SceneManager.LoadScene("MainMenu");
     }
 
     private void UpdateMoneyDisplay(int currentMoney)
