@@ -5,8 +5,26 @@
       "title": "Sunny Flower",
       "category": "Seed",
       "price": 200,
-      "description": "A radiant sun-kissed flower specimen.",
-      "spritePath": "Sprites/Tanaman/SunnyFlower/Mutated/SunnyFlower_Mutated_Bunga",
+      "description": "A cheerful & cute flower. It has a bright yellow bloom and is known for its ability to heat things up ;).",
+      "spritePath": "Sprites/Tanaman1/Sunny Flower/SunnyFlower",
+      "day": 5
+    },
+    {
+      "id": "plant_dandelectric",
+      "title": "Dandelectric",
+      "category": "Seed",
+      "price": 300,
+      "description": "A mysterious plant that glows with electric energy. It can shock rooms.",
+      "spritePath": "Sprites/Tanaman1/Dandelectric/Dandelectric",
+      "day": 5
+    },
+    {
+      "id": "plant_blight_root",
+      "title": "Blight Root",
+      "category": "Seed",
+      "price": 400,
+      "description": "A dark and twisted plant that spreads virus. It can infect employees and make them sick.",
+      "spritePath": "Sprites/Tanaman1/Blight Root/BlightRoot",
       "day": 5
     },
     {

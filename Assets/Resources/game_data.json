@@ -1,7 +1,6 @@
 {
-    "money": 450,
+    "money": 500,
     "day": 1,
     "electricityLevel": 1,
-    "purchasedItemIds": [
-    ]
+    "purchasedItemIds": []
 }
