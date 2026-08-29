@@ -1127,6 +1127,10 @@ MonoBehaviour:
     growingSprite: {fileID: -1254272907982245393, guid: 06a7201abf78eed40a1b5809209f94dd, type: 3}
     overgrowthSprite: {fileID: 5411576281342212095, guid: 109d40e5718b9da448a023c1d500fde7, type: 3}
     mutatedSprite: {fileID: 7015881845714089253, guid: 0616e04afe2c0de48811a1f1cdc70039, type: 3}
+  - plantId: Blight Root
+    growingSprite: {fileID: 4629396507754485152, guid: 3422b012e35cd384081ab59927ba20bf, type: 3}
+    overgrowthSprite: {fileID: 4207278909212107264, guid: fd0809d5be86aae419eb0bb7bdf0089a, type: 3}
+    mutatedSprite: {fileID: -668852860949389577, guid: 2adb1b9a05cbf2f41845c884495bb605, type: 3}
 --- !u!1 &891815954
 GameObject:
   m_ObjectHideFlags: 0

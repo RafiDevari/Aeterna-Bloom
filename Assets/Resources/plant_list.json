@@ -4,23 +4,19 @@
       "plantId": "Sunny Flower",
       "isUnlocked": true,
       "isMutated": false,
-      "plantDescription": "A cheerful flower that thrives in sunlight. It has a bright yellow bloom and is known for its ability to lift spirits."
+      "plantDescription": "A cheerful & cute flower. It has a bright yellow bloom and is known for its ability to heat things up ;)."
     },
     {
       "plantId": "Dandelectric",
       "isUnlocked": false,
       "isMutated": false,
-      "plantDescription": "A mysterious plant that glows with electric energy. It thrives in dark environments and can shock its enemies."
+      "plantDescription": "A mysterious plant that glows with electric energy. It can shock rooms."
     },
     {
-      "plantId": "Monster AB",
+      "plantId": "Blight Root",
       "isUnlocked": false,
-      "isMutated": false
-    },
-    {
-      "plantId": "BlightRoot",
-      "isUnlocked": false,
-      "isMutated": false
+      "isMutated": false,
+      "plantDescription": "A dark and twisted plant that spreads virus. It can infect employees and make them sick."
     }
   ]
 }
